@@ -109,7 +109,7 @@ export default function PrivacyPage() {
                 <li><strong>Restriction:</strong> Request restriction of processing</li>
               </ul>
               <p className="text-gray-700 mt-4">
-                To exercise these rights, contact us at privacy@codesnap.io
+                To exercise these rights, contact us at privacy@codesnap.com
               </p>
             </section>
 
@@ -178,9 +178,9 @@ export default function PrivacyPage() {
                 If you have questions or concerns about this Privacy Policy, please contact us:
               </p>
               <p className="text-gray-700">
-                Email: privacy@codesnap.io<br />
+                Email: privacy@codesnap.com<br />
                 Address: [Your Business Address]<br />
-                Data Protection Officer: dpo@codesnap.io
+                Data Protection Officer: dpo@codesnap.com
               </p>
             </section>
           </div>

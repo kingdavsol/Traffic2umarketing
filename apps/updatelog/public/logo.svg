@@ -1,0 +1,8 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="40" fill="#8B5CF6"/>
+  <path d="M100 50C77.9 50 60 67.9 60 90C60 95 61 99.8 62.8 104.2L55 140L91.8 133.2C96.2 135 101 136 106 136H110C132.1 136 150 118.1 150 96C150 73.9 132.1 56 110 56H100C77.9 56 60 67.9 60 90Z" fill="white"/>
+  <circle cx="85" cy="85" r="5" fill="#8B5CF6"/>
+  <circle cx="105" cy="85" r="5" fill="#8B5CF6"/>
+  <circle cx="125" cy="85" r="5" fill="#8B5CF6"/>
+  <text x="100" y="170" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">UpdateLog</text>
+</svg>

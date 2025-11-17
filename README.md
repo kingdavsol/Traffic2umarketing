@@ -4,50 +4,58 @@ A monorepo containing 8 high-value SaaS applications built with modern web techn
 
 ## 🚀 Applications
 
-### 1. CodeSnap.io - Screenshot to Code Converter
+### 1. CodeSnap.com - Screenshot to Code Converter
 Transform UI screenshots into production-ready code using AI vision models.
+- **Domain**: codesnap.com
 - **Tech Stack**: Next.js, OpenAI GPT-4V, TailwindCSS
 - **Pricing**: $19-49/month
 - **Port**: 3001
 
-### 2. WarmInbox.io - Email Warm-up & Deliverability
+### 2. WarmInbox.com - Email Warm-up & Deliverability
 Improve email deliverability through automated domain reputation building.
+- **Domain**: warminbox.com
 - **Tech Stack**: Next.js, Node.js, SMTP
 - **Pricing**: $29-79/month
 - **Port**: 3002
 
-### 3. UpdateLog.io - Changelog & Product Updates
+### 3. UpdateLog.com - Changelog & Product Updates
 Engage users with beautiful product update announcements.
+- **Domain**: updatelog.com
 - **Tech Stack**: Next.js, Markdown, Embeddable Widget
 - **Pricing**: $19-49/month
 - **Port**: 3003
 
-### 4. TestLift.io - No-Code A/B Testing
+### 4. TestLift.com - No-Code A/B Testing
 Simple A/B testing for landing pages without expensive enterprise tools.
+- **Domain**: testlift.com
 - **Tech Stack**: Next.js, Analytics, Visual Editor
 - **Pricing**: $29-99/month
 - **Port**: 3004
 
-### 5. LinkedBoost.io - LinkedIn Scheduler with AI
+### 5. LinkedBoost.com - LinkedIn Scheduler with AI
 Schedule and optimize LinkedIn posts with AI-powered content enhancement.
+- **Domain**: linkedboost.com
 - **Tech Stack**: Next.js, LinkedIn API, OpenAI
 - **Pricing**: $15-39/month
 - **Port**: 3005
 
-### 6. RevenueView.io - Stripe Analytics Dashboard
+### 6. RevenueView.com - Stripe Analytics Dashboard
 Beautiful revenue analytics and insights for Stripe users.
+- **Domain**: revenueview.com
 - **Tech Stack**: Next.js, Stripe API, Chart.js
 - **Pricing**: $19-99/month
 - **Port**: 3006
 
-### 7. MenuQR.io - QR Code Menu Builder
+### 7. MenuQR.com - QR Code Menu Builder
 Digital menu builder for restaurants with QR code generation.
+- **Domain**: menuqr.com
 - **Tech Stack**: Next.js, QR Code Generator, Image Upload
 - **Pricing**: $9-29/month
 - **Port**: 3007
 
-### 8. LeadExtract.io - LinkedIn Profile Scraper
+### 8. LeadExtract.com - LinkedIn Profile Scraper
 Chrome extension for extracting LinkedIn profile data for sales teams.
+- **Domain**: leadextract.com
 - **Tech Stack**: Chrome Extension, Next.js Dashboard
 - **Pricing**: $19-49/month
 - **Port**: 3008
@@ -114,6 +122,7 @@ pnpm dev:warminbox
 
 ## 📊 Features (All Apps)
 
+- ✅ Custom logos and favicons
 - ✅ Email verification
 - ✅ Terms & Conditions
 - ✅ Privacy Policy

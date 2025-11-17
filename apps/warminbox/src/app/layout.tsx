@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'WarmInbox - Email Warm-up & Deliverability Platform',
     description: 'Improve your email deliverability with automated inbox warm-up.',
-    url: 'https://warminbox.io',
+    url: 'https://warminbox.com',
     siteName: 'WarmInbox',
     type: 'website',
   },

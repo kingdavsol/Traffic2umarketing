@@ -14,7 +14,7 @@ export default function TermsPage() {
             <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">2. Service</h2><p className="text-gray-700">We provide tools to publish, manage, and distribute product updates to your users through widgets, emails, and integrations.</p></section>
             <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">3. Content</h2><p className="text-gray-700">You retain ownership of content published. We may display your content as part of the service. You're responsible for content accuracy and compliance.</p></section>
             <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">4. Pricing</h2><p className="text-gray-700">Subscription fees are charged monthly. You can cancel anytime. 7-day money-back guarantee available.</p></section>
-            <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">5. Contact</h2><p className="text-gray-700">Questions? Email: legal@updatelog.io</p></section>
+            <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">5. Contact</h2><p className="text-gray-700">Questions? Email: legal@updatelog.com</p></section>
           </div>
         </div>
       </div>

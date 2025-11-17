@@ -144,7 +144,7 @@ export default function TermsPage() {
                 If you have questions about these Terms, please contact us at:
               </p>
               <p className="text-gray-700">
-                Email: legal@codesnap.io<br />
+                Email: legal@codesnap.com<br />
                 Address: [Your Business Address]
               </p>
             </section>

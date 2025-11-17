@@ -108,8 +108,8 @@ export default function PrivacyPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Contact</h2>
               <p className="text-gray-700">
-                Privacy concerns? Contact: privacy@warminbox.io<br />
-                Data Protection Officer: dpo@warminbox.io
+                Privacy concerns? Contact: privacy@warminbox.com<br />
+                Data Protection Officer: dpo@warminbox.com
               </p>
             </section>
           </div>

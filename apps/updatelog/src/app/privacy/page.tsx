@@ -13,7 +13,7 @@ export default function PrivacyPage() {
             <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">1. Data Collection</h2><p className="text-gray-700">We collect: account information, published updates, usage analytics, payment data (via Stripe).</p></section>
             <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">2. Data Usage</h2><p className="text-gray-700">We use data to: provide the service, improve features, process payments, send notifications, provide support.</p></section>
             <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">3. Data Security</h2><p className="text-gray-700">We use encryption, secure infrastructure (AWS/GCP), regular security audits, and access controls to protect your data.</p></section>
-            <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">4. Your Rights</h2><p className="text-gray-700">You can access, export, or delete your data anytime. Contact privacy@updatelog.io for requests.</p></section>
+            <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">4. Your Rights</h2><p className="text-gray-700">You can access, export, or delete your data anytime. Contact privacy@updatelog.com for requests.</p></section>
             <section className="mb-8"><h2 className="text-2xl font-semibold mb-4">5. Cookies</h2><p className="text-gray-700">We use cookies for authentication, preferences, and analytics. You can control cookies via browser settings.</p></section>
           </div>
         </div>

@@ -1,0 +1,8 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="40" fill="#0A66C2"/>
+  <rect x="50" y="90" width="35" height="60" rx="4" fill="white"/>
+  <rect x="55" y="60" width="25" height="25" rx="12.5" fill="white"/>
+  <path d="M110 100L140 80L140 140L110 120V100Z" fill="white"/>
+  <path d="M145 85L160 75L160 125L145 115" fill="white" opacity="0.6"/>
+  <text x="100" y="175" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">LinkedBoost</text>
+</svg>

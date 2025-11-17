@@ -1,0 +1,8 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="40" fill="#7C3AED"/>
+  <circle cx="100" cy="80" r="25" fill="white"/>
+  <circle cx="100" cy="80" r="15" fill="#7C3AED"/>
+  <path d="M70 110C70 110 80 100 100 100C120 100 130 110 130 110L130 130C130 130 120 140 100 140C80 140 70 130 70 130L70 110Z" fill="white"/>
+  <path d="M85 115L100 125L115 115" stroke="#7C3AED" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="100" y="175" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">LeadExtract</text>
+</svg>

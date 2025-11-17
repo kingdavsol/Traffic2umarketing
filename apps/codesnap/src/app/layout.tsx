@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'CodeSnap - Transform Screenshots into Production-Ready Code',
     description: 'Convert any UI screenshot into clean, production-ready code using AI.',
-    url: 'https://codesnap.io',
+    url: 'https://codesnap.com',
     siteName: 'CodeSnap',
     type: 'website',
   },
