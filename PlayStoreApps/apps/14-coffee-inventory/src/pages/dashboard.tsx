@@ -1,100 +1,81 @@
-/**
- * Coffee Shop Inventory - Dashboard
- */
-
 'use client';
-
 import { useRouter } from 'next/router';
 import { useUser } from '@/shared/hooks/useUser';
-import { AdBanner, RewardedAdButton } from '@/shared/components/ads/AdBanner';
-import { Flame, Award, TrendingUp } from 'lucide-react';
+import { AdBanner } from '@/shared/components/ads/AdBanner';
+import { Flame } from 'lucide-react';
+import { useState } from 'react';
+
+const RECIPES = [
+  { id: 1, name: 'Espresso', cost: 0.45, price: 2.50, margin: '82%' },
+  { id: 2, name: 'Americano', cost: 0.60, price: 3.00, margin: '80%' },
+  { id: 3, name: 'Cappuccino', cost: 1.20, price: 4.50, margin: '73%' },
+  { id: 4, name: 'Latte', cost: 1.35, price: 4.95, margin: '73%' }
+];
 
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading, isAuthenticated } = useUser();
+  const [inventoryValue] = useState(2450);
+  const [wasteValue] = useState(145);
+  const [dailyRevenue] = useState(650);
 
   if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  if (!isAuthenticated) {
-    router.push('/login');
-    return null;
-  }
+  if (!isAuthenticated) { router.push('/login'); return null; }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
       {!user?.isPremium && <AdBanner placement="top" appId="coffee-inventory" />}
-
-      <div className="bg-gradient-to-r from-amber-700 to-yellow-600 text-white px-4 py-6">
-        <div className="max-w-6xl mx-auto flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold">Welcome back, {user?.name?.split(' ')[0]}!</h1>
-            <p className="text-white/80">Keep up your progress!</p>
-          </div>
-          <div className="text-right">
-            <div className="flex items-center gap-2 text-2xl font-bold mb-2">
-              <Flame className="w-6 h-6" />
-              {user?.gamification?.streak || 0} Day Streak
-            </div>
-          </div>
-        </div>
+      <div className="bg-gradient-to-r from-amber-600 to-amber-400 text-white px-4 py-6">
+        <h1 className="text-3xl font-bold">Brew Success, Maximize Profits</h1>
+        <div className="flex gap-2 text-2xl font-bold mt-4"><Flame className="w-6 h-6" />{user?.gamification?.streak || 0} Day Streak</div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-400">
-            <p className="text-gray-600 text-sm">Recipes</p>
-            <h3 className="text-3xl font-bold text-gray-900">0</h3>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-400">
-            <p className="text-gray-600 text-sm">Inventory</p>
-            <h3 className="text-3xl font-bold text-gray-900">0</h3>
+            <p className="text-sm text-gray-600">Inventory Value</p>
+            <h3 className="text-3xl font-bold text-blue-600">${inventoryValue}</h3>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-400">
-            <p className="text-gray-600 text-sm">Score</p>
-            <h3 className="text-3xl font-bold text-gray-900">0</h3>
+            <p className="text-sm text-gray-600">Daily Revenue</p>
+            <h3 className="text-3xl font-bold text-green-600">${dailyRevenue}</h3>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-400">
-            <p className="text-gray-600 text-sm">Badges</p>
-            <h3 className="text-3xl font-bold text-gray-900">{user?.gamification?.badges?.length || 0}</h3>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-400">
+            <p className="text-sm text-gray-600">Avg. Margin</p>
+            <h3 className="text-3xl font-bold text-purple-600">76%</h3>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-400">
+            <p className="text-sm text-gray-600">Waste (Weekly)</p>
+            <h3 className="text-3xl font-bold text-red-600">${wasteValue}</h3>
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="bg-white rounded-lg shadow p-8 mb-8">
-          <h2 className="text-2xl font-bold mb-4">Your Activity</h2>
-          <p className="text-gray-600">Start using the app to see your progress here!</p>
+        <div className="bg-white rounded-lg shadow p-8">
+          <h2 className="text-2xl font-bold mb-6">Recipe Costing</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b-2 border-gray-200">
+                  <th className="text-left p-3">Recipe</th>
+                  <th className="text-left p-3">Cost</th>
+                  <th className="text-left p-3">Price</th>
+                  <th className="text-left p-3">Margin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {RECIPES.map(recipe => (
+                  <tr key={recipe.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="p-3 font-bold">{recipe.name}</td>
+                    <td className="p-3">${recipe.cost}</td>
+                    <td className="p-3">${recipe.price}</td>
+                    <td className="p-3 font-bold text-green-600">{recipe.margin}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-
-        {/* Rewarded Ad */}
-        {!user?.isPremium && (
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200 mb-8">
-            <h4 className="font-bold mb-3">Earn Bonus Points</h4>
-            <p className="text-sm text-gray-700 mb-4">Watch a short video to earn 50 bonus points!</p>
-            <RewardedAdButton
-              appId="coffee-inventory"
-              reward={ type: 'points', amount: 50, label: 'Bonus Points' }
-              onRewardEarned={async () => {
-                await fetch('/api/gamification/award-points', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ points: 50, type: 'rewarded_ad' }),
-                });
-              }}
-            />
-          </div>
-        )}
-
-        {/* Premium CTA */}
-        {!user?.isPremium && (
-          <div className="bg-gradient-to-r from-amber-700 to-yellow-600 rounded-lg p-8 text-center text-white">
-            <h3 className="text-2xl font-bold mb-2">Unlock Premium Features</h3>
-            <p className="mb-6 text-white/90">Get full access to all features, remove ads, and unlock advanced capabilities.</p>
-            <button className="bg-white text-gray-900 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition">Start Free Trial</button>
-          </div>
-        )}
       </div>
-
-      {!user?.isPremium && <AdBanner placement="bottom" appId="coffee-inventory" />}
     </div>
   );
 }

@@ -1,100 +1,86 @@
-/**
- * Niche Dating - Dashboard
- */
-
 'use client';
-
 import { useRouter } from 'next/router';
 import { useUser } from '@/shared/hooks/useUser';
-import { AdBanner, RewardedAdButton } from '@/shared/components/ads/AdBanner';
-import { Flame, Award, TrendingUp } from 'lucide-react';
+import { AdBanner } from '@/shared/components/ads/AdBanner';
+import { Flame, Heart, Shield } from 'lucide-react';
+import { useState } from 'react';
+
+const PROFILES = [
+  { id: 1, name: 'Alex', age: 28, interests: ['Hiking', 'Photography', 'Music'], verified: true, rating: 4.8 },
+  { id: 2, name: 'Jordan', age: 26, interests: ['Gaming', 'Tech', 'Cooking'], verified: true, rating: 4.9 },
+  { id: 3, name: 'Casey', age: 29, interests: ['Travel', 'Books', 'Art'], verified: false, rating: 4.7 }
+];
 
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading, isAuthenticated } = useUser();
+  const [matches] = useState(12);
+  const [profileViews] = useState(87);
 
   if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  if (!isAuthenticated) {
-    router.push('/login');
-    return null;
-  }
+  if (!isAuthenticated) { router.push('/login'); return null; }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
       {!user?.isPremium && <AdBanner placement="top" appId="niche-dating" />}
-
-      <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-6">
-        <div className="max-w-6xl mx-auto flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold">Welcome back, {user?.name?.split(' ')[0]}!</h1>
-            <p className="text-white/80">Keep up your progress!</p>
-          </div>
-          <div className="text-right">
-            <div className="flex items-center gap-2 text-2xl font-bold mb-2">
-              <Flame className="w-6 h-6" />
-              {user?.gamification?.streak || 0} Day Streak
-            </div>
-          </div>
-        </div>
+      <div className="bg-gradient-to-r from-rose-600 to-rose-400 text-white px-4 py-6">
+        <h1 className="text-3xl font-bold">Find Your Perfect Match</h1>
+        <div className="flex gap-2 text-2xl font-bold mt-4"><Flame className="w-6 h-6" />{user?.gamification?.streak || 0} Day Streak</div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-400">
-            <p className="text-gray-600 text-sm">Matches</p>
-            <h3 className="text-3xl font-bold text-gray-900">0</h3>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-400">
-            <p className="text-gray-600 text-sm">Events</p>
-            <h3 className="text-3xl font-bold text-gray-900">0</h3>
+            <p className="text-sm text-gray-600">Profile Views</p>
+            <h3 className="text-3xl font-bold text-blue-600">{profileViews}</h3>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-400">
-            <p className="text-gray-600 text-sm">Score</p>
-            <h3 className="text-3xl font-bold text-gray-900">0</h3>
+            <p className="text-sm text-gray-600">Matches</p>
+            <h3 className="text-3xl font-bold text-green-600">{matches}</h3>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-400">
+            <p className="text-sm text-gray-600">Messages</p>
+            <h3 className="text-3xl font-bold text-purple-600">23</h3>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-400">
-            <p className="text-gray-600 text-sm">Badges</p>
-            <h3 className="text-3xl font-bold text-gray-900">{user?.gamification?.badges?.length || 0}</h3>
+            <p className="text-sm text-gray-600">Badges</p>
+            <h3 className="text-3xl font-bold text-yellow-600">{user?.gamification?.badges?.length || 0}</h3>
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="bg-white rounded-lg shadow p-8 mb-8">
-          <h2 className="text-2xl font-bold mb-4">Your Activity</h2>
-          <p className="text-gray-600">Start using the app to see your progress here!</p>
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Suggested Matches</h2>
+          {PROFILES.map(profile => (
+            <div key={profile.id} className="bg-white rounded-lg shadow p-6 border-2 border-gray-200">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="font-bold text-lg">{profile.name}, {profile.age}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    {profile.verified && <Shield className="w-4 h-4 text-green-600" />}
+                    <span className="text-sm text-gray-600">⭐ {profile.rating}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">Interests:</p>
+                <div className="flex flex-wrap gap-2">
+                  {profile.interests.map((interest, idx) => (
+                    <span key={idx} className="px-3 py-1 bg-rose-100 text-rose-800 rounded text-sm font-bold">
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button className="flex-1 bg-rose-600 text-white px-4 py-2 rounded font-bold hover:bg-rose-700 flex items-center justify-center gap-2">
+                  <Heart className="w-4 h-4" /> Like
+                </button>
+                <button className="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded font-bold">Pass</button>
+              </div>
+            </div>
+          ))}
         </div>
-
-        {/* Rewarded Ad */}
-        {!user?.isPremium && (
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200 mb-8">
-            <h4 className="font-bold mb-3">Earn Bonus Points</h4>
-            <p className="text-sm text-gray-700 mb-4">Watch a short video to earn 50 bonus points!</p>
-            <RewardedAdButton
-              appId="niche-dating"
-              reward={ type: 'points', amount: 50, label: 'Bonus Points' }
-              onRewardEarned={async () => {
-                await fetch('/api/gamification/award-points', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ points: 50, type: 'rewarded_ad' }),
-                });
-              }}
-            />
-          </div>
-        )}
-
-        {/* Premium CTA */}
-        {!user?.isPremium && (
-          <div className="bg-gradient-to-r from-red-500 to-pink-500 rounded-lg p-8 text-center text-white">
-            <h3 className="text-2xl font-bold mb-2">Unlock Premium Features</h3>
-            <p className="mb-6 text-white/90">Get full access to all features, remove ads, and unlock advanced capabilities.</p>
-            <button className="bg-white text-gray-900 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition">Start Free Trial</button>
-          </div>
-        )}
       </div>
-
-      {!user?.isPremium && <AdBanner placement="bottom" appId="niche-dating" />}
     </div>
   );
 }
