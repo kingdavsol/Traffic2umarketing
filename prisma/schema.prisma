@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionTier {
+  FREE
+  BASIC
+  BUILDER
+  PREMIUM
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  FACEBOOK
+  TWITTER
+  LINKEDIN
+  TIKTOK
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String
+  image         String?
+  role          String    @default("user")
+
+  subscriptionTier    SubscriptionTier @default(FREE)
+  stripeCustomerId    String?          @unique
+  stripeSubscriptionId String?         @unique
+  subscriptionEndsAt  DateTime?
+
+  captionsGenerated   Int      @default(0)
+  monthlyCapLimit     Int      @default(10)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  captions       Caption[]
+  savedCaptions  SavedCaption[]
+  templates      Template[]
+  analytics      Analytics[]
+  socialAccounts SocialAccount[]
+
+  @@index([email])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Caption {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content     String   @db.Text
+  platform    SocialPlatform
+  tone        String
+  hashtags    String[]
+  emojis      Boolean  @default(true)
+
+  promptUsed  String   @db.Text
+
+  createdAt   DateTime @default(now())
+
+  saved       SavedCaption?
+
+  @@index([userId, createdAt])
+}
+
+model SavedCaption {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  captionId String   @unique
+  caption   Caption  @relation(fields: [captionId], references: [id], onDelete: Cascade)
+
+  name      String?
+  folder    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  content     String   @db.Text
+  platform    SocialPlatform?
+  isPublic    Boolean  @default(false)
+
+  usageCount  Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isPublic])
+}
+
+model SocialAccount {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  platform    SocialPlatform
+  accountName String
+  accessToken String?  @db.Text
+  refreshToken String? @db.Text
+  expiresAt   DateTime?
+
+  connected   Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, platform])
+  @@index([userId])
+}
+
+model Analytics {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date      DateTime @default(now())
+
+  captionsGenerated Int @default(0)
+  platform          SocialPlatform?
+  tone              String?
+
+  @@index([userId, date])
+}
+
+model TrendingMeme {
+  id          String   @id @default(cuid())
+
+  title       String
+  description String   @db.Text
+  imageUrl    String?
+  category    String
+  platform    SocialPlatform[]
+
+  popularity  Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([createdAt, popularity])
+}
+
+model TrendingHashtag {
+  id          String   @id @default(cuid())
+
+  hashtag     String   @unique
+  platform    SocialPlatform
+  category    String
+
+  popularity  Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([platform, popularity])
+}
+
+model AdminStats {
+  id              String   @id @default(cuid())
+
+  date            DateTime @unique @default(now())
+
+  totalUsers      Int      @default(0)
+  newUsers        Int      @default(0)
+
+  freeUsers       Int      @default(0)
+  basicUsers      Int      @default(0)
+  builderUsers    Int      @default(0)
+  premiumUsers    Int      @default(0)
+
+  captionsGenerated Int    @default(0)
+  revenue         Float    @default(0)
+
+  @@index([date])
+}
