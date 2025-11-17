@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@traffic2u/database';
 import bcrypt from 'bcryptjs';
+import { sendVerificationEmail } from '@traffic2u/email';
+import { generateVerificationToken } from '@/lib/tokens';
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,10 +55,22 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Send verification email
+    // Generate verification token and send email
+    const token = await generateVerificationToken(email);
+    const verificationUrl = `${process.env.NEXTAUTH_URL}/auth/verify?token=${token}`;
+
+    await sendVerificationEmail({
+      to: email,
+      name,
+      verificationUrl,
+      appName: 'CodeSnap',
+    });
 
     return NextResponse.json(
-      { message: 'User created successfully', userId: user.id },
+      {
+        message: 'User created successfully. Please check your email to verify your account.',
+        userId: user.id
+      },
       { status: 201 }
     );
   } catch (error) {

@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@traffic2u/auth';
+import { prisma } from '@traffic2u/database';
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
@@ -16,7 +19,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Check user subscription and usage limits
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { message: 'Unauthorized. Please sign in.' },
+        { status: 401 }
+      );
+    }
+
+    // Get user's subscription
+    const subscription = await prisma.subscription.findFirst({
+      where: { userId: session.user.id },
+    });
+
+    if (!subscription) {
+      return NextResponse.json(
+        { message: 'No subscription found' },
+        { status: 403 }
+      );
+    }
+
+    // Check usage limits based on plan
+    const planLimits = {
+      FREE: 5,
+      STARTER: 100,
+      PROFESSIONAL: Infinity,
+      ENTERPRISE: Infinity,
+    };
+
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const usageCount = await prisma.usageRecord.count({
+      where: {
+        userId: session.user.id,
+        feature: 'code_generation',
+        createdAt: {
+          gte: new Date(currentMonth + '-01'),
+        },
+      },
+    });
+
+    const limit = planLimits[subscription.plan as keyof typeof planLimits];
+
+    if (usageCount >= limit) {
+      return NextResponse.json(
+        {
+          message: `Usage limit exceeded. You've used ${usageCount} of ${limit} conversions this month. Please upgrade your plan.`,
+          usageCount,
+          limit,
+          plan: subscription.plan,
+        },
+        { status: 429 }
+      );
+    }
 
     const frameworkInstructions = {
       react: 'Generate clean React (TypeScript) code with functional components and hooks. Use modern best practices.',
@@ -62,10 +117,25 @@ Generate the complete code now:`,
 
     const code = response.choices[0]?.message?.content || '';
 
-    // TODO: Save to database for history
-    // TODO: Update user usage count
+    // Track usage
+    await prisma.usageRecord.create({
+      data: {
+        userId: session.user.id,
+        feature: 'code_generation',
+        metadata: {
+          framework,
+          model: 'gpt-4-vision-preview',
+          tokensUsed: response.usage?.total_tokens || 0,
+        },
+      },
+    });
 
-    return NextResponse.json({ code });
+    return NextResponse.json({
+      code,
+      usageCount: usageCount + 1,
+      limit,
+      plan: subscription.plan,
+    });
   } catch (error: any) {
     console.error('Code generation error:', error);
 

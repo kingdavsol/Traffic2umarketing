@@ -51,8 +51,8 @@ export default function SignUpPage() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      toast.success('Account created! Check your email to verify.');
-      router.push('/auth/verify?email=' + encodeURIComponent(formData.email));
+      toast.success('Account created successfully! Please check your email to verify your account.');
+      // Don't redirect automatically - user needs to check email for verification link
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
     } finally {
