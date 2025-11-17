@@ -23,6 +23,35 @@ model User {
   sessions      Session[]
   subscriptions Subscription[]
 
+  // CodeSnap
+  usageRecords  UsageRecord[]
+
+  // WarmInbox
+  emailAccounts EmailAccount[]
+
+  // UpdateLog
+  changelogs    Changelog[]
+
+  // TestLift
+  projects      Project[]
+
+  // LinkedBoost
+  linkedInAccounts LinkedInAccount[]
+  posts         Post[]
+  ownedTeams    Team[] @relation("TeamOwner")
+  teamMemberships TeamMember[]
+
+  // RevenueView
+  stripeAccounts StripeAccount[]
+
+  // MenuQR
+  restaurants   Restaurant[]
+
+  // LeadExtract
+  leads         Lead[]
+  extractionLogs ExtractionLog[]
+  usageQuota    UsageQuota?
+
   @@index([email])
 }
 
@@ -101,4 +130,729 @@ enum SubscriptionStatus {
   CANCELED
   PAST_DUE
   PAUSED
+}
+
+// ==========================================
+// CODESNAP MODELS
+// ==========================================
+
+model UsageRecord {
+  id              String   @id @default(cuid())
+  userId          String
+  feature         String   // "code_generation"
+  count           Int      @default(1)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ==========================================
+// WARMINBOX MODELS
+// ==========================================
+
+model EmailAccount {
+  id                  String    @id @default(cuid())
+  userId              String
+  email               String    @unique
+  provider            String   // gmail, outlook, smtp, etc.
+  smtpHost            String?
+  smtpPort            Int?
+  smtpUser            String?
+  smtpPassword        String?  // Encrypted
+  status              EmailAccountStatus @default(PENDING)
+  dailySentCount      Int      @default(0)
+  dailyLimit          Int      @default(50)
+  deliverabilityScore Float    @default(0)
+  warmupStartDate     DateTime?
+  warmupEndDate       DateTime?
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  warmupCampaigns     WarmupCampaign[]
+  emailLogs           EmailLog[]
+
+  @@index([userId])
+}
+
+model WarmupCampaign {
+  id                String   @id @default(cuid())
+  emailAccountId    String
+  name              String
+  status            CampaignStatus @default(ACTIVE)
+  dailyLimit        Int      @default(20)
+  rampUpDays        Int      @default(14)
+  currentDay        Int      @default(1)
+  emailsSent        Int      @default(0)
+  emailsReceived    Int      @default(0)
+  repliesSent       Int      @default(0)
+  spamReports       Int      @default(0)
+  startDate         DateTime @default(now())
+  endDate           DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  emailAccount      EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+
+  @@index([emailAccountId])
+}
+
+model EmailLog {
+  id                String   @id @default(cuid())
+  emailAccountId    String
+  campaignId        String?
+  subject           String
+  recipientEmail    String
+  sentAt            DateTime @default(now())
+  openedAt          DateTime?
+  repliedAt         DateTime?
+  spamMarked        Boolean  @default(false)
+  bounced           Boolean  @default(false)
+  status            EmailStatus @default(SENT)
+
+  emailAccount      EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+
+  @@index([emailAccountId])
+}
+
+enum EmailAccountStatus {
+  PENDING
+  WARMING
+  ACTIVE
+  PAUSED
+  ERROR
+  DISCONNECTED
+}
+
+enum CampaignStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum EmailStatus {
+  SENT
+  DELIVERED
+  OPENED
+  REPLIED
+  BOUNCED
+  SPAM
+}
+
+// ==========================================
+// UPDATELOG MODELS
+// ==========================================
+
+model Changelog {
+  id              String    @id @default(cuid())
+  userId          String
+  name            String
+  slug            String    @unique
+  description     String?
+  logoUrl         String?
+  customDomain    String?   @unique
+  primaryColor    String    @default("#8B5CF6")
+  isPublic        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updates         Update[]
+  subscribers     Subscriber[]
+
+  @@index([userId])
+  @@index([slug])
+}
+
+model Update {
+  id              String    @id @default(cuid())
+  changelogId     String
+  title           String
+  content         String    @db.Text
+  category        UpdateCategory @default(FEATURE)
+  publishedAt     DateTime?
+  scheduledFor    DateTime?
+  imageUrl        String?
+  isPinned        Boolean   @default(false)
+  isPublished     Boolean   @default(false)
+  views           Int       @default(0)
+  reactions       Json      @default("{}")  // {likes: 0, loves: 0, etc.}
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  changelog       Changelog @relation(fields: [changelogId], references: [id], onDelete: Cascade)
+  notifications   Notification[]
+
+  @@index([changelogId])
+  @@index([publishedAt])
+}
+
+model Subscriber {
+  id              String    @id @default(cuid())
+  changelogId     String
+  email           String
+  isVerified      Boolean   @default(false)
+  verificationToken String? @unique
+  preferences     Json      @default("{}")  // Email frequency, categories, etc.
+  subscribedAt    DateTime  @default(now())
+  unsubscribedAt  DateTime?
+
+  changelog       Changelog @relation(fields: [changelogId], references: [id], onDelete: Cascade)
+  notifications   Notification[]
+
+  @@unique([changelogId, email])
+  @@index([changelogId])
+}
+
+model Notification {
+  id              String    @id @default(cuid())
+  updateId        String
+  subscriberId    String
+  sentAt          DateTime  @default(now())
+  openedAt        DateTime?
+  clickedAt       DateTime?
+
+  update          Update    @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  subscriber      Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([updateId])
+  @@index([subscriberId])
+}
+
+enum UpdateCategory {
+  FEATURE
+  FIX
+  IMPROVEMENT
+  ANNOUNCEMENT
+  DEPRECATION
+}
+
+// ==========================================
+// TESTLIFT MODELS
+// ==========================================
+
+model Project {
+  id              String    @id @default(cuid())
+  userId          String
+  name            String
+  domain          String
+  trackingId      String    @unique @default(cuid())
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tests           Test[]
+
+  @@index([userId])
+  @@index([trackingId])
+}
+
+model Test {
+  id              String    @id @default(cuid())
+  projectId       String
+  name            String
+  description     String?
+  url             String
+  status          TestStatus @default(DRAFT)
+  testType        TestType   @default(AB_TEST)
+  trafficSplit    Int        @default(50)  // Percentage for variant
+  startDate       DateTime?
+  endDate         DateTime?
+  winnerVariant   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  variants        Variant[]
+  goals           Goal[]
+  events          Event[]
+
+  @@index([projectId])
+  @@index([status])
+}
+
+model Variant {
+  id              String    @id @default(cuid())
+  testId          String
+  name            String    // "Control", "Variant A", "Variant B"
+  isControl       Boolean   @default(false)
+  changes         Json      // DOM changes, CSS, JS
+  visitors        Int       @default(0)
+  conversions     Int       @default(0)
+  conversionRate  Float     @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  test            Test      @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+}
+
+model Goal {
+  id              String    @id @default(cuid())
+  testId          String
+  name            String
+  type            GoalType  @default(CLICK)
+  selector        String?   // CSS selector for click goals
+  url             String?   // URL for pageview goals
+  value           Float?    // Revenue value
+  isPrimary       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+
+  test            Test      @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+}
+
+model Event {
+  id              String    @id @default(cuid())
+  testId          String
+  variantId       String?
+  visitorId       String
+  eventType       EventType
+  goalId          String?
+  value           Float?
+  metadata        Json?
+  timestamp       DateTime  @default(now())
+
+  test            Test      @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+  @@index([visitorId])
+  @@index([timestamp])
+}
+
+enum TestStatus {
+  DRAFT
+  RUNNING
+  PAUSED
+  COMPLETED
+}
+
+enum TestType {
+  AB_TEST
+  MULTIVARIATE
+  SPLIT_URL
+}
+
+enum GoalType {
+  CLICK
+  PAGEVIEW
+  CUSTOM_EVENT
+  REVENUE
+}
+
+enum EventType {
+  PAGEVIEW
+  CONVERSION
+  CLICK
+  CUSTOM
+}
+
+// ==========================================
+// LINKEDBOOST MODELS
+// ==========================================
+
+model LinkedInAccount {
+  id              String    @id @default(cuid())
+  userId          String
+  linkedInId      String    @unique
+  name            String
+  email           String?
+  profileUrl      String?
+  profilePicture  String?
+  accessToken     String    // Encrypt in production
+  refreshToken    String?   // Encrypt in production
+  expiresAt       DateTime?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts           Post[]
+
+  @@index([userId])
+}
+
+model Post {
+  id                String    @id @default(cuid())
+  userId            String
+  linkedInAccountId String
+  content           String    @db.Text
+  images            Json?     // Array of image URLs
+  scheduledFor      DateTime?
+  publishedAt       DateTime?
+  linkedInPostId    String?   @unique
+  status            PostStatus @default(DRAFT)
+  engagement        Json?     // {likes, comments, shares, views}
+  optimizedBy       Boolean   @default(false)
+  hashtags          String[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linkedInAccount   LinkedInAccount @relation(fields: [linkedInAccountId], references: [id], onDelete: Cascade)
+  analytics         PostAnalytics[]
+
+  @@index([userId])
+  @@index([linkedInAccountId])
+  @@index([scheduledFor])
+  @@index([status])
+}
+
+model PostAnalytics {
+  id              String    @id @default(cuid())
+  postId          String
+  likes           Int       @default(0)
+  comments        Int       @default(0)
+  shares          Int       @default(0)
+  views           Int       @default(0)
+  clickThroughs   Int       @default(0)
+  engagementRate  Float     @default(0)
+  timestamp       DateTime  @default(now())
+
+  post            Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([timestamp])
+}
+
+model Team {
+  id              String    @id @default(cuid())
+  name            String
+  ownerId         String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  owner           User      @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members         TeamMember[]
+}
+
+model TeamMember {
+  id              String    @id @default(cuid())
+  teamId          String
+  userId          String
+  role            TeamRole  @default(MEMBER)
+  joinedAt        DateTime  @default(now())
+
+  team            Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+// ==========================================
+// REVENUEVIEW MODELS
+// ==========================================
+
+model StripeAccount {
+  id                String    @id @default(cuid())
+  userId            String
+  stripeUserId      String    @unique  // Stripe account ID (acc_...)
+  accessToken       String    // Encrypted
+  refreshToken      String?   // Encrypted
+  livemode          Boolean   @default(false)
+  businessName      String?
+  email             String?
+  lastSyncedAt      DateTime?
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customers         StripeCustomer[]
+  subscriptions     StripeSubscription[]
+  charges           StripeCharge[]
+  mrrSnapshots      MRRSnapshot[]
+
+  @@index([userId])
+}
+
+model StripeCustomer {
+  id                String    @id @default(cuid())
+  stripeAccountId   String
+  stripeCustomerId  String    @unique  // cus_...
+  email             String?
+  name              String?
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+
+  stripeAccount     StripeAccount @relation(fields: [stripeAccountId], references: [id], onDelete: Cascade)
+  subscriptions     StripeSubscription[]
+  charges           StripeCharge[]
+
+  @@index([stripeAccountId])
+}
+
+model StripeSubscription {
+  id                String    @id @default(cuid())
+  stripeAccountId   String
+  customerId        String
+  stripeSubId       String    @unique  // sub_...
+  status            String    // active, canceled, past_due, etc.
+  currentPeriodStart DateTime
+  currentPeriodEnd  DateTime
+  cancelAtPeriodEnd Boolean   @default(false)
+  planAmount        Int       // In cents
+  planInterval      String    // month, year
+  quantity          Int       @default(1)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  stripeAccount     StripeAccount @relation(fields: [stripeAccountId], references: [id], onDelete: Cascade)
+  customer          StripeCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([stripeAccountId])
+  @@index([customerId])
+  @@index([status])
+}
+
+model StripeCharge {
+  id                String    @id @default(cuid())
+  stripeAccountId   String
+  customerId        String
+  stripeChargeId    String    @unique  // ch_...
+  amount            Int       // In cents
+  currency          String    @default("usd")
+  status            String    // succeeded, failed, refunded
+  paid              Boolean
+  refunded          Boolean   @default(false)
+  description       String?
+  createdAt         DateTime  @default(now())
+
+  stripeAccount     StripeAccount @relation(fields: [stripeAccountId], references: [id], onDelete: Cascade)
+  customer          StripeCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([stripeAccountId])
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+model MRRSnapshot {
+  id                String    @id @default(cuid())
+  stripeAccountId   String
+  date              DateTime  @db.Date
+  mrr               Int       // Monthly Recurring Revenue in cents
+  activeSubscriptions Int
+  newMRR            Int       // New subscriptions
+  expansionMRR      Int       // Upgrades
+  contractionMRR    Int       // Downgrades
+  churnedMRR        Int       // Cancellations
+  createdAt         DateTime  @default(now())
+
+  stripeAccount     StripeAccount @relation(fields: [stripeAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([stripeAccountId, date])
+  @@index([stripeAccountId])
+  @@index([date])
+}
+
+// ==========================================
+// MENUQR MODELS
+// ==========================================
+
+model Restaurant {
+  id              String    @id @default(cuid())
+  userId          String
+  name            String
+  slug            String    @unique
+  description     String?
+  logoUrl         String?
+  address         String?
+  phone           String?
+  email           String?
+  website         String?
+  primaryColor    String    @default("#DC2626")
+  customDomain    String?   @unique
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menus           Menu[]
+
+  @@index([userId])
+  @@index([slug])
+}
+
+model Menu {
+  id              String    @id @default(cuid())
+  restaurantId    String
+  name            String
+  slug            String
+  description     String?
+  language        String    @default("en")
+  isActive        Boolean   @default(true)
+  displayOrder    Int       @default(0)
+  qrCodeUrl       String?
+  viewCount       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  categories      MenuCategory[]
+  views           MenuView[]
+
+  @@unique([restaurantId, slug])
+  @@index([restaurantId])
+}
+
+model MenuCategory {
+  id              String    @id @default(cuid())
+  menuId          String
+  name            String
+  description     String?
+  displayOrder    Int       @default(0)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  menu            Menu      @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  items           MenuItem[]
+
+  @@index([menuId])
+}
+
+model MenuItem {
+  id              String    @id @default(cuid())
+  categoryId      String
+  name            String
+  description     String?
+  price           Float
+  currency        String    @default("USD")
+  imageUrl        String?
+  isAvailable     Boolean   @default(true)
+  isVegetarian    Boolean   @default(false)
+  isVegan         Boolean   @default(false)
+  isGlutenFree    Boolean   @default(false)
+  allergens       String[]  // Array of allergen names
+  calories        Int?
+  displayOrder    Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  category        MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+}
+
+model MenuView {
+  id              String    @id @default(cuid())
+  menuId          String
+  viewedAt        DateTime  @default(now())
+  userAgent       String?
+  ipAddress       String?
+  country         String?
+
+  menu            Menu      @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  @@index([menuId])
+  @@index([viewedAt])
+}
+
+// ==========================================
+// LEADEXTRACT MODELS
+// ==========================================
+
+model Lead {
+  id              String    @id @default(cuid())
+  userId          String
+  linkedInUrl     String?
+  firstName       String?
+  lastName        String?
+  fullName        String
+  headline        String?
+  company         String?
+  companyUrl      String?
+  title           String?
+  location        String?
+  email           String?
+  emailStatus     EmailFindStatus @default(PENDING)
+  phone           String?
+  profilePicture  String?
+  about           String?   @db.Text
+  experience      Json?     // Array of work experience
+  education       Json?     // Array of education
+  skills          String[]  // Array of skills
+  connections     Int?
+  isEnriched      Boolean   @default(false)
+  tags            String[]
+  notes           String?   @db.Text
+  extractedAt     DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([company])
+}
+
+model ExtractionLog {
+  id              String    @id @default(cuid())
+  userId          String
+  leadId          String?
+  linkedInUrl     String
+  status          ExtractionStatus @default(SUCCESS)
+  errorMessage    String?
+  ipAddress       String?
+  userAgent       String?
+  extractedAt     DateTime  @default(now())
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([extractedAt])
+}
+
+model UsageQuota {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  plan            Plan
+  monthlyLimit    Int
+  currentUsage    Int       @default(0)
+  resetDate       DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum EmailFindStatus {
+  PENDING
+  FOUND
+  NOT_FOUND
+  INVALID
+  VERIFIED
+}
+
+enum ExtractionStatus {
+  SUCCESS
+  FAILED
+  RATE_LIMITED
+  BLOCKED
 }
