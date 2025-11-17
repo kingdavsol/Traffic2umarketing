@@ -1,12 +1,47 @@
 'use client';
+import { useState } from 'react';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge } from '@traffic2u/ui';
-import { UserPlus, Download } from 'lucide-react';
+import { UserPlus, Download, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
+  const [exporting, setExporting] = useState(false);
+
   const leads = [
     { id: '1', name: 'John Doe', title: 'CEO', company: 'Acme Corp', email: 'john@acme.com', extractedAt: '2024-03-15' },
     { id: '2', name: 'Jane Smith', title: 'VP Sales', company: 'Tech Inc', email: 'jane@tech.com', extractedAt: '2024-03-14' },
   ];
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const response = await fetch('/api/leads/export');
+
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+
+      // Get the CSV blob
+      const blob = await response.blob();
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `leads-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('CSV exported successfully!');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -28,9 +63,15 @@ export default function DashboardPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Extracted Leads</h1>
-          <Button><Download className="mr-2 h-4 w-4" />Export CSV</Button>
+          <Button onClick={handleExportCSV} disabled={exporting}>
+            {exporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            {exporting ? 'Exporting...' : 'Export CSV'}
+          </Button>
         </div>
-
         <Card>
           <CardContent className="p-0">
             <table className="w-full">
