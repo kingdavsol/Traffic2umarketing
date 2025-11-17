@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+* { box-sizing: border-box; } body { margin: 0; font-family: system-ui, sans-serif; }
+input, button { font-size: 1rem; padding: 0.5rem; } button { cursor: pointer; border: none; border-radius: 0.375rem; }
+input { border: 1px solid #ddd; border-radius: 0.375rem; width: 100%; }
