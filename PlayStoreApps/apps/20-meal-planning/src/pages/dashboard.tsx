@@ -1,5 +1,5 @@
 /**
- * Mental Health Pro - Dashboard
+ * Meal Planning - Dashboard
  */
 
 'use client';
@@ -21,9 +21,9 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
-      {!user?.isPremium && <AdBanner placement="top" appId="mental-health-pro" />}
+      {!user?.isPremium && <AdBanner placement="top" appId="meal-planning" />}
 
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-6">
+      <div className="bg-gradient-to-r from-green-500 to-lime-500 text-white px-4 py-6">
         <div className="max-w-6xl mx-auto flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold">Welcome back, {user?.name?.split(' ')[0]}!</h1>
@@ -42,11 +42,11 @@ export default function Dashboard() {
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-400">
-            <p className="text-gray-600 text-sm">Stress Level</p>
+            <p className="text-gray-600 text-sm">Meals Planned</p>
             <h3 className="text-3xl font-bold text-gray-900">0</h3>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-400">
-            <p className="text-gray-600 text-sm">Sessions</p>
+            <p className="text-gray-600 text-sm">Restrictions</p>
             <h3 className="text-3xl font-bold text-gray-900">0</h3>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-400">
@@ -71,7 +71,7 @@ export default function Dashboard() {
             <h4 className="font-bold mb-3">Earn Bonus Points</h4>
             <p className="text-sm text-gray-700 mb-4">Watch a short video to earn 50 bonus points!</p>
             <RewardedAdButton
-              appId="mental-health-pro"
+              appId="meal-planning"
               reward={ type: 'points', amount: 50, label: 'Bonus Points' }
               onRewardEarned={async () => {
                 await fetch('/api/gamification/award-points', {
@@ -86,7 +86,7 @@ export default function Dashboard() {
 
         {/* Premium CTA */}
         {!user?.isPremium && (
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg p-8 text-center text-white">
+          <div className="bg-gradient-to-r from-green-500 to-lime-500 rounded-lg p-8 text-center text-white">
             <h3 className="text-2xl font-bold mb-2">Unlock Premium Features</h3>
             <p className="mb-6 text-white/90">Get full access to all features, remove ads, and unlock advanced capabilities.</p>
             <button className="bg-white text-gray-900 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition">Start Free Trial</button>
@@ -94,7 +94,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {!user?.isPremium && <AdBanner placement="bottom" appId="mental-health-pro" />}
+      {!user?.isPremium && <AdBanner placement="bottom" appId="meal-planning" />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 /**
- * Mental Health Pro - Landing Page
- * AI-powered workplace stress management for professionals with real-time stress alerts and personalized interventions.
+ * Meal Planning - Landing Page
+ * Meal planning for families with multiple dietary restrictions and batch cooking guides.
  */
 
 import { useState } from 'react';
@@ -35,8 +35,8 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🧠</span>
-            <span className="text-xl font-bold text-gray-900">Mental Health Pro</span>
+            <span className="text-2xl">🍽️</span>
+            <span className="text-xl font-bold text-gray-900">Meal Planning</span>
           </div>
           <div className="flex gap-4">
             <Link href="/login" className="text-gray-700 hover:text-gray-900">Sign In</Link>
@@ -47,15 +47,15 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
-          Workplace stress management with AI-powered interventions
+        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-lime-500">
+          Meal planning for families with multiple dietary needs
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          AI-powered workplace stress management for professionals with real-time stress alerts and personalized interventions.
+          Meal planning for families with multiple dietary restrictions and batch cooking guides.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <Link href="/signup" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
+          <Link href="/signup" className="bg-gradient-to-r from-green-500 to-lime-500 text-white px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
             Start Free Trial (7 Days)
           </Link>
           <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="border-2 border-gray-400 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition">
@@ -77,20 +77,20 @@ export default function LandingPage() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Feature 1 */}
-          <div className="bg-white rounded-lg shadow-lg p-8 border-l-4 purple-600">
-            <h3 className="text-xl font-bold mb-3">AI Stress Detection</h3>
-            <p className="text-gray-600">Premium access to advanced ai stress detection capabilities</p>
+          <div className="bg-white rounded-lg shadow-lg p-8 border-l-4 green-500">
+            <h3 className="text-xl font-bold mb-3">Multi-Diet Support</h3>
+            <p className="text-gray-600">Premium access to advanced multi-diet support capabilities</p>
           </div>
 
           {/* Feature 2 */}
           <div className="bg-white rounded-lg shadow-lg p-8 border-l-4">
-            <h3 className="text-xl font-bold mb-3">Micro-Interventions</h3>
+            <h3 className="text-xl font-bold mb-3">Batch Cooking</h3>
             <p className="text-gray-600">Specialized tools built for your specific needs</p>
           </div>
 
           {/* Feature 3 */}
           <div className="bg-white rounded-lg shadow-lg p-8 border-l-4">
-            <h3 className="text-xl font-bold mb-3">Corporate Dashboard</h3>
+            <h3 className="text-xl font-bold mb-3">Nutritionist Access</h3>
             <p className="text-gray-600">Expert-backed features you won't find elsewhere</p>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 text-sm py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p>© 2024 Mental Health Pro. All rights reserved.</p>
+          <p>© 2024 Meal Planning. All rights reserved.</p>
         </div>
       </footer>
     </div>

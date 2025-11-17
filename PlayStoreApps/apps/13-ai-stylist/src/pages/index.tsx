@@ -1,6 +1,6 @@
 /**
- * Mental Health Pro - Landing Page
- * AI-powered workplace stress management for professionals with real-time stress alerts and personalized interventions.
+ * AI Personal Stylist - Landing Page
+ * AI-powered personal styling with budget constraints and sustainability scoring.
  */
 
 import { useState } from 'react';
@@ -35,8 +35,8 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🧠</span>
-            <span className="text-xl font-bold text-gray-900">Mental Health Pro</span>
+            <span className="text-2xl">👗</span>
+            <span className="text-xl font-bold text-gray-900">AI Personal Stylist</span>
           </div>
           <div className="flex gap-4">
             <Link href="/login" className="text-gray-700 hover:text-gray-900">Sign In</Link>
@@ -47,15 +47,15 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
-          Workplace stress management with AI-powered interventions
+        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-rose-500">
+          Budget-aware AI fashion recommendations
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          AI-powered workplace stress management for professionals with real-time stress alerts and personalized interventions.
+          AI-powered personal styling with budget constraints and sustainability scoring.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <Link href="/signup" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
+          <Link href="/signup" className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
             Start Free Trial (7 Days)
           </Link>
           <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="border-2 border-gray-400 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition">
@@ -77,20 +77,20 @@ export default function LandingPage() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Feature 1 */}
-          <div className="bg-white rounded-lg shadow-lg p-8 border-l-4 purple-600">
-            <h3 className="text-xl font-bold mb-3">AI Stress Detection</h3>
-            <p className="text-gray-600">Premium access to advanced ai stress detection capabilities</p>
+          <div className="bg-white rounded-lg shadow-lg p-8 border-l-4 pink-500">
+            <h3 className="text-xl font-bold mb-3">Budget Constraints</h3>
+            <p className="text-gray-600">Premium access to advanced budget constraints capabilities</p>
           </div>
 
           {/* Feature 2 */}
           <div className="bg-white rounded-lg shadow-lg p-8 border-l-4">
-            <h3 className="text-xl font-bold mb-3">Micro-Interventions</h3>
+            <h3 className="text-xl font-bold mb-3">Sustainability Scoring</h3>
             <p className="text-gray-600">Specialized tools built for your specific needs</p>
           </div>
 
           {/* Feature 3 */}
           <div className="bg-white rounded-lg shadow-lg p-8 border-l-4">
-            <h3 className="text-xl font-bold mb-3">Corporate Dashboard</h3>
+            <h3 className="text-xl font-bold mb-3">Retail Integration</h3>
             <p className="text-gray-600">Expert-backed features you won't find elsewhere</p>
           </div>
         </div>
@@ -118,7 +118,7 @@ export default function LandingPage() {
           <div className="border-2 border-blue-500 rounded-xl p-8 bg-blue-50 relative transform md:scale-105">
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-bold">POPULAR</div>
             <h3 className="text-2xl font-bold mb-2">Premium</h3>
-            <div className="text-4xl font-bold mb-6">$9.99<span className="text-lg text-gray-600">/month</span></div>
+            <div className="text-4xl font-bold mb-6">$6.99<span className="text-lg text-gray-600">/month</span></div>
             <div className="text-sm text-blue-600 mb-6">7-day free trial</div>
             <ul className="space-y-3 mb-8">
               <li>✓ All features</li>
@@ -158,7 +158,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 text-sm py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p>© 2024 Mental Health Pro. All rights reserved.</p>
+          <p>© 2024 AI Personal Stylist. All rights reserved.</p>
         </div>
       </footer>
     </div>
