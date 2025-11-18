@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traffic2u Monitoring Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <style>
         * {
             margin: 0;
@@ -35,7 +36,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 20px auto;
             padding: 0 20px;
         }
@@ -48,6 +49,7 @@
             padding: 10px;
             border-radius: 4px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
         }
 
         .tab-btn {
@@ -112,6 +114,33 @@
             margin-top: 5px;
         }
 
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            position: relative;
+            height: 400px;
+        }
+
+        .chart-container-small {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            position: relative;
+            height: 300px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
         table {
             width: 100%;
             background: white;
@@ -141,10 +170,6 @@
 
         table tbody tr:hover {
             background: #f8f9fa;
-        }
-
-        .app-row:cursor {
-            cursor: pointer;
         }
 
         .detail-section {
@@ -184,13 +209,6 @@
             background: #7f8c8d;
         }
 
-        .chart-container {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
-
         .loading {
             text-align: center;
             color: #7f8c8d;
@@ -222,6 +240,7 @@
             gap: 15px;
             align-items: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
         }
 
         .filter-controls select,
@@ -264,8 +283,70 @@
             color: #e74c3c;
         }
 
+        .growth-indicator {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 3px;
+        }
+
+        .growth-indicator.up {
+            color: #27ae60;
+            background: #d5f4e6;
+        }
+
+        .growth-indicator.down {
+            color: #e74c3c;
+            background: #fadbd8;
+        }
+
+        h2 {
+            margin: 30px 0 15px 0;
+            color: #2c3e50;
+        }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .performance-card {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .performance-card h3 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .performance-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .performance-metric label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .performance-metric value {
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
         @media (max-width: 768px) {
             .overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -278,7 +359,7 @@
             }
 
             .tabs {
-                flex-wrap: wrap;
+                flex-direction: column;
             }
 
             .filter-controls {
@@ -296,10 +377,11 @@
 
     <div class="container">
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
-            <button class="tab-btn" onclick="showTab('apps')">All Apps</button>
-            <button class="tab-btn" onclick="showTab('analytics')">Analytics</button>
-            <button class="tab-btn" onclick="showTab('settings')">Settings</button>
+            <button class="tab-btn active" onclick="showTab('overview')">📊 Overview</button>
+            <button class="tab-btn" onclick="showTab('analytics')">📈 Analytics</button>
+            <button class="tab-btn" onclick="showTab('performance')">🏆 Performance</button>
+            <button class="tab-btn" onclick="showTab('apps')">📱 All Apps</button>
+            <button class="tab-btn" onclick="showTab('settings')">⚙️ Settings</button>
         </div>
 
         <!-- Overview Tab -->
@@ -308,7 +390,12 @@
                 <div class="loading">Loading overview...</div>
             </div>
 
-            <h2 style="margin: 30px 0 15px 0; color: #2c3e50;">Today's Active Apps</h2>
+            <h2>Platform Trends (Last 30 Days)</h2>
+            <div class="chart-container">
+                <canvas id="platformTrendChart"></canvas>
+            </div>
+
+            <h2>Today's Active Apps</h2>
             <table>
                 <thead>
                     <tr>
@@ -327,41 +414,10 @@
             </table>
         </div>
 
-        <!-- Apps Tab -->
-        <div id="apps" class="tab-content">
-            <div class="filter-controls">
-                <select id="appsFilterMetric" onchange="loadAllApps()">
-                    <option value="users">Filter by: Users</option>
-                    <option value="downloads">Filter by: Downloads</option>
-                    <option value="revenue">Filter by: Revenue</option>
-                </select>
-                <input type="text" id="appSearchInput" placeholder="Search apps..." onkeyup="filterAppsTable()">
-            </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>App Name</th>
-                        <th>Display Name</th>
-                        <th>Users</th>
-                        <th>Downloads</th>
-                        <th>Revenue</th>
-                        <th>Sessions</th>
-                        <th>Ad Clicks</th>
-                        <th>Last Update</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="allAppsTableBody">
-                    <tr><td colspan="9" class="loading">Loading apps...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
         <!-- Analytics Tab -->
         <div id="analytics" class="tab-content">
             <div class="filter-controls">
-                <label>Days to display:</label>
+                <label>Time Period:</label>
                 <select id="analyticsdays" onchange="loadAnalytics()">
                     <option value="7">Last 7 days</option>
                     <option value="30" selected>Last 30 days</option>
@@ -369,64 +425,112 @@
                 </select>
             </div>
 
-            <h2 style="margin: 20px 0 15px 0; color: #2c3e50;">Platform Timeline</h2>
+            <div class="charts-grid">
+                <div class="chart-container-small">
+                    <canvas id="usersChart"></canvas>
+                </div>
+                <div class="chart-container-small">
+                    <canvas id="downloadsChart"></canvas>
+                </div>
+                <div class="chart-container-small">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+                <div class="chart-container-small">
+                    <canvas id="sessionsChart"></canvas>
+                </div>
+            </div>
+
+            <h2>Detailed Timeline Data</h2>
             <div id="timelineData">
                 <div class="loading">Loading timeline...</div>
             </div>
         </div>
 
+        <!-- Performance Tab -->
+        <div id="performance" class="tab-content">
+            <div class="filter-controls">
+                <label>Period:</label>
+                <select id="performanceDays" onchange="loadPerformance()">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                </select>
+            </div>
+
+            <h2>Key Performance Indicators</h2>
+            <div id="performanceSummary" class="overview-grid">
+                <div class="loading">Loading performance metrics...</div>
+            </div>
+
+            <h2>Top 5 Performers vs Bottom 5 - By Revenue</h2>
+            <div class="charts-grid">
+                <div class="chart-container-small">
+                    <canvas id="topRevenueChart"></canvas>
+                </div>
+                <div class="chart-container-small">
+                    <canvas id="bottomRevenueChart"></canvas>
+                </div>
+            </div>
+
+            <h2>Growth Analysis (Last 30 Days)</h2>
+            <div id="growthAnalysis">
+                <div class="loading">Loading growth analysis...</div>
+            </div>
+        </div>
+
+        <!-- Apps Tab -->
+        <div id="apps" class="tab-content">
+            <div class="filter-controls">
+                <input type="text" id="appSearchInput" placeholder="Search apps..." onkeyup="filterAppsTable()">
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>App Name</th>
+                        <th>Users</th>
+                        <th>Downloads</th>
+                        <th>Revenue</th>
+                        <th>Sessions</th>
+                        <th>Ad CTR</th>
+                        <th>Last Update</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="allAppsTableBody">
+                    <tr><td colspan="8" class="loading">Loading apps...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
         <!-- Settings Tab -->
         <div id="settings" class="tab-content">
             <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <h2 style="margin-bottom: 20px;">API Information</h2>
+                <h2>API Integration</h2>
 
                 <h3 style="margin-top: 20px; margin-bottom: 10px;">Submit Metrics</h3>
-                <p style="margin-bottom: 10px; color: #7f8c8d;">POST to: <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px;">/api/metrics</code></p>
+                <p style="margin-bottom: 10px; color: #7f8c8d;"><code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px;">POST /api/metrics</code></p>
                 <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto; margin-bottom: 20px;"><code>{
   "appName": "your-app-name",
   "displayName": "Your App Display Name",
-  "date": "2024-01-15",
   "metrics": {
     "users": 1000,
-    "activeUsers": 500,
     "downloads": 50,
     "revenue": 100.50,
     "adImpressions": 5000,
     "adClicks": 250,
-    "sessions": 2000,
-    "custom": {
-      "custom_metric": "value"
-    }
+    "sessions": 2000
   }
 }</code></pre>
 
-                <h3 style="margin-top: 20px; margin-bottom: 10px;">Register App</h3>
-                <p style="margin-bottom: 10px; color: #7f8c8d;">POST to: <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px;">/api/apps</code></p>
-                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto; margin-bottom: 20px;"><code>{
-  "appName": "your-app-name",
-  "displayName": "Your App Display Name"
-}</code></pre>
-
-                <h3 style="margin-top: 20px; margin-bottom: 10px;">Get App Stats</h3>
-                <p style="margin-bottom: 10px; color: #7f8c8d;">GET: <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px;">/api/apps/:appId/summary</code></p>
-
-                <h3 style="margin-top: 20px; margin-bottom: 10px;">Example cURL Command</h3>
-                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>curl -X POST http://your-server/api/metrics \
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Example cURL</h3>
+                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>curl -X POST https://monitor.sourcevida.com/api/metrics \
   -H "Content-Type: application/json" \
   -d '{
-    "appName": "bizbuys",
-    "displayName": "BizBuys",
-    "metrics": {
-      "users": 1500,
-      "downloads": 75,
-      "revenue": 250.00
-    }
+    "appName": "test-app",
+    "displayName": "Test App",
+    "metrics": {"users": 100, "downloads": 5, "revenue": 50.00}
   }'</code></pre>
-
-                <h3 style="margin-top: 30px; margin-bottom: 10px;">Environment Variables</h3>
-                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px;"><code>PORT=3000
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=your_secure_password</code></pre>
             </div>
         </div>
     </div>
@@ -435,36 +539,17 @@ ADMIN_PASSWORD=your_secure_password</code></pre>
     <div id="appDetail" class="detail-section">
         <div class="detail-header">
             <h2 id="appDetailName"></h2>
-            <button class="back-btn" onclick="backToApps()">← Back to Apps</button>
+            <button class="back-btn" onclick="backToApps()">← Back</button>
+        </div>
+        <div class="chart-container" style="height: 400px; margin-bottom: 20px;">
+            <canvas id="appDetailChart"></canvas>
         </div>
         <div id="appDetailContent"></div>
     </div>
 
     <script>
         const BASE_URL = '/dashboard/api';
-
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-
-            // Load data for specific tabs
-            if (tabName === 'overview') {
-                loadOverview();
-            } else if (tabName === 'apps') {
-                loadAllApps();
-            } else if (tabName === 'analytics') {
-                loadAnalytics();
-            }
-        }
+        let chartInstances = {};
 
         function formatNumber(num) {
             if (num === null || num === undefined) return '0';
@@ -482,69 +567,127 @@ ADMIN_PASSWORD=your_secure_password</code></pre>
             });
         }
 
+        function getGrowthIndicator(growth) {
+            const value = parseFloat(growth);
+            const arrow = value >= 0 ? '↑' : '↓';
+            const className = value >= 0 ? 'up' : 'down';
+            return `<span class="growth-indicator ${className}">${arrow} ${Math.abs(value).toFixed(2)}%</span>`;
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'overview') loadOverview();
+            else if (tabName === 'analytics') loadAnalytics();
+            else if (tabName === 'performance') loadPerformance();
+            else if (tabName === 'apps') loadAllApps();
+        }
+
         async function loadOverview() {
             try {
-                const response = await fetch(`${BASE_URL}/overview`);
-                const data = await response.json();
+                const [overview, timeline] = await Promise.all([
+                    fetch(`${BASE_URL}/overview`).then(r => r.json()),
+                    fetch(`${BASE_URL}/stats/timeline?days=30`).then(r => r.json())
+                ]);
 
                 const statsHTML = `
                     <div class="stat-card">
                         <h3>Total Apps</h3>
-                        <div class="value">${data.totalApps}</div>
+                        <div class="value">${overview.totalApps}</div>
                     </div>
                     <div class="stat-card">
                         <h3>Active Apps Today</h3>
-                        <div class="value">${data.today.active_apps || 0}</div>
+                        <div class="value">${overview.today.active_apps || 0}</div>
                     </div>
                     <div class="stat-card">
                         <h3>Total Users</h3>
-                        <div class="value">${formatNumber(data.today.total_users)}</div>
+                        <div class="value">${formatNumber(overview.today.total_users)}</div>
                     </div>
                     <div class="stat-card">
                         <h3>Total Downloads</h3>
-                        <div class="value">${formatNumber(data.today.total_downloads)}</div>
+                        <div class="value">${formatNumber(overview.today.total_downloads)}</div>
                     </div>
                     <div class="stat-card">
                         <h3>Total Revenue</h3>
-                        <div class="value">${formatCurrency(data.today.total_revenue)}</div>
+                        <div class="value">${formatCurrency(overview.today.total_revenue)}</div>
                     </div>
                     <div class="stat-card">
                         <h3>Total Sessions</h3>
-                        <div class="value">${formatNumber(data.today.total_sessions)}</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Avg Daily Users (7d)</h3>
-                        <div class="value">${formatNumber(data.sevenDayAvg.avg_users)}</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Avg Daily Downloads (7d)</h3>
-                        <div class="value">${formatNumber(data.sevenDayAvg.avg_downloads)}</div>
+                        <div class="value">${formatNumber(overview.today.total_sessions)}</div>
                     </div>
                 `;
 
                 document.getElementById('overviewStats').innerHTML = statsHTML;
                 document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
 
-                // Load today's apps
+                // Chart for platform trends
+                const chartCtx = document.getElementById('platformTrendChart');
+                if (chartInstances.platformTrend) chartInstances.platformTrend.destroy();
+
+                chartInstances.platformTrend = new Chart(chartCtx, {
+                    type: 'line',
+                    data: {
+                        labels: timeline.map(d => d.date),
+                        datasets: [
+                            {
+                                label: 'Total Revenue',
+                                data: timeline.map(d => d.total_revenue),
+                                borderColor: '#27ae60',
+                                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                                yAxisID: 'y1',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Total Users',
+                                data: timeline.map(d => d.total_users),
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                yAxisID: 'y',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Total Downloads',
+                                data: timeline.map(d => d.total_downloads),
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                yAxisID: 'y',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: { legend: { display: true, position: 'top' } },
+                        scales: {
+                            y: { type: 'linear', display: true, position: 'left' },
+                            y1: { type: 'linear', display: true, position: 'right' }
+                        }
+                    }
+                });
+
                 await loadAppsTable();
             } catch (error) {
                 console.error('Error loading overview:', error);
-                document.getElementById('overviewStats').innerHTML = '<div class="error">Failed to load overview data</div>';
+                document.getElementById('overviewStats').innerHTML = '<div class="error">Failed to load data</div>';
             }
         }
 
         async function loadAppsTable() {
             try {
-                const response = await fetch(`${BASE_URL}/apps`);
-                const apps = await response.json();
+                const apps = await fetch(`${BASE_URL}/apps`).then(r => r.json());
 
                 if (apps.length === 0) {
-                    document.getElementById('appsTableBody').innerHTML = '<tr><td colspan="7">No apps registered yet</td></tr>';
+                    document.getElementById('appsTableBody').innerHTML = '<tr><td colspan="7">No apps yet</td></tr>';
                     return;
                 }
 
                 const html = apps.map(app => `
-                    <tr class="app-row" onclick="viewAppDetail(${app.id}, '${app.display_name}')">
+                    <tr onclick="viewAppDetail(${app.id}, '${app.display_name}')">
                         <td>${app.display_name}</td>
                         <td>${formatNumber(app.users)}</td>
                         <td>${formatNumber(app.downloads)}</td>
@@ -558,94 +701,292 @@ ADMIN_PASSWORD=your_secure_password</code></pre>
                 document.getElementById('appsTableBody').innerHTML = html;
             } catch (error) {
                 console.error('Error loading apps:', error);
-                document.getElementById('appsTableBody').innerHTML = '<tr><td colspan="7"><div class="error">Failed to load apps</div></td></tr>';
-            }
-        }
-
-        async function loadAllApps() {
-            try {
-                const response = await fetch(`${BASE_URL}/apps`);
-                const apps = await response.json();
-
-                if (apps.length === 0) {
-                    document.getElementById('allAppsTableBody').innerHTML = '<tr><td colspan="9">No apps registered yet</td></tr>';
-                    return;
-                }
-
-                const html = apps.map(app => `
-                    <tr onclick="viewAppDetail(${app.id}, '${app.display_name}')">
-                        <td>${app.name}</td>
-                        <td>${app.display_name}</td>
-                        <td>${formatNumber(app.users)}</td>
-                        <td>${formatNumber(app.downloads)}</td>
-                        <td>${formatCurrency(app.revenue)}</td>
-                        <td>${formatNumber(app.sessions)}</td>
-                        <td>${formatNumber(app.ad_clicks)}</td>
-                        <td>${app.last_update || 'Never'}</td>
-                        <td><button class="back-btn" onclick="viewAppDetail(${app.id}, '${app.display_name}'); event.stopPropagation();">View</button></td>
-                    </tr>
-                `).join('');
-
-                document.getElementById('allAppsTableBody').innerHTML = html;
-            } catch (error) {
-                console.error('Error loading apps:', error);
-                document.getElementById('allAppsTableBody').innerHTML = '<tr><td colspan="9"><div class="error">Failed to load apps</div></td></tr>';
             }
         }
 
         async function loadAnalytics() {
             try {
-                const days = document.getElementById('analyticsdays')?.value || '30';
-                const response = await fetch(`${BASE_URL}/stats/timeline?days=${days}`);
-                const data = await response.json();
+                const days = document.getElementById('analyticsdays').value;
+                const timeline = await fetch(`${BASE_URL}/stats/timeline?days=${days}`).then(r => r.json());
 
-                if (data.length === 0) {
-                    document.getElementById('timelineData').innerHTML = '<p style="padding: 20px;">No data available</p>';
-                    return;
-                }
+                const labels = timeline.map(d => d.date);
+                const chartConfigs = [
+                    {
+                        id: 'usersChart',
+                        title: 'Total Users',
+                        data: timeline.map(d => d.total_users),
+                        color: '#3498db'
+                    },
+                    {
+                        id: 'downloadsChart',
+                        title: 'Total Downloads',
+                        data: timeline.map(d => d.total_downloads),
+                        color: '#e74c3c'
+                    },
+                    {
+                        id: 'revenueChart',
+                        title: 'Total Revenue',
+                        data: timeline.map(d => d.total_revenue),
+                        color: '#27ae60'
+                    },
+                    {
+                        id: 'sessionsChart',
+                        title: 'Total Sessions',
+                        data: timeline.map(d => d.total_sessions),
+                        color: '#f39c12'
+                    }
+                ];
 
-                const html = `
+                chartConfigs.forEach(config => {
+                    const ctx = document.getElementById(config.id);
+                    if (chartInstances[config.id]) chartInstances[config.id].destroy();
+
+                    chartInstances[config.id] = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: config.title,
+                                data: config.data,
+                                borderColor: config.color,
+                                backgroundColor: config.color + '20',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                });
+
+                // Timeline table
+                const tableHtml = `
                     <table>
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Total Users</th>
-                                <th>Active Users</th>
+                                <th>Users</th>
                                 <th>Downloads</th>
                                 <th>Revenue</th>
+                                <th>Sessions</th>
                                 <th>Ad Impressions</th>
                                 <th>Active Apps</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${data.map(day => `
+                            ${timeline.map(d => `
                                 <tr>
-                                    <td>${day.date}</td>
-                                    <td>${formatNumber(day.total_users)}</td>
-                                    <td>${formatNumber(day.total_active_users)}</td>
-                                    <td>${formatNumber(day.total_downloads)}</td>
-                                    <td>${formatCurrency(day.total_revenue)}</td>
-                                    <td>${formatNumber(day.total_ad_impressions)}</td>
-                                    <td>${day.active_apps}</td>
+                                    <td>${d.date}</td>
+                                    <td>${formatNumber(d.total_users)}</td>
+                                    <td>${formatNumber(d.total_downloads)}</td>
+                                    <td>${formatCurrency(d.total_revenue)}</td>
+                                    <td>${formatNumber(d.total_sessions)}</td>
+                                    <td>${formatNumber(d.total_ad_impressions)}</td>
+                                    <td>${d.active_apps}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
                 `;
 
-                document.getElementById('timelineData').innerHTML = html;
+                document.getElementById('timelineData').innerHTML = tableHtml;
             } catch (error) {
                 console.error('Error loading analytics:', error);
-                document.getElementById('timelineData').innerHTML = '<div class="error">Failed to load analytics data</div>';
+                document.getElementById('timelineData').innerHTML = '<div class="error">Failed to load analytics</div>';
+            }
+        }
+
+        async function loadPerformance() {
+            try {
+                const days = document.getElementById('performanceDays').value;
+                const [summary, topBottom, growth] = await Promise.all([
+                    fetch(`${BASE_URL}/analysis/performance-summary?days=${days}`).then(r => r.json()),
+                    fetch(`${BASE_URL}/analysis/top-bottom?metric=revenue&days=${days}&limit=5`).then(r => r.json()),
+                    fetch(`${BASE_URL}/analysis/growth?days=${days}`).then(r => r.json())
+                ]);
+
+                // Performance summary cards
+                const pm = summary.platformMetrics;
+                const summaryHtml = `
+                    <div class="stat-card">
+                        <h3>Active Apps</h3>
+                        <div class="value">${pm.activeApps}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg Daily Users</h3>
+                        <div class="value">${formatNumber(pm.avgDailyUsers)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <div class="value">${formatCurrency(pm.totalRevenue)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Engagement Rate</h3>
+                        <div class="value">${pm.engagementRate.toFixed(2)}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Ad CTR</h3>
+                        <div class="value">${pm.adClickRate.toFixed(2)}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Top by Revenue</h3>
+                        <div class="value" style="font-size: 16px;">${summary.topPerformers.byRevenue}</div>
+                    </div>
+                `;
+
+                document.getElementById('performanceSummary').innerHTML = summaryHtml;
+
+                // Top/Bottom revenue charts
+                const topCtx = document.getElementById('topRevenueChart');
+                const bottomCtx = document.getElementById('bottomRevenueChart');
+
+                if (chartInstances.topRevenue) chartInstances.topRevenue.destroy();
+                if (chartInstances.bottomRevenue) chartInstances.bottomRevenue.destroy();
+
+                chartInstances.topRevenue = new Chart(topCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: topBottom.top.map(a => a.display_name),
+                        datasets: [{
+                            label: 'Revenue',
+                            data: topBottom.top.map(a => a.total_metric),
+                            backgroundColor: '#27ae60'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                chartInstances.bottomRevenue = new Chart(bottomCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: topBottom.bottom.map(a => a.display_name),
+                        datasets: [{
+                            label: 'Revenue',
+                            data: topBottom.bottom.map(a => a.total_metric),
+                            backgroundColor: '#e74c3c'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // Growth analysis table
+                const growthHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>App</th>
+                                <th>User Growth</th>
+                                <th>Revenue Growth</th>
+                                <th>Download Growth</th>
+                                <th>Days Reported</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${growth.growthAnalysis.slice(0, 15).map(app => `
+                                <tr>
+                                    <td>${app.displayName}</td>
+                                    <td>${getGrowthIndicator(app.users.growth)}</td>
+                                    <td>${getGrowthIndicator(app.revenue.growth)}</td>
+                                    <td>${getGrowthIndicator(app.downloads.growth)}</td>
+                                    <td>${app.daysReported}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                document.getElementById('growthAnalysis').innerHTML = growthHtml;
+            } catch (error) {
+                console.error('Error loading performance:', error);
+                document.getElementById('performanceSummary').innerHTML = '<div class="error">Failed to load performance data</div>';
+            }
+        }
+
+        async function loadAllApps() {
+            try {
+                const apps = await fetch(`${BASE_URL}/apps`).then(r => r.json());
+
+                if (apps.length === 0) {
+                    document.getElementById('allAppsTableBody').innerHTML = '<tr><td colspan="8">No apps</td></tr>';
+                    return;
+                }
+
+                const html = apps.map(app => {
+                    const ctr = app.ad_impressions > 0 ? ((app.ad_clicks / app.ad_impressions) * 100).toFixed(2) : '0.00';
+                    return `
+                        <tr onclick="viewAppDetail(${app.id}, '${app.display_name}')">
+                            <td>${app.display_name}</td>
+                            <td>${formatNumber(app.users)}</td>
+                            <td>${formatNumber(app.downloads)}</td>
+                            <td>${formatCurrency(app.revenue)}</td>
+                            <td>${formatNumber(app.sessions)}</td>
+                            <td>${ctr}%</td>
+                            <td>${app.last_update || 'Never'}</td>
+                            <td><button class="back-btn" onclick="viewAppDetail(${app.id}, '${app.display_name}'); event.stopPropagation();">View</button></td>
+                        </tr>
+                    `;
+                }).join('');
+
+                document.getElementById('allAppsTableBody').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading apps:', error);
             }
         }
 
         async function viewAppDetail(appId, appName) {
             try {
-                const response = await fetch(`${BASE_URL}/apps/${appId}?days=30`);
-                const data = await response.json();
+                const data = await fetch(`${BASE_URL}/apps/${appId}?days=30`).then(r => r.json());
 
                 document.getElementById('appDetailName').textContent = data.app.display_name;
+
+                // Line chart for app metrics
+                const ctx = document.getElementById('appDetailChart');
+                if (chartInstances.appDetail) chartInstances.appDetail.destroy();
+
+                chartInstances.appDetail = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.stats.map(s => s.date),
+                        datasets: [
+                            {
+                                label: 'Users',
+                                data: data.stats.map(s => s.users),
+                                borderColor: '#3498db',
+                                yAxisID: 'y',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Revenue',
+                                data: data.stats.map(s => s.revenue),
+                                borderColor: '#27ae60',
+                                yAxisID: 'y1',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            y: { type: 'linear', position: 'left' },
+                            y1: { type: 'linear', position: 'right' }
+                        }
+                    }
+                });
 
                 const statsHTML = `
                     <div class="overview-grid">
@@ -662,26 +1003,18 @@ ADMIN_PASSWORD=your_secure_password</code></pre>
                             <div class="value">${formatCurrency(data.summary.totalRevenue)}</div>
                         </div>
                         <div class="stat-card">
-                            <h3>Total Sessions (30d)</h3>
-                            <div class="value">${formatNumber(data.summary.totalSessions)}</div>
-                        </div>
-                        <div class="stat-card">
                             <h3>Avg Daily Users</h3>
                             <div class="value">${formatNumber(data.summary.avgDailyUsers)}</div>
                         </div>
-                        <div class="stat-card">
-                            <h3>Avg Daily Downloads</h3>
-                            <div class="value">${formatNumber(data.summary.avgDailyDownloads)}</div>
-                        </div>
                     </div>
 
-                    <h3 style="margin-top: 30px; margin-bottom: 15px;">Daily Stats (Last 30 Days)</h3>
+                    <h3>Daily Stats</h3>
                     <table>
                         <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Users</th>
-                                <th>Active Users</th>
+                                <th>Active</th>
                                 <th>Downloads</th>
                                 <th>Revenue</th>
                                 <th>Ad Impressions</th>
@@ -689,15 +1022,15 @@ ADMIN_PASSWORD=your_secure_password</code></pre>
                             </tr>
                         </thead>
                         <tbody>
-                            ${data.stats.map(stat => `
+                            ${data.stats.map(s => `
                                 <tr>
-                                    <td>${stat.date}</td>
-                                    <td>${formatNumber(stat.users)}</td>
-                                    <td>${formatNumber(stat.active_users)}</td>
-                                    <td>${formatNumber(stat.downloads)}</td>
-                                    <td>${formatCurrency(stat.revenue)}</td>
-                                    <td>${formatNumber(stat.ad_impressions)}</td>
-                                    <td>${formatNumber(stat.sessions)}</td>
+                                    <td>${s.date}</td>
+                                    <td>${formatNumber(s.users)}</td>
+                                    <td>${formatNumber(s.active_users)}</td>
+                                    <td>${formatNumber(s.downloads)}</td>
+                                    <td>${formatCurrency(s.revenue)}</td>
+                                    <td>${formatNumber(s.ad_impressions)}</td>
+                                    <td>${formatNumber(s.sessions)}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -715,7 +1048,6 @@ ADMIN_PASSWORD=your_secure_password</code></pre>
 
         function backToApps() {
             document.getElementById('appDetail').classList.remove('active');
-            loadAllApps();
         }
 
         function filterAppsTable() {
@@ -727,13 +1059,10 @@ ADMIN_PASSWORD=your_secure_password</code></pre>
             });
         }
 
-        // Load overview on page load
         document.addEventListener('DOMContentLoaded', loadOverview);
 
-        // Auto-refresh every 5 minutes
         setInterval(() => {
-            const activeTab = document.querySelector('.tab-content.active').id;
-            if (activeTab === 'overview') {
+            if (document.querySelector('.tab-content.active').id === 'overview') {
                 loadOverview();
             }
         }, 5 * 60 * 1000);
