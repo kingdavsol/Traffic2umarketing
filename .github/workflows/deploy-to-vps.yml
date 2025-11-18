@@ -39,9 +39,10 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
           VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
           BRANCH: ${{ steps.branch.outputs.name }}
         run: |
-          sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no "$VPS_USERNAME@$VPS_HOST" << 'SCRIPT'
+          sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no -p "$VPS_PORT" "$VPS_USERNAME@$VPS_HOST" << 'SCRIPT'
           set -e
 
           cd /home/traffic2u
@@ -90,8 +91,9 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
           VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
         run: |
-          sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no "$VPS_USERNAME@$VPS_HOST" << 'SCRIPT'
+          sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no -p "$VPS_PORT" "$VPS_USERNAME@$VPS_HOST" << 'SCRIPT'
           echo ""
           echo "Service Status:"
           docker-compose ps
