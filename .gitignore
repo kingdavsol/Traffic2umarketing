@@ -36,7 +36,21 @@ yarn-error.log*
 *.sln
 *.sw?
 .turbo/
-.env.example
+
+# SSL certificates and private keys (generate locally)
+ssl/*.crt
+ssl/*.key
+ssl/*.pem
+
+# Logs directory
+logs/
+data/
+
+# Docker volumes
+postgres_data/
+
+# PM2 logs
+ecosystem.config.js.bak
 
 # OS
 Thumbs.db
