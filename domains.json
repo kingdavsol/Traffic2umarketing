@@ -1,0 +1,193 @@
+{
+  "apps": [
+    {
+      "id": "pet-insurance",
+      "name": "Pet Insurance Compare",
+      "appDir": "apps/pet-insurance-compare",
+      "dockerfile": "apps/pet-insurance-compare/Dockerfile",
+      "container": "pet-insurance-app",
+      "serviceName": "pet-insurance",
+      "port": 3001,
+      "domain": "petcovercompare.com",
+      "domains": ["petcovercompare.com"],
+      "appUrl": "https://petcovercompare.com",
+      "apiUrl": "https://petcovercompare.com/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://petcovercompare.com",
+        "NEXT_PUBLIC_API_URL": "https://petcovercompare.com/api"
+      }
+    },
+    {
+      "id": "disability-insurance",
+      "name": "Disability Insurance Hub",
+      "appDir": "apps/disability-insurance-compare",
+      "dockerfile": "apps/disability-insurance-compare/Dockerfile",
+      "container": "disability-insurance-app",
+      "serviceName": "disability-insurance",
+      "port": 3002,
+      "domain": "disabilityquotehub.com",
+      "domains": ["disabilityquotehub.com"],
+      "appUrl": "https://disabilityquotehub.com",
+      "apiUrl": "https://disabilityquotehub.com/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://disabilityquotehub.com",
+        "NEXT_PUBLIC_API_URL": "https://disabilityquotehub.com/api"
+      }
+    },
+    {
+      "id": "cyber-insurance",
+      "name": "Cyber Insurance Compare",
+      "appDir": "apps/cyber-insurance-compare",
+      "dockerfile": "apps/cyber-insurance-compare/Dockerfile",
+      "container": "cyber-insurance-app",
+      "serviceName": "cyber-insurance",
+      "port": 3003,
+      "domain": "cybersmallbizcompare.com",
+      "domains": ["cybersmallbizcompare.com"],
+      "appUrl": "https://cybersmallbizcompare.com",
+      "apiUrl": "https://cybersmallbizcompare.com/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://cybersmallbizcompare.com",
+        "NEXT_PUBLIC_API_URL": "https://cybersmallbizcompare.com/api"
+      }
+    },
+    {
+      "id": "travel-insurance",
+      "name": "Travel Insurance Compare",
+      "appDir": "apps/travel-insurance-compare",
+      "dockerfile": "apps/travel-insurance-compare/Dockerfile",
+      "container": "travel-insurance-app",
+      "serviceName": "travel-insurance",
+      "port": 3004,
+      "domain": "travelinsurancecompare.io",
+      "domains": ["travelinsurancecompare.io"],
+      "appUrl": "https://travelinsurancecompare.io",
+      "apiUrl": "https://travelinsurancecompare.io/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://travelinsurancecompare.io",
+        "NEXT_PUBLIC_API_URL": "https://travelinsurancecompare.io/api"
+      }
+    },
+    {
+      "id": "umbrella-insurance",
+      "name": "Umbrella Insurance Quotes",
+      "appDir": "apps/umbrella-insurance-compare",
+      "dockerfile": "apps/umbrella-insurance-compare/Dockerfile",
+      "container": "umbrella-insurance-app",
+      "serviceName": "umbrella-insurance",
+      "port": 3005,
+      "domain": "umbrellainsurancequotes.com",
+      "domains": ["umbrellainsurancequotes.com"],
+      "appUrl": "https://umbrellainsurancequotes.com",
+      "apiUrl": "https://umbrellainsurancequotes.com/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://umbrellainsurancequotes.com",
+        "NEXT_PUBLIC_API_URL": "https://umbrellainsurancequotes.com/api"
+      }
+    },
+    {
+      "id": "motorcycle-insurance",
+      "name": "Motorcycle Insurance Hub",
+      "appDir": "apps/motorcycle-insurance-compare",
+      "dockerfile": "apps/motorcycle-insurance-compare/Dockerfile",
+      "container": "motorcycle-insurance-app",
+      "serviceName": "motorcycle-insurance",
+      "port": 3006,
+      "domain": "motorcycleinsurancehub.com",
+      "domains": ["motorcycleinsurancehub.com"],
+      "appUrl": "https://motorcycleinsurancehub.com",
+      "apiUrl": "https://motorcycleinsurancehub.com/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://motorcycleinsurancehub.com",
+        "NEXT_PUBLIC_API_URL": "https://motorcycleinsurancehub.com/api"
+      }
+    },
+    {
+      "id": "sr22-insurance",
+      "name": "SR-22 Insurance Quick",
+      "appDir": "apps/sr22-insurance-compare",
+      "dockerfile": "apps/sr22-insurance-compare/Dockerfile",
+      "container": "sr22-insurance-app",
+      "serviceName": "sr22-insurance",
+      "port": 3007,
+      "domain": "sr22insurancequick.com",
+      "domains": ["sr22insurancequick.com"],
+      "appUrl": "https://sr22insurancequick.com",
+      "apiUrl": "https://sr22insurancequick.com/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://sr22insurancequick.com",
+        "NEXT_PUBLIC_API_URL": "https://sr22insurancequick.com/api"
+      }
+    },
+    {
+      "id": "wedding-insurance",
+      "name": "Wedding Insurance Compare",
+      "appDir": "apps/wedding-insurance-compare",
+      "dockerfile": "apps/wedding-insurance-compare/Dockerfile",
+      "container": "wedding-insurance-app",
+      "serviceName": "wedding-insurance",
+      "port": 3008,
+      "domain": "weddinginsurancecompare.com",
+      "domains": ["weddinginsurancecompare.com"],
+      "appUrl": "https://weddinginsurancecompare.com",
+      "apiUrl": "https://weddinginsurancecompare.com/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://weddinginsurancecompare.com",
+        "NEXT_PUBLIC_API_URL": "https://weddinginsurancecompare.com/api"
+      }
+    },
+    {
+      "id": "drone-insurance",
+      "name": "Drone Insurance Compare",
+      "appDir": "apps/drone-insurance-compare",
+      "dockerfile": "apps/drone-insurance-compare/Dockerfile",
+      "container": "drone-insurance-app",
+      "serviceName": "drone-insurance",
+      "port": 3009,
+      "domain": "droneinsurancecompare.io",
+      "domains": ["droneinsurancecompare.io"],
+      "appUrl": "https://droneinsurancecompare.io",
+      "apiUrl": "https://droneinsurancecompare.io/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://droneinsurancecompare.io",
+        "NEXT_PUBLIC_API_URL": "https://droneinsurancecompare.io/api"
+      }
+    },
+    {
+      "id": "landlord-insurance",
+      "name": "Landlord Insurance Compare",
+      "appDir": "apps/landlord-insurance-compare",
+      "dockerfile": "apps/landlord-insurance-compare/Dockerfile",
+      "container": "landlord-insurance-app",
+      "serviceName": "landlord-insurance",
+      "port": 3010,
+      "domain": "landlordinsurancecompare.com",
+      "domains": ["landlordinsurancecompare.com"],
+      "appUrl": "https://landlordinsurancecompare.com",
+      "apiUrl": "https://landlordinsurancecompare.com/api",
+      "envVars": {
+        "NEXT_PUBLIC_APP_URL": "https://landlordinsurancecompare.com",
+        "NEXT_PUBLIC_API_URL": "https://landlordinsurancecompare.com/api"
+      }
+    }
+  ],
+  "metadata": {
+    "totalApps": 10,
+    "database": {
+      "host": "postgres",
+      "port": 5432,
+      "name": "traffic2u"
+    },
+    "nginx": {
+      "host": "nginx",
+      "httpPort": 80,
+      "httpsPort": 443
+    },
+    "deploymentRules": {
+      "detectChangedApps": true,
+      "deployOnlyChanged": true,
+      "rebuildDatabase": false,
+      "runMigrations": true
+    }
+  }
+}

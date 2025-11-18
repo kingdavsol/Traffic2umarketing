@@ -1,0 +1,201 @@
+name: Smart Deploy to VPS
+
+# Trigger on pushes to any branch
+on:
+  push:
+    branches:
+      - '**'
+
+# Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      deployMode:
+        description: 'Deployment mode'
+        required: true
+        default: 'auto-detect'
+        type: choice
+        options:
+          - auto-detect
+          - all-apps
+      specificApps:
+        description: 'Specific apps to deploy (comma-separated, for specific mode)'
+        required: false
+        default: ''
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+
+    outputs:
+      changed-apps: ${{ steps.detect.outputs.changed-apps }}
+      deploy-all: ${{ steps.detect.outputs.deploy-all }}
+      has-changes: ${{ steps.detect.outputs.has-changes }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed apps
+        id: detect
+        run: |
+          # Load domains.json to get app directories
+          APPS_JSON=$(cat domains.json)
+
+          # Get list of changed files
+          if git rev-parse origin/main &>/dev/null; then
+            CHANGED_FILES=$(git diff --name-only origin/main...HEAD || true)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1 2>/dev/null || echo "")
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          echo ""
+
+          # Detect which apps changed
+          CHANGED_APPS=()
+
+          while IFS= read -r app_id; do
+            APP_DIR=$(echo "$APPS_JSON" | jq -r ".apps[] | select(.id==\"$app_id\") | .appDir")
+
+            if echo "$CHANGED_FILES" | grep -q "^$APP_DIR" 2>/dev/null; then
+              CHANGED_APPS+=("$app_id")
+              echo "✓ Detected changes: $app_id"
+            fi
+          done < <(echo "$APPS_JSON" | jq -r '.apps[].id')
+
+          # Set outputs
+          if [ ${#CHANGED_APPS[@]} -eq 0 ]; then
+            echo "changed-apps=" >> $GITHUB_OUTPUT
+            echo "deploy-all=true" >> $GITHUB_OUTPUT
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "→ No app changes detected, will deploy all apps"
+          else
+            APPS_STR=$(IFS=,; echo "${CHANGED_APPS[*]}")
+            echo "changed-apps=$APPS_STR" >> $GITHUB_OUTPUT
+            echo "deploy-all=false" >> $GITHUB_OUTPUT
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "→ Will deploy changed apps: $APPS_STR"
+          fi
+
+  deploy:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+
+    # Only deploy on main and claude/* branches
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/claude/')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Extract branch name
+        id: branch
+        run: echo "name=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          CHANGED_APPS: ${{ needs.detect-changes.outputs.changed-apps }}
+          DEPLOY_ALL: ${{ needs.detect-changes.outputs.deploy-all }}
+        run: |
+          sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no "$VPS_USERNAME@$VPS_HOST" << 'SCRIPT'
+          set -e
+
+          cd /home/traffic2u
+
+          echo "==================================="
+          echo "Smart Deployment Starting..."
+          echo "==================================="
+          echo "Branch: $BRANCH"
+          echo "Deploy All: $DEPLOY_ALL"
+          echo "Changed Apps: $CHANGED_APPS"
+          echo ""
+
+          # Verify .env file exists
+          if [ ! -f .env ]; then
+            echo "Error: .env file not found on VPS"
+            echo "Please ensure .env file is configured at /home/traffic2u/.env"
+            exit 1
+          fi
+
+          echo "[1/5] Pulling latest code from $BRANCH..."
+          git fetch origin
+          git checkout $BRANCH
+          git pull origin $BRANCH
+
+          echo "[2/5] Installing dependencies..."
+          npm ci
+
+          echo "[3/5] Building and deploying apps..."
+
+          # Set deployment mode based on changed apps
+          if [ "$DEPLOY_ALL" = "true" ]; then
+            echo "→ Deploying all 10 apps"
+            bash scripts/deploy-smart.sh --all --branch=$BRANCH
+          else
+            echo "→ Deploying changed apps: $CHANGED_APPS"
+            # Deploy each changed app
+            IFS=',' read -ra APPS <<< "$CHANGED_APPS"
+            for APP in "${APPS[@]}"; do
+              APP=$(echo "$APP" | xargs)  # Trim whitespace
+              bash scripts/deploy-smart.sh --app="$APP" --branch=$BRANCH
+            done
+          fi
+
+          echo "[4/5] Running database migrations..."
+          npm run db:push || true
+
+          echo "[5/5] Verifying deployment..."
+          docker-compose ps
+
+          echo ""
+          echo "==================================="
+          echo "✅ Deployment successful!"
+          echo "==================================="
+          SCRIPT
+
+      - name: Verify deployment
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+        run: |
+          sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no "$VPS_USERNAME@$VPS_HOST" << 'SCRIPT'
+          echo ""
+          echo "Service Status:"
+          cd /home/traffic2u
+          docker-compose ps
+
+          echo ""
+          echo "Recent logs (last 30 lines):"
+          docker-compose logs --tail=30 | head -50
+          SCRIPT
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Deployment to VPS successful!"
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Changed Apps: ${{ needs.detect-changes.outputs.changed-apps }}"
+          echo "Deploy All: ${{ needs.detect-changes.outputs.deploy-all }}"
+          echo "Time: $(date)"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Deployment to VPS failed!"
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+          exit 1
