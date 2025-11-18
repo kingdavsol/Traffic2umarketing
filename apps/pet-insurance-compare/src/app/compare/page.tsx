@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { SITES } from "@traffic2u/config";
+import { SITES, getAffiliatesByNiche } from "@traffic2u/config";
+import { AffiliateComparisonTable } from "@traffic2u/ui";
 import { CheckCircle, AlertCircle, Loader } from "lucide-react";
 
 const site = SITES.pet;
@@ -187,6 +188,19 @@ export default function ComparePage() {
                 </a>
               </div>
             ))}
+          </div>
+
+          {/* Affiliate Programs Section */}
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-4">Earn Commissions with These Programs</h2>
+            <p className="text-gray-600 mb-6">
+              If you're interested in promoting pet insurance, join these affiliate programs and earn commissions:
+            </p>
+            <AffiliateComparisonTable
+              programs={getAffiliatesByNiche("pet")}
+              siteName="Pet Insurance"
+              primaryColor={site.primaryColor}
+            />
           </div>
 
           <div className="text-center mt-12">

@@ -96,34 +96,27 @@ export const SITES = {
   },
 } as const;
 
-// Affiliate configuration
-export const AFFILIATE_PROGRAMS = {
-  pet: [
-    { name: "Trupanion", commission: "15%", cookieDays: 30 },
-    { name: "Fetch Pet Insurance", commission: "12%", cookieDays: 30 },
-    { name: "Spot Pet Insurance", commission: "14%", cookieDays: 30 },
-    { name: "ManyPets", commission: "13%", cookieDays: 30 },
-    { name: "MetLife Pet Insurance", commission: "11%", cookieDays: 30 },
-  ],
-  disability: [
-    { name: "Prudential", commission: "$100", cookieDays: 30 },
-    { name: "The Hartford", commission: "$85", cookieDays: 30 },
-    { name: "MetLife", commission: "$90", cookieDays: 30 },
-    { name: "Guardian", commission: "$95", cookieDays: 30 },
-  ],
-  cyber: [
-    { name: "Hiscox", commission: "$25/quote", cookieDays: 7 },
-    { name: "Coalition", commission: "$50-150", cookieDays: 30 },
-    { name: "Chubb", commission: "Custom", cookieDays: 30 },
-    { name: "Hartford", commission: "$60-100", cookieDays: 30 },
-  ],
-  travel: [
-    { name: "Visitors Coverage", commission: "40%", cookieDays: 30 },
-    { name: "World Nomads", commission: "$0.83", cookieDays: 60 },
-    { name: "InsureMyTrip", commission: "Custom", cookieDays: 30 },
-    { name: "Travel Insured", commission: "20%", cookieDays: 30 },
-  ],
-} as const;
+// Affiliate configuration - Import from detailed affiliate programs database
+export {
+  AFFILIATE_PROGRAMS_BY_NICHE,
+  PET_INSURANCE_AFFILIATES,
+  DISABILITY_INSURANCE_AFFILIATES,
+  CYBER_INSURANCE_AFFILIATES,
+  TRAVEL_INSURANCE_AFFILIATES,
+  UMBRELLA_INSURANCE_AFFILIATES,
+  MOTORCYCLE_INSURANCE_AFFILIATES,
+  SR22_INSURANCE_AFFILIATES,
+  WEDDING_INSURANCE_AFFILIATES,
+  DRONE_INSURANCE_AFFILIATES,
+  LANDLORD_INSURANCE_AFFILIATES,
+  getAffiliatesByNiche,
+  getAffiliateById,
+  getHighestPayingAffiliates,
+  getVerifiedPrograms,
+  getAffiliateStats,
+  parseCommission,
+  type AffiliateProgram,
+} from "./affiliate-programs";
 
 // API configuration
 export const API_CONFIG = {
