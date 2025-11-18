@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  01-snapsave-backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5002:5001"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/01-snapsave
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - 01-snapsave-network
+
+  mongodb:
+    image: mongo:6.0-alpine
+    ports:
+      - "6002:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-admin}
+    restart: unless-stopped
+    networks:
+      - 01-snapsave-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  01-snapsave-network:
+    driver: bridge

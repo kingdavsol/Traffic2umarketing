@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "StoryRunner - Your Perfect App",
+    "fullDescription": "Experience StoryRunner today",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "StoryRunner - Your Perfect App",
+    "description": "Experience StoryRunner today",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Experience StoryRunner today"
+    },
+    "FDroid": {
+      "summary": "StoryRunner - Your Perfect App"
+    },
+    "Aptoide": {
+      "description": "Experience StoryRunner today"
+    },
+    "TapTap": {
+      "description": "Experience StoryRunner today"
+    }
+  }
+}

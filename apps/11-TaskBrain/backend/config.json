@@ -1,0 +1,23 @@
+{
+  "category": "Productivity",
+  "features": [
+    "task_management",
+    "ai_parsing",
+    "scheduling",
+    "analytics"
+  ],
+  "models": [
+    "Task",
+    "Project",
+    "Schedule",
+    "Insight"
+  ],
+  "endpoints": [
+    "/api/tasks/create",
+    "/api/tasks/nlp-parse",
+    "/api/tasks/list",
+    "/api/projects/manage",
+    "/api/schedule/optimize",
+    "/api/analytics/productivity"
+  ]
+}

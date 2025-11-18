@@ -1,0 +1,23 @@
+{
+  "category": "Health",
+  "features": [
+    "peer_support",
+    "therapy_directory",
+    "exercises",
+    "crisis_resources"
+  ],
+  "models": [
+    "User",
+    "Support",
+    "Therapist",
+    "Exercise"
+  ],
+  "endpoints": [
+    "/api/support/post",
+    "/api/support/feed",
+    "/api/therapists/search",
+    "/api/exercises/list",
+    "/api/resources/crisis",
+    "/api/community/join"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "category": "Gaming",
+  "features": [
+    "plant_growth",
+    "meditation",
+    "sharing",
+    "progression"
+  ],
+  "models": [
+    "Plant",
+    "Garden",
+    "Growth",
+    "Achievement"
+  ],
+  "endpoints": [
+    "/api/garden/create",
+    "/api/plants/grow",
+    "/api/plants/care",
+    "/api/garden/share",
+    "/api/meditation/start"
+  ]
+}

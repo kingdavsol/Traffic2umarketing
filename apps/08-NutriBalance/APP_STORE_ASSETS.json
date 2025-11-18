@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "Nutrition Made Personal",
+    "fullDescription": "Eat local, stay healthy, live better",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "Nutrition Made Personal",
+    "description": "Eat local, stay healthy, live better",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Eat local, stay healthy, live better"
+    },
+    "FDroid": {
+      "summary": "Nutrition Made Personal"
+    },
+    "Aptoide": {
+      "description": "Eat local, stay healthy, live better"
+    },
+    "TapTap": {
+      "description": "Eat local, stay healthy, live better"
+    }
+  }
+}

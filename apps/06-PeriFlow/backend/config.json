@@ -1,0 +1,22 @@
+{
+  "category": "Health",
+  "features": [
+    "cycle_tracking",
+    "symptom_logging",
+    "fertility_prediction",
+    "insights"
+  ],
+  "models": [
+    "Cycle",
+    "Symptom",
+    "Prediction",
+    "Insight"
+  ],
+  "endpoints": [
+    "/api/cycles/log",
+    "/api/cycles/history",
+    "/api/symptoms/log",
+    "/api/predictions/fertility",
+    "/api/insights/get"
+  ]
+}

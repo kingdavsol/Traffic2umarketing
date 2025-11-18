@@ -1,0 +1,23 @@
+{
+  "category": "Finance",
+  "features": [
+    "wallet_management",
+    "crypto_transactions",
+    "price_tracking",
+    "security"
+  ],
+  "models": [
+    "Wallet",
+    "Asset",
+    "Transaction",
+    "Price"
+  ],
+  "endpoints": [
+    "/api/wallet/create",
+    "/api/wallet/balance",
+    "/api/transactions/send",
+    "/api/assets/list",
+    "/api/prices/get",
+    "/api/security/backup"
+  ]
+}

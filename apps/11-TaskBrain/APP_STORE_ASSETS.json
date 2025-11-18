@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "TaskBrain - Your Perfect App",
+    "fullDescription": "Experience TaskBrain today",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "TaskBrain - Your Perfect App",
+    "description": "Experience TaskBrain today",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Experience TaskBrain today"
+    },
+    "FDroid": {
+      "summary": "TaskBrain - Your Perfect App"
+    },
+    "Aptoide": {
+      "description": "Experience TaskBrain today"
+    },
+    "TapTap": {
+      "description": "Experience TaskBrain today"
+    }
+  }
+}

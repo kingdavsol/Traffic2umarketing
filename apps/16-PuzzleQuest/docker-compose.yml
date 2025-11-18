@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  16-puzzlequest-backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5017:5001"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/16-puzzlequest
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - 16-puzzlequest-network
+
+  mongodb:
+    image: mongo:6.0-alpine
+    ports:
+      - "6017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-admin}
+    restart: unless-stopped
+    networks:
+      - 16-puzzlequest-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  16-puzzlequest-network:
+    driver: bridge

@@ -1,0 +1,404 @@
+version: '3.8'
+
+services:
+
+  01-snapsave-backend:
+    build:
+      context: ./apps/01-SnapSave
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5002:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/01-snapsave
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  02-cashflowmap-backend:
+    build:
+      context: ./apps/02-CashFlowMap
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5003:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/02-cashflowmap
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  03-gigstack-backend:
+    build:
+      context: ./apps/03-GigStack
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5004:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/03-gigstack
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  04-vaultpay-backend:
+    build:
+      context: ./apps/04-VaultPay
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5005:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/04-vaultpay
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  05-debtbreak-backend:
+    build:
+      context: ./apps/05-DebtBreak
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5006:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/05-debtbreak
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  06-periflow-backend:
+    build:
+      context: ./apps/06-PeriFlow
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5007:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/06-periflow
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  07-teledoclocal-backend:
+    build:
+      context: ./apps/07-TeleDocLocal
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5008:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/07-teledoclocal
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  08-nutribalance-backend:
+    build:
+      context: ./apps/08-NutriBalance
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5009:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/08-nutribalance
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  09-mentalmate-backend:
+    build:
+      context: ./apps/09-MentalMate
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5010:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/09-mentalmate
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  10-activeage-backend:
+    build:
+      context: ./apps/10-ActiveAge
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5011:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/10-activeage
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  11-taskbrain-backend:
+    build:
+      context: ./apps/11-TaskBrain
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5012:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/11-taskbrain
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  12-memoshift-backend:
+    build:
+      context: ./apps/12-MemoShift
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5013:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/12-memoshift
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  13-codesnap-backend:
+    build:
+      context: ./apps/13-CodeSnap
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5014:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/13-codesnap
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  14-draftmate-backend:
+    build:
+      context: ./apps/14-DraftMate
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5015:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/14-draftmate
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  15-focusflow-backend:
+    build:
+      context: ./apps/15-FocusFlow
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5016:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/15-focusflow
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  16-puzzlequest-backend:
+    build:
+      context: ./apps/16-PuzzleQuest
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5017:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/16-puzzlequest
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  17-citybuilderlite-backend:
+    build:
+      context: ./apps/17-CityBuilderLite
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5018:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/17-citybuilderlite
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  18-storyrunner-backend:
+    build:
+      context: ./apps/18-StoryRunner
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5019:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/18-storyrunner
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  19-skillmatch-backend:
+    build:
+      context: ./apps/19-SkillMatch
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5020:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/19-skillmatch
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  20-zengarden-backend:
+    build:
+      context: ./apps/20-ZenGarden
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5021:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/20-zengarden
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  21-guardvault-backend:
+    build:
+      context: ./apps/21-GuardVault
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5022:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/21-guardvault
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  22-notrace-backend:
+    build:
+      context: ./apps/22-NoTrace
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5023:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/22-notrace
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  23-ciphertext-backend:
+    build:
+      context: ./apps/23-CipherText
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5024:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/23-ciphertext
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  24-localeats-backend:
+    build:
+      context: ./apps/24-LocalEats
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5025:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/24-localeats
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  25-artisanhub-backend:
+    build:
+      context: ./apps/25-ArtisanHub
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5026:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/25-artisanhub
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  26-qualitycheck-backend:
+    build:
+      context: ./apps/26-QualityCheck
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5027:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/26-qualitycheck
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  27-skillbarter-backend:
+    build:
+      context: ./apps/27-SkillBarter
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5028:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/27-skillbarter
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  28-climatetrack-backend:
+    build:
+      context: ./apps/28-ClimateTrack
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5029:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/28-climatetrack
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  29-crewnetwork-backend:
+    build:
+      context: ./apps/29-CrewNetwork
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5030:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/29-crewnetwork
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  30-auraread-backend:
+    build:
+      context: ./apps/30-AuraRead
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5031:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/30-auraread
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+
+  mongodb:
+    image: mongo:6.0-alpine
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:

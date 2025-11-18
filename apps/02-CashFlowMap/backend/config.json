@@ -1,0 +1,23 @@
+{
+  "category": "Finance",
+  "features": [
+    "multi_currency",
+    "expense_tracking",
+    "budget_forecasting",
+    "bill_integration"
+  ],
+  "models": [
+    "Transaction",
+    "Budget",
+    "Category",
+    "Bill"
+  ],
+  "endpoints": [
+    "/api/transactions/add",
+    "/api/transactions/list",
+    "/api/transactions/analyze",
+    "/api/budgets/create",
+    "/api/budgets/track",
+    "/api/categories/list"
+  ]
+}

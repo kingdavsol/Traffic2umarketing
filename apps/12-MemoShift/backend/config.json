@@ -1,0 +1,23 @@
+{
+  "category": "Productivity",
+  "features": [
+    "note_taking",
+    "spaced_repetition",
+    "ai_summarization",
+    "search"
+  ],
+  "models": [
+    "Note",
+    "Revision",
+    "Summary",
+    "Deck"
+  ],
+  "endpoints": [
+    "/api/notes/create",
+    "/api/notes/list",
+    "/api/notes/ai-summary",
+    "/api/revision/schedule",
+    "/api/revision/next",
+    "/api/search/notes"
+  ]
+}

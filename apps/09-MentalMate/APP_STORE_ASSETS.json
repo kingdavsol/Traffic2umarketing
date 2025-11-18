@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "Mental Health Support Community",
+    "fullDescription": "Anonymous, supportive, always there",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "Mental Health Support Community",
+    "description": "Anonymous, supportive, always there",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Anonymous, supportive, always there"
+    },
+    "FDroid": {
+      "summary": "Mental Health Support Community"
+    },
+    "Aptoide": {
+      "description": "Anonymous, supportive, always there"
+    },
+    "TapTap": {
+      "description": "Anonymous, supportive, always there"
+    }
+  }
+}

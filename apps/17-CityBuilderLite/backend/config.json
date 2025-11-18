@@ -1,0 +1,23 @@
+{
+  "category": "Gaming",
+  "features": [
+    "city_simulation",
+    "progression",
+    "cosmetics",
+    "persistence"
+  ],
+  "models": [
+    "City",
+    "Building",
+    "Resource",
+    "Progress"
+  ],
+  "endpoints": [
+    "/api/city/create",
+    "/api/city/state",
+    "/api/buildings/place",
+    "/api/buildings/upgrade",
+    "/api/resources/update",
+    "/api/save/persist"
+  ]
+}

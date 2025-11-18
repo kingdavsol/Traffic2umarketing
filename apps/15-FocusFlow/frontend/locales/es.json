@@ -1,0 +1,35 @@
+{
+  "common": {
+    "welcome": "Bienvenido a {app}",
+    "loading": "Cargando...",
+    "error": "Ocurri\u00f3 un error",
+    "success": "\u00a1\u00c9xito!",
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Atr\u00e1s",
+    "next": "Siguiente",
+    "continue": "Continuar"
+  },
+  "auth": {
+    "login": "Iniciar sesi\u00f3n",
+    "register": "Registrarse",
+    "logout": "Cerrar sesi\u00f3n",
+    "email": "Correo electr\u00f3nico",
+    "password": "Contrase\u00f1a",
+    "forgotPassword": "\u00bfOlvid\u00f3 su contrase\u00f1a?",
+    "createAccount": "Crear cuenta",
+    "alreadyHaveAccount": "\u00bfYa tiene una cuenta?",
+    "rememberMe": "Recu\u00e9rdame"
+  },
+  "errors": {
+    "invalidEmail": "Por favor, ingrese un correo v\u00e1lido",
+    "passwordTooShort": "La contrase\u00f1a debe tener al menos 6 caracteres",
+    "passwordsDoNotMatch": "Las contrase\u00f1as no coinciden",
+    "emailAlreadyExists": "Este correo ya est\u00e1 en uso",
+    "networkError": "Error de red. Por favor, verifique su conexi\u00f3n",
+    "serverError": "Error del servidor. Por favor, intente m\u00e1s tarde"
+  }
+}

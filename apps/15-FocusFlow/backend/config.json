@@ -1,0 +1,22 @@
+{
+  "category": "Productivity",
+  "features": [
+    "distraction_blocking",
+    "focus_tracking",
+    "pomodoro",
+    "analytics"
+  ],
+  "models": [
+    "Block",
+    "Session",
+    "Distraction",
+    "Stat"
+  ],
+  "endpoints": [
+    "/api/block/start",
+    "/api/block/end",
+    "/api/session/track",
+    "/api/distractions/log",
+    "/api/analytics/focus"
+  ]
+}

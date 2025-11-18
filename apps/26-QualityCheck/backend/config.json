@@ -1,0 +1,22 @@
+{
+  "category": "Niche",
+  "features": [
+    "review_platform",
+    "verification",
+    "rewards",
+    "fraud_detection"
+  ],
+  "models": [
+    "Review",
+    "Reviewer",
+    "Reward",
+    "FraudReport"
+  ],
+  "endpoints": [
+    "/api/reviews/submit",
+    "/api/reviews/list",
+    "/api/reviewers/verify",
+    "/api/rewards/earn",
+    "/api/fraud/report"
+  ]
+}

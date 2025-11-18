@@ -1,0 +1,22 @@
+{
+  "category": "Niche",
+  "features": [
+    "local_discovery",
+    "recommendations",
+    "bookings",
+    "reviews"
+  ],
+  "models": [
+    "Restaurant",
+    "Recommendation",
+    "Booking",
+    "Review"
+  ],
+  "endpoints": [
+    "/api/restaurants/search",
+    "/api/restaurants/nearby",
+    "/api/recommendations/get",
+    "/api/bookings/create",
+    "/api/reviews/submit"
+  ]
+}

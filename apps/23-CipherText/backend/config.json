@@ -1,0 +1,22 @@
+{
+  "category": "Privacy",
+  "features": [
+    "encrypted_messaging",
+    "e2e_calls",
+    "disappearing_messages",
+    "groups"
+  ],
+  "models": [
+    "Message",
+    "Conversation",
+    "Key",
+    "GroupChat"
+  ],
+  "endpoints": [
+    "/api/messages/send",
+    "/api/messages/receive",
+    "/api/conversations/list",
+    "/api/calls/initiate",
+    "/api/groups/create"
+  ]
+}

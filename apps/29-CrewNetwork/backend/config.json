@@ -1,0 +1,22 @@
+{
+  "category": "Niche",
+  "features": [
+    "team_culture",
+    "communications",
+    "recognition",
+    "wellness"
+  ],
+  "models": [
+    "Team",
+    "Message",
+    "Recognition",
+    "Wellness"
+  ],
+  "endpoints": [
+    "/api/teams/create",
+    "/api/team/invite",
+    "/api/messages/send",
+    "/api/recognition/give",
+    "/api/wellness/track"
+  ]
+}

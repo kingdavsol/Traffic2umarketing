@@ -1,0 +1,21 @@
+{
+  "category": "Privacy",
+  "features": [
+    "vpn",
+    "ad_blocking",
+    "tracker_blocking",
+    "privacy_tools"
+  ],
+  "models": [
+    "VPNSession",
+    "Block",
+    "TrackerLog"
+  ],
+  "endpoints": [
+    "/api/vpn/connect",
+    "/api/vpn/disconnect",
+    "/api/blocks/list",
+    "/api/trackers/detect",
+    "/api/privacy/status"
+  ]
+}

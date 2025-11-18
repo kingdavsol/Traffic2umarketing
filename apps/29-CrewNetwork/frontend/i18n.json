@@ -1,0 +1,16 @@
+{
+  "defaultLanguage": "en",
+  "supportedLanguages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "pt",
+    "ja",
+    "zh",
+    "hi",
+    "ar"
+  ],
+  "fallbackLanguage": "en",
+  "localesPath": "./locales"
+}

@@ -1,0 +1,22 @@
+{
+  "category": "Gaming",
+  "features": [
+    "story_branches",
+    "choices",
+    "progression",
+    "chapters"
+  ],
+  "models": [
+    "Story",
+    "Branch",
+    "Choice",
+    "Progress"
+  ],
+  "endpoints": [
+    "/api/stories/list",
+    "/api/story/start",
+    "/api/story/progress",
+    "/api/branches/get",
+    "/api/choices/submit"
+  ]
+}

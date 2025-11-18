@@ -1,0 +1,23 @@
+{
+  "category": "Health",
+  "features": [
+    "meal_planning",
+    "nutrition_tracking",
+    "recipe_generation",
+    "local_foods"
+  ],
+  "models": [
+    "Meal",
+    "NutritionLog",
+    "Recipe",
+    "Food"
+  ],
+  "endpoints": [
+    "/api/meals/plan",
+    "/api/meals/history",
+    "/api/nutrition/track",
+    "/api/nutrition/analysis",
+    "/api/recipes/search",
+    "/api/foods/local"
+  ]
+}

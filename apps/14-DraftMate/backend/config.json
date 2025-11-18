@@ -1,0 +1,22 @@
+{
+  "category": "Productivity",
+  "features": [
+    "content_generation",
+    "templates",
+    "refinement",
+    "analytics"
+  ],
+  "models": [
+    "Draft",
+    "Template",
+    "Revision",
+    "Analytics"
+  ],
+  "endpoints": [
+    "/api/generate/text",
+    "/api/templates/list",
+    "/api/drafts/save",
+    "/api/drafts/refine",
+    "/api/analytics/performance"
+  ]
+}

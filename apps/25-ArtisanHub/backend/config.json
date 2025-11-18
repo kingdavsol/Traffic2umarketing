@@ -1,0 +1,22 @@
+{
+  "category": "Niche",
+  "features": [
+    "artisan_marketplace",
+    "direct_sales",
+    "authenticity",
+    "sustainability"
+  ],
+  "models": [
+    "Artisan",
+    "Product",
+    "Order",
+    "Authenticity"
+  ],
+  "endpoints": [
+    "/api/artisans/search",
+    "/api/products/browse",
+    "/api/products/order",
+    "/api/orders/track",
+    "/api/authenticity/verify"
+  ]
+}

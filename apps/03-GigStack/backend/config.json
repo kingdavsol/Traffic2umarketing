@@ -1,0 +1,23 @@
+{
+  "category": "Finance",
+  "features": [
+    "invoice_management",
+    "tax_calculation",
+    "payment_tracking",
+    "earnings"
+  ],
+  "models": [
+    "Invoice",
+    "Payment",
+    "TaxRecord",
+    "Client"
+  ],
+  "endpoints": [
+    "/api/invoices/create",
+    "/api/invoices/list",
+    "/api/invoices/send",
+    "/api/payments/track",
+    "/api/taxes/calculate",
+    "/api/earnings/summary"
+  ]
+}

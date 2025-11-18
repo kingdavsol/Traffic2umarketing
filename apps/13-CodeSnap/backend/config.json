@@ -1,0 +1,23 @@
+{
+  "category": "Productivity",
+  "features": [
+    "workflow_builder",
+    "api_integration",
+    "templates",
+    "execution"
+  ],
+  "models": [
+    "Workflow",
+    "Trigger",
+    "Action",
+    "Execution"
+  ],
+  "endpoints": [
+    "/api/workflows/create",
+    "/api/workflows/test",
+    "/api/workflows/execute",
+    "/api/triggers/list",
+    "/api/actions/list",
+    "/api/integrations/connect"
+  ]
+}

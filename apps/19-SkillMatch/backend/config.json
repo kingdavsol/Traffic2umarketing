@@ -1,0 +1,22 @@
+{
+  "category": "Gaming",
+  "features": [
+    "tournaments",
+    "skill_games",
+    "scoring",
+    "payouts"
+  ],
+  "models": [
+    "Tournament",
+    "Game",
+    "Score",
+    "Payout"
+  ],
+  "endpoints": [
+    "/api/tournaments/list",
+    "/api/tournaments/join",
+    "/api/games/play",
+    "/api/scores/submit",
+    "/api/payouts/calculate"
+  ]
+}

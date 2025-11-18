@@ -1,0 +1,22 @@
+{
+  "category": "Niche",
+  "features": [
+    "book_discovery",
+    "social_reading",
+    "challenges",
+    "recommendations"
+  ],
+  "models": [
+    "Book",
+    "ReadingList",
+    "Challenge",
+    "Recommendation"
+  ],
+  "endpoints": [
+    "/api/books/search",
+    "/api/books/rate",
+    "/api/challenges/list",
+    "/api/challenges/join",
+    "/api/recommendations/get"
+  ]
+}

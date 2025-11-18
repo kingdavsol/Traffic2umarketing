@@ -1,0 +1,22 @@
+{
+  "category": "Finance",
+  "features": [
+    "debt_tracking",
+    "payoff_planning",
+    "gamification",
+    "creditor_info"
+  ],
+  "models": [
+    "Debt",
+    "PaymentSchedule",
+    "Milestone",
+    "Achievement"
+  ],
+  "endpoints": [
+    "/api/debts/add",
+    "/api/debts/list",
+    "/api/debts/payment",
+    "/api/payoff-plan/generate",
+    "/api/milestones/list"
+  ]
+}

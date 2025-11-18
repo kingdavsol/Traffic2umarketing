@@ -1,0 +1,23 @@
+{
+  "category": "Health",
+  "features": [
+    "doctor_network",
+    "appointments",
+    "prescriptions",
+    "local_presence"
+  ],
+  "models": [
+    "Doctor",
+    "Appointment",
+    "Prescription",
+    "Consultation"
+  ],
+  "endpoints": [
+    "/api/doctors/search",
+    "/api/doctors/profile",
+    "/api/appointments/book",
+    "/api/appointments/history",
+    "/api/prescriptions/get",
+    "/api/consultations/start"
+  ]
+}

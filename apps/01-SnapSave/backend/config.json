@@ -1,0 +1,25 @@
+{
+  "category": "Finance",
+  "features": [
+    "savings_tracking",
+    "goal_management",
+    "analytics",
+    "gamification"
+  ],
+  "models": [
+    "Saving",
+    "Goal",
+    "Achievement",
+    "MonthlyStats"
+  ],
+  "endpoints": [
+    "/api/savings/add",
+    "/api/savings/get-monthly",
+    "/api/savings/analytics",
+    "/api/goals/create",
+    "/api/goals/list",
+    "/api/goals/update",
+    "/api/achievements/unlock",
+    "/api/achievements/list"
+  ]
+}

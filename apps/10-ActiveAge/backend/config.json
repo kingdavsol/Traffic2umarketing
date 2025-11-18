@@ -1,0 +1,23 @@
+{
+  "category": "Health",
+  "features": [
+    "health_monitoring",
+    "medication_reminders",
+    "family_alerts",
+    "fall_detection"
+  ],
+  "models": [
+    "HealthRecord",
+    "Medication",
+    "Alert",
+    "FamilyMember"
+  ],
+  "endpoints": [
+    "/api/health/log",
+    "/api/medications/add",
+    "/api/medications/remind",
+    "/api/alerts/send",
+    "/api/family/invite",
+    "/api/fall-detection/enable"
+  ]
+}

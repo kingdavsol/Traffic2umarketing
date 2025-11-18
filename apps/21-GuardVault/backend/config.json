@@ -1,0 +1,23 @@
+{
+  "category": "Privacy",
+  "features": [
+    "password_storage",
+    "encryption",
+    "sync",
+    "audit"
+  ],
+  "models": [
+    "Vault",
+    "Password",
+    "Key",
+    "AuditLog"
+  ],
+  "endpoints": [
+    "/api/vault/create",
+    "/api/passwords/add",
+    "/api/passwords/get",
+    "/api/passwords/update",
+    "/api/sync/enable",
+    "/api/audit/log"
+  ]
+}

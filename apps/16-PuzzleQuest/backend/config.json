@@ -1,0 +1,22 @@
+{
+  "category": "Gaming",
+  "features": [
+    "puzzle_generation",
+    "difficulty_scaling",
+    "leaderboards",
+    "rewards"
+  ],
+  "models": [
+    "Puzzle",
+    "Solution",
+    "Score",
+    "Reward"
+  ],
+  "endpoints": [
+    "/api/puzzles/get",
+    "/api/puzzles/submit",
+    "/api/leaderboards/get",
+    "/api/scores/update",
+    "/api/rewards/claim"
+  ]
+}

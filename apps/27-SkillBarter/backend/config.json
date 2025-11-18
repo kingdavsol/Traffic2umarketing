@@ -1,0 +1,22 @@
+{
+  "category": "Niche",
+  "features": [
+    "skill_exchange",
+    "matching",
+    "escrow",
+    "ratings"
+  ],
+  "models": [
+    "Skill",
+    "Match",
+    "Transaction",
+    "Rating"
+  ],
+  "endpoints": [
+    "/api/skills/offer",
+    "/api/skills/search",
+    "/api/matches/find",
+    "/api/transactions/escrow",
+    "/api/ratings/submit"
+  ]
+}

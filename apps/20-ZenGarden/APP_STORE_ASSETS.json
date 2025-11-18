@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "ZenGarden - Your Perfect App",
+    "fullDescription": "Experience ZenGarden today",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "ZenGarden - Your Perfect App",
+    "description": "Experience ZenGarden today",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Experience ZenGarden today"
+    },
+    "FDroid": {
+      "summary": "ZenGarden - Your Perfect App"
+    },
+    "Aptoide": {
+      "description": "Experience ZenGarden today"
+    },
+    "TapTap": {
+      "description": "Experience ZenGarden today"
+    }
+  }
+}

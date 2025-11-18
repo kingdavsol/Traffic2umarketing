@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "QualityCheck - Your Perfect App",
+    "fullDescription": "Experience QualityCheck today",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "QualityCheck - Your Perfect App",
+    "description": "Experience QualityCheck today",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Experience QualityCheck today"
+    },
+    "FDroid": {
+      "summary": "QualityCheck - Your Perfect App"
+    },
+    "Aptoide": {
+      "description": "Experience QualityCheck today"
+    },
+    "TapTap": {
+      "description": "Experience QualityCheck today"
+    }
+  }
+}

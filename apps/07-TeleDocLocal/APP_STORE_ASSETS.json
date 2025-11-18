@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "Healthcare in Your City",
+    "fullDescription": "Connect with local doctors instantly",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "Healthcare in Your City",
+    "description": "Connect with local doctors instantly",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Connect with local doctors instantly"
+    },
+    "FDroid": {
+      "summary": "Healthcare in Your City"
+    },
+    "Aptoide": {
+      "description": "Connect with local doctors instantly"
+    },
+    "TapTap": {
+      "description": "Connect with local doctors instantly"
+    }
+  }
+}

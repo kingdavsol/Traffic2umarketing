@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "Smart Savings Automation",
+    "fullDescription": "Automate your savings with AI-powered insights",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "Smart Savings Automation",
+    "description": "Automate your savings with AI-powered insights",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Automate your savings with AI-powered insights"
+    },
+    "FDroid": {
+      "summary": "Smart Savings Automation"
+    },
+    "Aptoide": {
+      "description": "Automate your savings with AI-powered insights"
+    },
+    "TapTap": {
+      "description": "Automate your savings with AI-powered insights"
+    }
+  }
+}

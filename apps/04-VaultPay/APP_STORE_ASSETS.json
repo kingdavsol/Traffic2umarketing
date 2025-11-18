@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "Privacy-First Crypto Wallet",
+    "fullDescription": "Secure self-custody of your digital assets",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "Privacy-First Crypto Wallet",
+    "description": "Secure self-custody of your digital assets",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Secure self-custody of your digital assets"
+    },
+    "FDroid": {
+      "summary": "Privacy-First Crypto Wallet"
+    },
+    "Aptoide": {
+      "description": "Secure self-custody of your digital assets"
+    },
+    "TapTap": {
+      "description": "Secure self-custody of your digital assets"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "LocalEats - Your Perfect App",
+    "fullDescription": "Experience LocalEats today",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "LocalEats - Your Perfect App",
+    "description": "Experience LocalEats today",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Experience LocalEats today"
+    },
+    "FDroid": {
+      "summary": "LocalEats - Your Perfect App"
+    },
+    "Aptoide": {
+      "description": "Experience LocalEats today"
+    },
+    "TapTap": {
+      "description": "Experience LocalEats today"
+    }
+  }
+}

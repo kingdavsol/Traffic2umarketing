@@ -1,0 +1,37 @@
+{
+  "googlePlay": {
+    "shortDescription": "Freelancer's Financial Command Center",
+    "fullDescription": "Manage invoices, taxes, and earnings",
+    "whatsNew": "Version 1.0: Initial release",
+    "screenshotPaths": [
+      "play-store/screenshot-1.png",
+      "play-store/screenshot-2.png",
+      "play-store/screenshot-3.png"
+    ],
+    "featureGraphic": "play-store/feature-graphic.png"
+  },
+  "appStore": {
+    "subtitle": "Freelancer's Financial Command Center",
+    "description": "Manage invoices, taxes, and earnings",
+    "releaseNotes": "Version 1.0: Initial release",
+    "previewUrls": [
+      "app-store/preview-1.png",
+      "app-store/preview-2.png",
+      "app-store/preview-3.png"
+    ]
+  },
+  "alternativeStores": {
+    "AppSumo": {
+      "description": "Manage invoices, taxes, and earnings"
+    },
+    "FDroid": {
+      "summary": "Freelancer's Financial Command Center"
+    },
+    "Aptoide": {
+      "description": "Manage invoices, taxes, and earnings"
+    },
+    "TapTap": {
+      "description": "Manage invoices, taxes, and earnings"
+    }
+  }
+}

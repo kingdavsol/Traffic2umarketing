@@ -1,0 +1,22 @@
+{
+  "category": "Niche",
+  "features": [
+    "carbon_tracking",
+    "recommendations",
+    "gamification",
+    "impact"
+  ],
+  "models": [
+    "Footprint",
+    "Activity",
+    "Impact",
+    "Achievement"
+  ],
+  "endpoints": [
+    "/api/carbon/track",
+    "/api/carbon/calculate",
+    "/api/recommendations/get",
+    "/api/impact/measure",
+    "/api/achievements/unlock"
+  ]
+}
