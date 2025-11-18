@@ -20,3 +20,5 @@ coverage/
 dist/
 build/
 backups/
+config/
+package-lock.json
