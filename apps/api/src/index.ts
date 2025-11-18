@@ -16,6 +16,10 @@ import { modificationsRoutes } from './routes/modifications';
 import { maintenanceRoutes } from './routes/maintenance';
 import { valuationRoutes } from './routes/valuation';
 import { nhtsaRoutes } from './routes/nhtsa';
+import { affiliateRoutes } from './routes/affiliates';
+import { subscriptionRoutes } from './routes/subscriptions';
+import { priceAlertRoutes } from './routes/priceAlerts';
+import { userGuideRoutes } from './routes/userGuides';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -44,6 +48,10 @@ app.use('/api/tires', tiresRoutes);
 app.use('/api/modifications', modificationsRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/valuation', valuationRoutes);
+app.use('/api/affiliates', affiliateRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/price-alerts', priceAlertRoutes);
+app.use('/api/guides', userGuideRoutes);
 
 // 404 handler
 app.use((req, res) => {

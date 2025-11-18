@@ -15,7 +15,7 @@
     "submit": "eas submit"
   },
   "dependencies": {
-    "@car-hub/shared": "workspace:*",
+    "@car-hub/shared": "file:../../packages/shared",
     "@react-navigation/bottom-tabs": "^6.5.11",
     "@react-navigation/native": "^6.1.10",
     "@react-navigation/stack": "^6.3.20",

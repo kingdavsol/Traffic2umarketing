@@ -12,15 +12,31 @@ datasource db {
 
 // User Model
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  vehicles  Vehicle[]
-  maintenanceRecords MaintenanceRecord[]
-  savedArticles SavedArticle[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  email                 String   @unique
+  name                  String?
+  password              String
+  phone                 String?
+
+  // Billing & Subscription
+  stripeCustomerId      String?
+  subscription          Subscription?
+
+  // Relations
+  vehicles              Vehicle[]
+  maintenanceRecords    MaintenanceRecord[]
+  savedArticles         SavedArticle[]
+  priceAlerts           PriceAlert[]
+  affiliateClicks       AffiliateClick[]
+  userGuides            UserGuide[]
+  guideRatings          GuideRating[]
+  userPoints            UserPoints[]
+  adImpressions         AdImpression[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([email])
 }
 
 // Vehicle Model
@@ -81,29 +97,6 @@ model CommonProblem {
 
   @@index([vehicleMake, vehicleModel])
   @@index([category])
-}
-
-// Parts Model
-model Part {
-  id                    String   @id @default(cuid())
-  problemId             String
-  problem               CommonProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
-
-  name                  String
-  description           String?
-  oemPartNumber         String?
-  aftermarketPartNumbers String[]
-
-  estimatedCost         Int      // in cents
-  difficulty            String   // easy, medium, hard
-  tools                 String[]
-
-  priceListings         PriceListing[]
-
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  @@index([problemId])
 }
 
 // Price Listings Model
@@ -275,4 +268,194 @@ model VehicleValuation {
 
   @@unique([vehicleYear, vehicleMake, vehicleModel, vehicleTrim, mileage])
   @@index([vehicleYear, vehicleMake, vehicleModel])
+}
+
+// Subscription Model
+model Subscription {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  stripeSubscriptionId  String   @unique
+  plan                  String   // 'free', 'pro', 'business'
+  status                String   // 'active', 'past_due', 'canceled'
+
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Price Alert Model
+model PriceAlert {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  partId        String
+  part          Part     @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  targetPrice   Int      // in cents
+  isActive      Boolean  @default(true)
+
+  emailAlert    Boolean  @default(true)
+  smsAlert      Boolean  @default(false)
+
+  notifiedAt    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([partId])
+  @@index([isActive])
+}
+
+// Affiliate Click Tracking
+model AffiliateClick {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  partId        String?
+  part          Part?    @relation(fields: [partId], references: [id], onDelete: SetNull)
+
+  retailer      String   // amazon, ebay, rockauto, partsgeek
+  url           String
+  ipAddress     String?
+
+  conversions   Int      @default(0)
+  earnings      Int      @default(0) // in cents
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([partId])
+  @@index([retailer])
+  @@index([createdAt])
+}
+
+// User-Generated Guides
+model UserGuide {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String
+  content       String   // Full markdown content
+
+  vehicleMake   String
+  vehicleModel  String
+  vehicleYear   Int?
+
+  category      String   // repair, maintenance, modification
+  difficulty    String   // easy, medium, hard
+  estimatedTime Int?     // in minutes
+
+  steps         String[] // Array of step descriptions
+  tools         String[]
+  partsNeeded   String[]
+
+  status        String   @default("pending_review") // pending_review, approved, rejected
+  featured      Boolean  @default(false)
+
+  views         Int      @default(0)
+  ratings       GuideRating[]
+
+  videoUrl      String?
+  imageUrl      String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([vehicleMake, vehicleModel])
+  @@index([status])
+  @@index([featured])
+  @@index([views])
+}
+
+// Guide Ratings
+model GuideRating {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  guideId       String
+  guide         UserGuide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  helpful       Boolean
+  rating        Int?     // 1-5 stars
+  comment       String?
+
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, guideId])
+  @@index([guideId])
+}
+
+// User Points/Rewards
+model UserPoints {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  points        Int
+  reason        String   // created_guide, helpful_comment, referral, etc.
+  metadata      String?  // JSON metadata
+
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Ad Impressions Tracking
+model AdImpression {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  placement     String   // header, sidebar, in-feed, etc.
+  adNetwork     String   // google-adsense, other
+
+  impressions   Int      @default(1)
+  clicks        Int      @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([placement])
+  @@index([createdAt])
+}
+
+// Add relations to Part for price alerts and affiliate clicks
+model Part {
+  id                    String   @id @default(cuid())
+  problemId             String
+  problem               CommonProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  name                  String
+  description           String?
+  oemPartNumber         String?
+  aftermarketPartNumbers String[]
+
+  estimatedCost         Int      // in cents
+  difficulty            String   // easy, medium, hard
+  tools                 String[]
+
+  priceListings         PriceListing[]
+  priceAlerts           PriceAlert[]
+  affiliateClicks       AffiliateClick[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([problemId])
 }
