@@ -1,15 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import listingsReducer from './slices/listingsSlice';
-import uiReducer from './slices/uiSlice';
 import gamificationReducer from './slices/gamificationSlice';
+import uiReducer from './slices/uiSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     listings: listingsReducer,
-    ui: uiReducer,
     gamification: gamificationReducer,
+    ui: uiReducer,
   },
 });
 

@@ -1,87 +1,108 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface Listing {
+interface Listing {
   id: number;
   title: string;
   description: string;
   category: string;
-  condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   price: number;
   estimatedPrice?: number;
-  status: 'draft' | 'published' | 'sold' | 'delisted' | 'archived';
+  status: 'draft' | 'published' | 'sold' | 'delisted';
+  condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   photos: string[];
-  viewCount: number;
-  clickCount: number;
   createdAt: string;
-  updatedAt: string;
+  publishedAt?: string;
+  marketplaces?: string[];
 }
 
 interface ListingsState {
-  listings: Listing[];
+  items: Listing[];
   selectedListing: Listing | null;
-  isLoading: boolean;
+  loading: boolean;
   error: string | null;
   totalCount: number;
-  currentPage: number;
+  page: number;
+  limit: number;
 }
 
 const initialState: ListingsState = {
-  listings: [],
+  items: [],
   selectedListing: null,
-  isLoading: false,
+  loading: false,
   error: null,
   totalCount: 0,
-  currentPage: 1,
+  page: 1,
+  limit: 10,
 };
 
 const listingsSlice = createSlice({
   name: 'listings',
   initialState,
   reducers: {
+    // Fetch listings
     fetchListingsStart: (state) => {
-      state.isLoading = true;
+      state.loading = true;
       state.error = null;
     },
-    fetchListingsSuccess: (state, action: PayloadAction<{ listings: Listing[]; total: number }>) => {
-      state.isLoading = false;
-      state.listings = action.payload.listings;
+    fetchListingsSuccess: (state, action: PayloadAction<{ items: Listing[]; total: number }>) => {
+      state.items = action.payload.items;
       state.totalCount = action.payload.total;
+      state.loading = false;
     },
     fetchListingsFailure: (state, action: PayloadAction<string>) => {
-      state.isLoading = false;
+      state.loading = false;
       state.error = action.payload;
     },
+
+    // Create listing
     createListingStart: (state) => {
-      state.isLoading = true;
+      state.loading = true;
       state.error = null;
     },
     createListingSuccess: (state, action: PayloadAction<Listing>) => {
-      state.isLoading = false;
-      state.listings.unshift(action.payload);
-      state.totalCount += 1;
+      state.items.unshift(action.payload);
+      state.loading = false;
     },
     createListingFailure: (state, action: PayloadAction<string>) => {
-      state.isLoading = false;
+      state.loading = false;
       state.error = action.payload;
     },
+
+    // Select listing
     selectListing: (state, action: PayloadAction<Listing>) => {
       state.selectedListing = action.payload;
     },
-    updateListing: (state, action: PayloadAction<Listing>) => {
-      const index = state.listings.findIndex((l) => l.id === action.payload.id);
-      if (index !== -1) {
-        state.listings[index] = action.payload;
+
+    // Update listing
+    updateListingSuccess: (state, action: PayloadAction<Listing>) => {
+      const index = state.items.findIndex((item) => item.id === action.payload.id);
+      if (index >= 0) {
+        state.items[index] = action.payload;
       }
-      if (state.selectedListing?.id === action.payload.id) {
-        state.selectedListing = action.payload;
+      state.selectedListing = action.payload;
+    },
+
+    // Delete listing
+    deleteListingSuccess: (state, action: PayloadAction<number>) => {
+      state.items = state.items.filter((item) => item.id !== action.payload);
+    },
+
+    // Publish listing
+    publishListingSuccess: (state, action: PayloadAction<Listing>) => {
+      const index = state.items.findIndex((item) => item.id === action.payload.id);
+      if (index >= 0) {
+        state.items[index] = action.payload;
       }
     },
-    deleteListing: (state, action: PayloadAction<number>) => {
-      state.listings = state.listings.filter((l) => l.id !== action.payload);
-      state.totalCount -= 1;
+
+    // Set page
+    setPage: (state, action: PayloadAction<number>) => {
+      state.page = action.payload;
     },
-    setCurrentPage: (state, action: PayloadAction<number>) => {
-      state.currentPage = action.payload;
+
+    // Clear error
+    clearError: (state) => {
+      state.error = null;
     },
   },
 });
@@ -94,9 +115,11 @@ export const {
   createListingSuccess,
   createListingFailure,
   selectListing,
-  updateListing,
-  deleteListing,
-  setCurrentPage,
+  updateListingSuccess,
+  deleteListingSuccess,
+  publishListingSuccess,
+  setPage,
+  clearError,
 } = listingsSlice.actions;
 
 export default listingsSlice.reducer;

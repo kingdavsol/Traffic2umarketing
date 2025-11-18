@@ -1,108 +1,128 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface Badge {
+interface Badge {
   id: number;
   key: string;
   name: string;
-  description: string;
   icon: string;
-  tier: '1' | '2' | '3' | 'special';
-  unlockedAt?: string;
+  unlockedAt: string;
 }
 
-export interface Challenge {
+interface Challenge {
   id: number;
   key: string;
   name: string;
   description: string;
-  type: 'weekly' | 'monthly' | 'seasonal';
   progress: number;
   progressPercentage: number;
   status: 'active' | 'completed' | 'expired';
-  rewardPoints: number;
+  reward: number;
 }
 
-export interface GamificationState {
+interface GamificationState {
   points: number;
-  currentLevel: number;
-  nextLevelPoints: number;
+  level: number;
   badges: Badge[];
   challenges: Challenge[];
-  streakDays: number;
-  bestStreak: number;
-  stats: {
-    totalListings: number;
-    totalSales: number;
-    totalRevenue: number;
-    positiveRatings: number;
-  };
+  leaderboard: any[];
+  streak: number;
+  nextLevelPoints: number;
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: GamificationState = {
   points: 0,
-  currentLevel: 1,
-  nextLevelPoints: 500,
+  level: 1,
   badges: [],
   challenges: [],
-  streakDays: 0,
-  bestStreak: 0,
-  stats: {
-    totalListings: 0,
-    totalSales: 0,
-    totalRevenue: 0,
-    positiveRatings: 0,
-  },
+  leaderboard: [],
+  streak: 0,
+  nextLevelPoints: 500,
+  loading: false,
+  error: null,
 };
 
 const gamificationSlice = createSlice({
   name: 'gamification',
   initialState,
   reducers: {
-    addPoints: (state, action: PayloadAction<number>) => {
-      state.points += action.payload;
-      // Check for level up
-      if (state.points >= state.nextLevelPoints) {
-        state.currentLevel += 1;
-        state.nextLevelPoints = state.currentLevel * 500;
+    // Fetch stats
+    fetchStatsStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    fetchStatsSuccess: (state, action: PayloadAction<any>) => {
+      state.points = action.payload.points;
+      state.level = action.payload.level;
+      state.streak = action.payload.streak;
+      state.nextLevelPoints = action.payload.nextLevelPoints;
+      state.loading = false;
+    },
+    fetchStatsFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    // Fetch badges
+    fetchBadgesSuccess: (state, action: PayloadAction<Badge[]>) => {
+      state.badges = action.payload;
+    },
+
+    // Unlock badge
+    unlockBadge: (state, action: PayloadAction<Badge>) => {
+      if (!state.badges.find((b) => b.id === action.payload.id)) {
+        state.badges.push(action.payload);
       }
     },
-    unlockBadge: (state, action: PayloadAction<Badge>) => {
-      state.badges.push(action.payload);
+
+    // Fetch challenges
+    fetchChallengesSuccess: (state, action: PayloadAction<Challenge[]>) => {
+      state.challenges = action.payload;
     },
+
+    // Update challenge
     updateChallenge: (state, action: PayloadAction<Challenge>) => {
       const index = state.challenges.findIndex((c) => c.id === action.payload.id);
-      if (index !== -1) {
+      if (index >= 0) {
         state.challenges[index] = action.payload;
-      } else {
-        state.challenges.push(action.payload);
       }
     },
-    updateStreak: (state, action: PayloadAction<number>) => {
-      state.streakDays = action.payload;
-      if (state.streakDays > state.bestStreak) {
-        state.bestStreak = state.streakDays;
+
+    // Add points
+    addPoints: (state, action: PayloadAction<number>) => {
+      state.points += action.payload;
+      // Check if level up
+      if (state.points >= state.nextLevelPoints) {
+        state.level += 1;
+        state.points -= state.nextLevelPoints;
+        state.nextLevelPoints = Math.floor(state.nextLevelPoints * 1.5);
       }
     },
-    resetStreak: (state) => {
-      state.streakDays = 0;
+
+    // Fetch leaderboard
+    fetchLeaderboardSuccess: (state, action: PayloadAction<any[]>) => {
+      state.leaderboard = action.payload;
     },
-    updateStats: (state, action: PayloadAction<Partial<GamificationState['stats']>>) => {
-      state.stats = { ...state.stats, ...action.payload };
-    },
-    setGamificationData: (state, action: PayloadAction<GamificationState>) => {
-      return action.payload;
+
+    // Clear error
+    clearError: (state) => {
+      state.error = null;
     },
   },
 });
 
 export const {
-  addPoints,
+  fetchStatsStart,
+  fetchStatsSuccess,
+  fetchStatsFailure,
+  fetchBadgesSuccess,
   unlockBadge,
+  fetchChallengesSuccess,
   updateChallenge,
-  updateStreak,
-  resetStreak,
-  updateStats,
-  setGamificationData,
+  addPoints,
+  fetchLeaderboardSuccess,
+  clearError,
 } = gamificationSlice.actions;
 
 export default gamificationSlice.reducer;

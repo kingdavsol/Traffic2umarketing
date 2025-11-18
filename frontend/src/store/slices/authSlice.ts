@@ -1,33 +1,30 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface User {
+interface User {
   id: number;
   username: string;
   email: string;
   firstName?: string;
   lastName?: string;
-  profilePictureUrl?: string;
+  profilePicture?: string;
   subscriptionTier: 'free' | 'premium' | 'premium_plus';
   points: number;
-  currentLevel: number;
-  totalSales: number;
-  totalRevenue: number;
-  averageRating?: number;
+  level: number;
 }
 
 interface AuthState {
+  isAuthenticated: boolean;
   user: User | null;
   token: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
+  loading: boolean;
   error: string | null;
 }
 
 const initialState: AuthState = {
+  isAuthenticated: false,
   user: null,
-  token: localStorage.getItem('auth_token'),
-  isAuthenticated: !!localStorage.getItem('auth_token'),
-  isLoading: false,
+  token: localStorage.getItem('token'),
+  loading: false,
   error: null,
 };
 
@@ -35,35 +32,58 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    // Login
     loginStart: (state) => {
-      state.isLoading = true;
+      state.loading = true;
       state.error = null;
     },
     loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
-      state.isLoading = false;
+      state.isAuthenticated = true;
       state.user = action.payload.user;
       state.token = action.payload.token;
-      state.isAuthenticated = true;
-      localStorage.setItem('auth_token', action.payload.token);
+      state.loading = false;
+      localStorage.setItem('token', action.payload.token);
     },
     loginFailure: (state, action: PayloadAction<string>) => {
-      state.isLoading = false;
+      state.loading = false;
       state.error = action.payload;
-      state.isAuthenticated = false;
     },
+
+    // Register
+    registerStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    registerSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+      state.isAuthenticated = true;
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.loading = false;
+      localStorage.setItem('token', action.payload.token);
+    },
+    registerFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    // Logout
     logout: (state) => {
+      state.isAuthenticated = false;
       state.user = null;
       state.token = null;
-      state.isAuthenticated = false;
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem('token');
     },
-    setUser: (state, action: PayloadAction<User>) => {
-      state.user = action.payload;
-    },
-    updateUserPoints: (state, action: PayloadAction<number>) => {
+
+    // Update user
+    updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
-        state.user.points += action.payload;
+        state.user = { ...state.user, ...action.payload };
       }
+    },
+
+    // Clear error
+    clearError: (state) => {
+      state.error = null;
     },
   },
 });
@@ -72,9 +92,12 @@ export const {
   loginStart,
   loginSuccess,
   loginFailure,
+  registerStart,
+  registerSuccess,
+  registerFailure,
   logout,
-  setUser,
-  updateUserPoints,
+  updateUser,
+  clearError,
 } = authSlice.actions;
 
 export default authSlice.reducer;
