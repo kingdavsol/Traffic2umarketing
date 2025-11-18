@@ -15,6 +15,7 @@ import { tiresRoutes } from './routes/tires';
 import { modificationsRoutes } from './routes/modifications';
 import { maintenanceRoutes } from './routes/maintenance';
 import { valuationRoutes } from './routes/valuation';
+import { nhtsaRoutes } from './routes/nhtsa';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -36,6 +37,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/nhtsa', nhtsaRoutes);
 app.use('/api/problems', problemsRoutes);
 app.use('/api/parts', partsRoutes);
 app.use('/api/tires', tiresRoutes);
