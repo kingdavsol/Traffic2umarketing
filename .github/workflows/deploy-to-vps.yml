@@ -27,16 +27,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up SSH
-        env:
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$VPS_SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
 
       - name: Extract branch name
         id: branch
@@ -45,14 +37,11 @@ jobs:
       - name: Deploy to VPS
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
           BRANCH: ${{ steps.branch.outputs.name }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
         run: |
-          ssh -i ~/.ssh/id_rsa "$VPS_USER@$VPS_HOST" << 'SCRIPT'
+          sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no "$VPS_USERNAME@$VPS_HOST" << 'SCRIPT'
           set -e
 
           cd /home/traffic2u
@@ -61,31 +50,12 @@ jobs:
           echo "Starting deployment..."
           echo "==================================="
 
-          # Update .env file with secrets
-          cat > .env << EOF
-          NODE_ENV=production
-          NODE_OPTIONS="--max-old-space-size=2048"
-          DATABASE_URL=${{ env.DATABASE_URL }}
-          DATABASE_POOL_SIZE=20
-          DATABASE_SSL=true
-          NEXT_PUBLIC_APP_URL=https://petcovercompare.com
-          NEXT_PUBLIC_API_URL=https://petcovercompare.com/api
-          RESEND_API_KEY=${{ env.RESEND_API_KEY }}
-          RESEND_FROM_EMAIL=noreply@traffic2umarketing.com
-          ENABLE_AFFILIATE_TRACKING=true
-          AFFILIATE_COOKIE_DURATION=30
-          API_RATE_LIMIT_REQUESTS=100
-          API_RATE_LIMIT_WINDOW_MS=900000
-          API_QUOTE_CACHE_TTL=86400
-          JWT_SECRET=${{ env.JWT_SECRET }}
-          ENCRYPTION_KEY=${{ env.ENCRYPTION_KEY }}
-          LOG_LEVEL=info
-          ENABLE_ANALYTICS=true
-          ENABLE_EMAIL_VERIFICATION=true
-          ENABLE_AFFILIATE_TRACKING=true
-          ENABLE_RATE_LIMITING=true
-          ENABLE_CORS=true
-          EOF
+          # Verify .env file exists (should be configured on VPS)
+          if [ ! -f .env ]; then
+            echo "Error: .env file not found on VPS"
+            echo "Please ensure .env file is configured on VPS at /home/traffic2u/.env"
+            exit 1
+          fi
 
           echo "[1/6] Pulling latest code from ${{ env.BRANCH }}..."
           git fetch origin
@@ -118,9 +88,10 @@ jobs:
       - name: Verify deployment
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
         run: |
-          ssh -i ~/.ssh/id_rsa "$VPS_USER@$VPS_HOST" << 'SCRIPT'
+          sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no "$VPS_USERNAME@$VPS_HOST" << 'SCRIPT'
           echo ""
           echo "Service Status:"
           docker-compose ps
