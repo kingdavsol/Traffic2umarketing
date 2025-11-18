@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic2u Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #ecf0f1;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .tab-btn:hover {
+            background: #34495e;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-card .unit {
+            font-size: 12px;
+            color: #95a5a6;
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        table thead {
+            background: #34495e;
+            color: white;
+        }
+
+        table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #2c3e50;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .app-row:cursor {
+            cursor: pointer;
+        }
+
+        .detail-section {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .detail-section.active {
+            display: block;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .detail-header h2 {
+            font-size: 20px;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: #7f8c8d;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 40px;
+        }
+
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .filter-controls {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .filter-controls select,
+        .filter-controls input {
+            padding: 8px 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .filter-controls button {
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filter-controls button:hover {
+            background: #2980b9;
+        }
+
+        .metric-badge {
+            display: inline-block;
+            background: #ecf0f1;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        .metric-badge.positive {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .metric-badge.negative {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            table th, table td {
+                padding: 8px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Traffic2u Monitoring Dashboard</h1>
+        <p id="lastUpdate">Last updated: --</p>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="showTab('apps')">All Apps</button>
+            <button class="tab-btn" onclick="showTab('analytics')">Analytics</button>
+            <button class="tab-btn" onclick="showTab('settings')">Settings</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div id="overviewStats" class="overview-grid">
+                <div class="loading">Loading overview...</div>
+            </div>
+
+            <h2 style="margin: 30px 0 15px 0; color: #2c3e50;">Today's Active Apps</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>App Name</th>
+                        <th>Users</th>
+                        <th>Downloads</th>
+                        <th>Revenue</th>
+                        <th>Ad Impressions</th>
+                        <th>Sessions</th>
+                        <th>Last Update</th>
+                    </tr>
+                </thead>
+                <tbody id="appsTableBody">
+                    <tr><td colspan="7" class="loading">Loading apps...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Apps Tab -->
+        <div id="apps" class="tab-content">
+            <div class="filter-controls">
+                <select id="appsFilterMetric" onchange="loadAllApps()">
+                    <option value="users">Filter by: Users</option>
+                    <option value="downloads">Filter by: Downloads</option>
+                    <option value="revenue">Filter by: Revenue</option>
+                </select>
+                <input type="text" id="appSearchInput" placeholder="Search apps..." onkeyup="filterAppsTable()">
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>App Name</th>
+                        <th>Display Name</th>
+                        <th>Users</th>
+                        <th>Downloads</th>
+                        <th>Revenue</th>
+                        <th>Sessions</th>
+                        <th>Ad Clicks</th>
+                        <th>Last Update</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="allAppsTableBody">
+                    <tr><td colspan="9" class="loading">Loading apps...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="filter-controls">
+                <label>Days to display:</label>
+                <select id="analyticsdays" onchange="loadAnalytics()">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                </select>
+            </div>
+
+            <h2 style="margin: 20px 0 15px 0; color: #2c3e50;">Platform Timeline</h2>
+            <div id="timelineData">
+                <div class="loading">Loading timeline...</div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <h2 style="margin-bottom: 20px;">API Information</h2>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Submit Metrics</h3>
+                <p style="margin-bottom: 10px; color: #7f8c8d;">POST to: <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px;">/api/metrics</code></p>
+                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto; margin-bottom: 20px;"><code>{
+  "appName": "your-app-name",
+  "displayName": "Your App Display Name",
+  "date": "2024-01-15",
+  "metrics": {
+    "users": 1000,
+    "activeUsers": 500,
+    "downloads": 50,
+    "revenue": 100.50,
+    "adImpressions": 5000,
+    "adClicks": 250,
+    "sessions": 2000,
+    "custom": {
+      "custom_metric": "value"
+    }
+  }
+}</code></pre>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Register App</h3>
+                <p style="margin-bottom: 10px; color: #7f8c8d;">POST to: <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px;">/api/apps</code></p>
+                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto; margin-bottom: 20px;"><code>{
+  "appName": "your-app-name",
+  "displayName": "Your App Display Name"
+}</code></pre>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Get App Stats</h3>
+                <p style="margin-bottom: 10px; color: #7f8c8d;">GET: <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px;">/api/apps/:appId/summary</code></p>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Example cURL Command</h3>
+                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>curl -X POST http://your-server/api/metrics \
+  -H "Content-Type: application/json" \
+  -d '{
+    "appName": "bizbuys",
+    "displayName": "BizBuys",
+    "metrics": {
+      "users": 1500,
+      "downloads": 75,
+      "revenue": 250.00
+    }
+  }'</code></pre>
+
+                <h3 style="margin-top: 30px; margin-bottom: 10px;">Environment Variables</h3>
+                <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px;"><code>PORT=3000
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your_secure_password</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Detail Section -->
+    <div id="appDetail" class="detail-section">
+        <div class="detail-header">
+            <h2 id="appDetailName"></h2>
+            <button class="back-btn" onclick="backToApps()">← Back to Apps</button>
+        </div>
+        <div id="appDetailContent"></div>
+    </div>
+
+    <script>
+        const BASE_URL = '/dashboard/api';
+
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load data for specific tabs
+            if (tabName === 'overview') {
+                loadOverview();
+            } else if (tabName === 'apps') {
+                loadAllApps();
+            } else if (tabName === 'analytics') {
+                loadAnalytics();
+            }
+        }
+
+        function formatNumber(num) {
+            if (num === null || num === undefined) return '0';
+            return parseFloat(num).toLocaleString('en-US', {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 0
+            });
+        }
+
+        function formatCurrency(num) {
+            if (num === null || num === undefined) return '$0.00';
+            return parseFloat(num).toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            });
+        }
+
+        async function loadOverview() {
+            try {
+                const response = await fetch(`${BASE_URL}/overview`);
+                const data = await response.json();
+
+                const statsHTML = `
+                    <div class="stat-card">
+                        <h3>Total Apps</h3>
+                        <div class="value">${data.totalApps}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Apps Today</h3>
+                        <div class="value">${data.today.active_apps || 0}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <div class="value">${formatNumber(data.today.total_users)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Downloads</h3>
+                        <div class="value">${formatNumber(data.today.total_downloads)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <div class="value">${formatCurrency(data.today.total_revenue)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Sessions</h3>
+                        <div class="value">${formatNumber(data.today.total_sessions)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg Daily Users (7d)</h3>
+                        <div class="value">${formatNumber(data.sevenDayAvg.avg_users)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg Daily Downloads (7d)</h3>
+                        <div class="value">${formatNumber(data.sevenDayAvg.avg_downloads)}</div>
+                    </div>
+                `;
+
+                document.getElementById('overviewStats').innerHTML = statsHTML;
+                document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+
+                // Load today's apps
+                await loadAppsTable();
+            } catch (error) {
+                console.error('Error loading overview:', error);
+                document.getElementById('overviewStats').innerHTML = '<div class="error">Failed to load overview data</div>';
+            }
+        }
+
+        async function loadAppsTable() {
+            try {
+                const response = await fetch(`${BASE_URL}/apps`);
+                const apps = await response.json();
+
+                if (apps.length === 0) {
+                    document.getElementById('appsTableBody').innerHTML = '<tr><td colspan="7">No apps registered yet</td></tr>';
+                    return;
+                }
+
+                const html = apps.map(app => `
+                    <tr class="app-row" onclick="viewAppDetail(${app.id}, '${app.display_name}')">
+                        <td>${app.display_name}</td>
+                        <td>${formatNumber(app.users)}</td>
+                        <td>${formatNumber(app.downloads)}</td>
+                        <td>${formatCurrency(app.revenue)}</td>
+                        <td>${formatNumber(app.ad_impressions)}</td>
+                        <td>${formatNumber(app.sessions)}</td>
+                        <td>${app.last_update || 'Never'}</td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('appsTableBody').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading apps:', error);
+                document.getElementById('appsTableBody').innerHTML = '<tr><td colspan="7"><div class="error">Failed to load apps</div></td></tr>';
+            }
+        }
+
+        async function loadAllApps() {
+            try {
+                const response = await fetch(`${BASE_URL}/apps`);
+                const apps = await response.json();
+
+                if (apps.length === 0) {
+                    document.getElementById('allAppsTableBody').innerHTML = '<tr><td colspan="9">No apps registered yet</td></tr>';
+                    return;
+                }
+
+                const html = apps.map(app => `
+                    <tr onclick="viewAppDetail(${app.id}, '${app.display_name}')">
+                        <td>${app.name}</td>
+                        <td>${app.display_name}</td>
+                        <td>${formatNumber(app.users)}</td>
+                        <td>${formatNumber(app.downloads)}</td>
+                        <td>${formatCurrency(app.revenue)}</td>
+                        <td>${formatNumber(app.sessions)}</td>
+                        <td>${formatNumber(app.ad_clicks)}</td>
+                        <td>${app.last_update || 'Never'}</td>
+                        <td><button class="back-btn" onclick="viewAppDetail(${app.id}, '${app.display_name}'); event.stopPropagation();">View</button></td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('allAppsTableBody').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading apps:', error);
+                document.getElementById('allAppsTableBody').innerHTML = '<tr><td colspan="9"><div class="error">Failed to load apps</div></td></tr>';
+            }
+        }
+
+        async function loadAnalytics() {
+            try {
+                const days = document.getElementById('analyticsdays')?.value || '30';
+                const response = await fetch(`${BASE_URL}/stats/timeline?days=${days}`);
+                const data = await response.json();
+
+                if (data.length === 0) {
+                    document.getElementById('timelineData').innerHTML = '<p style="padding: 20px;">No data available</p>';
+                    return;
+                }
+
+                const html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Users</th>
+                                <th>Active Users</th>
+                                <th>Downloads</th>
+                                <th>Revenue</th>
+                                <th>Ad Impressions</th>
+                                <th>Active Apps</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(day => `
+                                <tr>
+                                    <td>${day.date}</td>
+                                    <td>${formatNumber(day.total_users)}</td>
+                                    <td>${formatNumber(day.total_active_users)}</td>
+                                    <td>${formatNumber(day.total_downloads)}</td>
+                                    <td>${formatCurrency(day.total_revenue)}</td>
+                                    <td>${formatNumber(day.total_ad_impressions)}</td>
+                                    <td>${day.active_apps}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                document.getElementById('timelineData').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                document.getElementById('timelineData').innerHTML = '<div class="error">Failed to load analytics data</div>';
+            }
+        }
+
+        async function viewAppDetail(appId, appName) {
+            try {
+                const response = await fetch(`${BASE_URL}/apps/${appId}?days=30`);
+                const data = await response.json();
+
+                document.getElementById('appDetailName').textContent = data.app.display_name;
+
+                const statsHTML = `
+                    <div class="overview-grid">
+                        <div class="stat-card">
+                            <h3>Total Users (30d)</h3>
+                            <div class="value">${formatNumber(data.summary.totalUsers)}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total Downloads (30d)</h3>
+                            <div class="value">${formatNumber(data.summary.totalDownloads)}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total Revenue (30d)</h3>
+                            <div class="value">${formatCurrency(data.summary.totalRevenue)}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total Sessions (30d)</h3>
+                            <div class="value">${formatNumber(data.summary.totalSessions)}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Avg Daily Users</h3>
+                            <div class="value">${formatNumber(data.summary.avgDailyUsers)}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Avg Daily Downloads</h3>
+                            <div class="value">${formatNumber(data.summary.avgDailyDownloads)}</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; margin-bottom: 15px;">Daily Stats (Last 30 Days)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Users</th>
+                                <th>Active Users</th>
+                                <th>Downloads</th>
+                                <th>Revenue</th>
+                                <th>Ad Impressions</th>
+                                <th>Sessions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.stats.map(stat => `
+                                <tr>
+                                    <td>${stat.date}</td>
+                                    <td>${formatNumber(stat.users)}</td>
+                                    <td>${formatNumber(stat.active_users)}</td>
+                                    <td>${formatNumber(stat.downloads)}</td>
+                                    <td>${formatCurrency(stat.revenue)}</td>
+                                    <td>${formatNumber(stat.ad_impressions)}</td>
+                                    <td>${formatNumber(stat.sessions)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                document.getElementById('appDetailContent').innerHTML = statsHTML;
+                document.getElementById('appDetail').classList.add('active');
+                window.scrollTo(0, 0);
+            } catch (error) {
+                console.error('Error loading app detail:', error);
+                alert('Failed to load app details');
+            }
+        }
+
+        function backToApps() {
+            document.getElementById('appDetail').classList.remove('active');
+            loadAllApps();
+        }
+
+        function filterAppsTable() {
+            const input = document.getElementById('appSearchInput').value.toLowerCase();
+            const rows = document.getElementById('allAppsTableBody').querySelectorAll('tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(input) ? '' : 'none';
+            });
+        }
+
+        // Load overview on page load
+        document.addEventListener('DOMContentLoaded', loadOverview);
+
+        // Auto-refresh every 5 minutes
+        setInterval(() => {
+            const activeTab = document.querySelector('.tab-content.active').id;
+            if (activeTab === 'overview') {
+                loadOverview();
+            }
+        }, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
