@@ -101,7 +101,7 @@ Submit daily metrics for your app. The app will be auto-registered if it doesn't
 
 **Example cURL**:
 ```bash
-curl -X POST http://your-domain.com/api/metrics \
+curl -X POST https://monitor.sourcevida.com/api/metrics \
   -H "Content-Type: application/json" \
   -d '{
     "appName": "bizbuys",

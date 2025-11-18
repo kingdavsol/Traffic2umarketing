@@ -89,7 +89,7 @@ npm install node-fetch  # if using Node < 18
 
 ```javascript
 // lib/monitoring.js
-const DASHBOARD_URL = process.env.MONITORING_DASHBOARD_URL || 'http://localhost:3000';
+const DASHBOARD_URL = process.env.MONITORING_DASHBOARD_URL || 'https://monitor.sourcevida.com';
 
 export async function reportMetrics(appName, metrics) {
   try {
@@ -200,7 +200,7 @@ function shouldReportMetrics() {
 Add to **.env.local**:
 ```env
 NEXT_PUBLIC_APP_NAME=YourAppName
-MONITORING_DASHBOARD_URL=http://your-vps-ip:3000
+MONITORING_DASHBOARD_URL=https://monitor.sourcevida.com
 CRON_SECRET=your_secret_cron_key
 ```
 
@@ -263,7 +263,7 @@ setInterval(async () => {
 ### Step 4: Test the Integration
 
 ```bash
-curl -X POST http://localhost:3000/api/metrics \
+curl -X POST https://monitor.sourcevida.com/api/metrics \
   -H "Content-Type: application/json" \
   -d '{
     "appName": "your-app-name",
@@ -276,7 +276,7 @@ curl -X POST http://localhost:3000/api/metrics \
   }'
 
 # Then check dashboard
-# http://localhost:3000/dashboard
+# https://monitor.sourcevida.com/dashboard
 ```
 
 ---
@@ -296,7 +296,7 @@ class MonitoringClient:
         self.app_name = app_name
         self.dashboard_url = dashboard_url or os.getenv(
             'MONITORING_DASHBOARD_URL',
-            'http://localhost:3000'
+            'https://monitor.sourcevida.com'
         )
 
     def report(self, metrics):
@@ -341,7 +341,7 @@ Create `/opt/traffic2u-metrics/cron-jobs/app-metrics.sh`:
 ```bash
 #!/bin/bash
 
-DASHBOARD_URL="http://localhost:3000"
+DASHBOARD_URL="https://monitor.sourcevida.com"
 
 # Array of apps to report for
 APPS=(
@@ -397,7 +397,7 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 import json
 
-DASHBOARD_URL = os.getenv('DASHBOARD_URL', 'http://localhost:3000')
+DASHBOARD_URL = os.getenv('DASHBOARD_URL', 'https://monitor.sourcevida.com')
 APPS_CONFIG = [
     {'name': 'snap-save', 'display': 'SnapSave', 'endpoint': 'http://snap-save-api/stats'},
     {'name': 'cash-flow-map', 'display': 'CashFlowMap', 'endpoint': 'http://cash-flow-api/stats'},
@@ -461,7 +461,7 @@ Run via cron:
 
 Once integrated:
 
-1. **Access Dashboard**: `http://your-vps-ip:3000/dashboard`
+1. **Access Dashboard**: `https://monitor.sourcevida.com/dashboard`
    - Username: Your configured admin username
    - Password: Your configured password
 
@@ -540,20 +540,20 @@ await reportMetrics('your-app', metrics);
 
 ```bash
 # Check if dashboard is running
-curl http://localhost:3000/health
+curl https://monitor.sourcevida.com/health
 
 # Check if app is registered
-curl http://localhost:3000/api/apps
+curl https://monitor.sourcevida.com/api/apps
 
 # Test manual metric submission
-curl -X POST http://localhost:3000/api/metrics \
+curl -X POST https://monitor.sourcevida.com/api/metrics \
   -H "Content-Type: application/json" \
   -d '{
     "appName": "test-app",
     "metrics": {"users": 100}
   }'
 
-# Check database
+# Check database (on VPS)
 sqlite3 data/monitoring.db "SELECT * FROM apps; SELECT * FROM daily_stats LIMIT 5;"
 ```
 
