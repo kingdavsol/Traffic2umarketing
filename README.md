@@ -164,13 +164,23 @@ docker-compose up
 
 ## 📚 Documentation
 
-- [Architecture Design](./docs/ARCHITECTURE.md)
-- [API Documentation](./docs/API.md)
-- [Database Schema](./docs/DATABASE.md)
-- [Marketplace Integration Guide](./docs/MARKETPLACES.md)
-- [AI/ML Pipeline](./docs/AI_ML.md)
-- [Gamification System](./docs/GAMIFICATION.md)
-- [Deployment Guide](./docs/DEPLOYMENT.md)
+### Getting Started
+- **[Quick Start](./QUICKSTART.md)** - Get started in 5 minutes ⚡
+- **[Getting Started Guide](./docs/GETTING_STARTED.md)** - Detailed setup instructions
+
+### Architecture & Design
+- **[Architecture Design](./docs/ARCHITECTURE.md)** - System architecture and components
+- **[Database Schema](./docs/DATABASE.md)** - Database design and tables
+- **[Marketplace Integration](./docs/MARKETPLACES.md)** - 20+ marketplace support
+
+### Features
+- **[Gamification System](./docs/GAMIFICATION.md)** - Points, badges, challenges, leaderboards
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - yakit.store, Android, iOS deployment
+- **[Roadmap](./ROADMAP.md)** - Future features and milestones
+
+### Contributing
+- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute
+- **[Makefile Commands](./Makefile)** - Development commands
 
 ## 🔐 Security
 
