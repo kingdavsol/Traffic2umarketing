@@ -1,0 +1,244 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== Authentication & Users =====
+model User {
+  id                    String                 @id @default(cuid())
+  email                 String                 @unique
+  emailVerified         Boolean                @default(false)
+  name                  String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  // Relations
+  quoteRequests         QuoteRequest[]
+  emailSubscriptions    EmailSubscription[]
+  reviews               InsuranceReview[]
+  affiliateClicks       AffiliateClick[]
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model EmailVerificationToken {
+  id                    String                 @id @default(cuid())
+  email                 String                 @unique
+  token                 String                 @unique
+  expiresAt             DateTime
+  verified              Boolean                @default(false)
+  createdAt             DateTime               @default(now())
+
+  @@index([token])
+  @@index([email])
+  @@index([expiresAt])
+}
+
+// ===== Quote System =====
+model QuoteRequest {
+  id                    String                 @id @default(cuid())
+  userId                String?
+  email                 String
+  siteType              String                 // pet, disability, cyber, etc.
+  questionnaire         Json                   // Store the questionnaire responses
+  status                String                 @default("pending") // pending, completed, error
+  errorMessage          String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  // Relations
+  user                  User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  quotes                Quote[]
+  affiliateClicks       AffiliateClick[]
+
+  @@index([userId])
+  @@index([email])
+  @@index([siteType])
+  @@index([createdAt])
+}
+
+model Quote {
+  id                    String                 @id @default(cuid())
+  quoteRequestId        String
+  carrierName           String
+  monthlyPremium        Float
+  annualPremium         Float
+  coverageDetails       Json                   // Store coverage details as JSON
+  deductibles           Json                   // Deductible information
+  features              String[]               // Array of included features
+  affiliateLink         String
+  affiliateProgram      String
+  commissionRate        String                 // e.g., "15%" or "$50"
+  expiresAt             DateTime
+  createdAt             DateTime               @default(now())
+
+  // Relations
+  quoteRequest          QuoteRequest           @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+
+  @@index([quoteRequestId])
+  @@index([carrierName])
+  @@index([createdAt])
+}
+
+// ===== Affiliate Tracking =====
+model AffiliateClick {
+  id                    String                 @id @default(cuid())
+  userId                String?
+  quoteRequestId        String
+  quoteId               String?
+  carrierName           String
+  siteType              String
+  affiliateProgram      String
+  affiliateUrl          String
+  sessionId             String
+  ipHash                String                 // Hash of IP for privacy
+  userAgent             String?
+  referrer              String?
+  timestamp             DateTime               @default(now())
+  conversions           Conversion[]
+
+  // Relations
+  user                  User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  quoteRequest          QuoteRequest           @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quoteRequestId])
+  @@index([carrierName])
+  @@index([siteType])
+  @@index([timestamp])
+}
+
+model Conversion {
+  id                    String                 @id @default(cuid())
+  affiliateClickId      String
+  carrierName           String
+  siteType              String
+  commissionAmount      Float
+  status                String                 @default("pending") // pending, confirmed, rejected
+  confirmedAt           DateTime?
+  rejectedAt            DateTime?
+  rejectionReason       String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  // Relations
+  affiliateClick        AffiliateClick         @relation(fields: [affiliateClickId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateClickId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([carrierName])
+}
+
+// ===== Email Management =====
+model EmailSubscription {
+  id                    String                 @id @default(cuid())
+  userId                String?
+  email                 String
+  siteType              String
+  status                String                 @default("subscribed") // subscribed, unsubscribed, bounced
+  subscribedAt          DateTime               @default(now())
+  unsubscribedAt        DateTime?
+  bouncedAt             DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  // Relations
+  user                  User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([email, siteType])
+  @@index([email])
+  @@index([siteType])
+  @@index([status])
+}
+
+// ===== Content & Reviews =====
+model InsuranceReview {
+  id                    String                 @id @default(cuid())
+  userId                String
+  carrierName           String
+  siteType              String
+  rating                Int                    // 1-5
+  title                 String
+  content               String
+  verified              Boolean                @default(false)
+  helpfulCount          Int                    @default(0)
+  unhelpfulCount        Int                    @default(0)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  // Relations
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([carrierName])
+  @@index([siteType])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+model Article {
+  id                    String                 @id @default(cuid())
+  slug                  String                 @unique
+  title                 String
+  excerpt               String
+  content               String                 @db.Text
+  siteType              String
+  author                String
+  tags                  String[]
+  published             Boolean                @default(false)
+  publishedAt           DateTime?
+  featuredImage         String?
+  seoTitle              String?
+  seoDescription        String?
+  viewCount             Int                    @default(0)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@index([siteType])
+  @@index([slug])
+  @@index([published])
+  @@index([publishedAt])
+  @@index([createdAt])
+}
+
+// ===== Analytics =====
+model PageMetrics {
+  id                    String                 @id @default(cuid())
+  siteType              String
+  pageUrl               String
+  visitCount            Int                    @default(0)
+  uniqueVisitors        Int                    @default(0)
+  avgTimeOnPage         Float                  @default(0)
+  bounceRate            Float                  @default(0)
+  conversionRate        Float                  @default(0)
+  date                  DateTime               @default(now())
+  createdAt             DateTime               @default(now())
+
+  @@unique([siteType, pageUrl, date])
+  @@index([siteType])
+  @@index([date])
+}
+
+model SiteMetrics {
+  id                    String                 @id @default(cuid())
+  siteType              String
+  date                  DateTime               @default(now())
+  totalVisitors         Int                    @default(0)
+  totalQuoteRequests    Int                    @default(0)
+  totalConversions      Int                    @default(0)
+  totalCommissions      Float                  @default(0)
+  avgConversionRate     Float                  @default(0)
+  createdAt             DateTime               @default(now())
+
+  @@unique([siteType, date])
+  @@index([siteType])
+  @@index([date])
+}

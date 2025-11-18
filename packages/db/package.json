@@ -1,0 +1,21 @@
+{
+  "name": "@traffic2u/db",
+  "version": "1.0.0",
+  "description": "Shared database schema and client for Traffic2u sites",
+  "main": "./src/client.ts",
+  "types": "./src/client.ts",
+  "files": ["src", "prisma"],
+  "scripts": {
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.7.0",
+    "typescript": "^5.3.2"
+  }
+}
