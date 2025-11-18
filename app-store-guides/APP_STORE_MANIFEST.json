@@ -1,0 +1,1464 @@
+{
+  "apps": [
+    {
+      "id": 1,
+      "name": "SnapSave",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Personal finance, savings tracking, expense management, budgeting",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.snapsave",
+          "signed_aab": "apps/01-SnapSave/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.snapsave",
+          "signed_ipa": "apps/01-SnapSave/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_snapsave",
+          "signed_apk": "apps/01-SnapSave/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/01-SnapSave/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.snapsave",
+          "signed_apk": "apps/01-SnapSave/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.snapsave",
+          "signed_apk": "apps/01-SnapSave/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official SnapSave app - Download now!",
+        "icon_path": "apps/01-SnapSave/assets/icon.png",
+        "screenshots_path": "apps/01-SnapSave/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/snapsave/privacy",
+        "terms_of_service": "https://www.traffic2u.com/snapsave/terms"
+      }
+    },
+    {
+      "id": 2,
+      "name": "CashFlowMap",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Cash flow tracking, financial planning, income management",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.cashflowmap",
+          "signed_aab": "apps/02-CashFlowMap/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.cashflowmap",
+          "signed_ipa": "apps/02-CashFlowMap/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_cashflowmap",
+          "signed_apk": "apps/02-CashFlowMap/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/02-CashFlowMap/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.cashflowmap",
+          "signed_apk": "apps/02-CashFlowMap/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.cashflowmap",
+          "signed_apk": "apps/02-CashFlowMap/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official CashFlowMap app - Download now!",
+        "icon_path": "apps/02-CashFlowMap/assets/icon.png",
+        "screenshots_path": "apps/02-CashFlowMap/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/cashflowmap/privacy",
+        "terms_of_service": "https://www.traffic2u.com/cashflowmap/terms"
+      }
+    },
+    {
+      "id": 3,
+      "name": "GigStack",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Gig work, freelance earnings, multiple income streams, side hustle",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.gigstack",
+          "signed_aab": "apps/03-GigStack/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.gigstack",
+          "signed_ipa": "apps/03-GigStack/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_gigstack",
+          "signed_apk": "apps/03-GigStack/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/03-GigStack/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.gigstack",
+          "signed_apk": "apps/03-GigStack/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.gigstack",
+          "signed_apk": "apps/03-GigStack/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official GigStack app - Download now!",
+        "icon_path": "apps/03-GigStack/assets/icon.png",
+        "screenshots_path": "apps/03-GigStack/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/gigstack/privacy",
+        "terms_of_service": "https://www.traffic2u.com/gigstack/terms"
+      }
+    },
+    {
+      "id": 4,
+      "name": "VaultPay",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Secure payments, digital wallet, financial security",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.vaultpay",
+          "signed_aab": "apps/04-VaultPay/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.vaultpay",
+          "signed_ipa": "apps/04-VaultPay/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_vaultpay",
+          "signed_apk": "apps/04-VaultPay/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/04-VaultPay/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.vaultpay",
+          "signed_apk": "apps/04-VaultPay/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.vaultpay",
+          "signed_apk": "apps/04-VaultPay/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official VaultPay app - Download now!",
+        "icon_path": "apps/04-VaultPay/assets/icon.png",
+        "screenshots_path": "apps/04-VaultPay/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/vaultpay/privacy",
+        "terms_of_service": "https://www.traffic2u.com/vaultpay/terms"
+      }
+    },
+    {
+      "id": 5,
+      "name": "DebtBreak",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Debt management, loan tracking, financial freedom",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.debtbreak",
+          "signed_aab": "apps/05-DebtBreak/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.debtbreak",
+          "signed_ipa": "apps/05-DebtBreak/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_debtbreak",
+          "signed_apk": "apps/05-DebtBreak/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/05-DebtBreak/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.debtbreak",
+          "signed_apk": "apps/05-DebtBreak/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.debtbreak",
+          "signed_apk": "apps/05-DebtBreak/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official DebtBreak app - Download now!",
+        "icon_path": "apps/05-DebtBreak/assets/icon.png",
+        "screenshots_path": "apps/05-DebtBreak/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/debtbreak/privacy",
+        "terms_of_service": "https://www.traffic2u.com/debtbreak/terms"
+      }
+    },
+    {
+      "id": 6,
+      "name": "PeriFlow",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Women's health, menstrual tracking, wellness",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.periflow",
+          "signed_aab": "apps/06-PeriFlow/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.periflow",
+          "signed_ipa": "apps/06-PeriFlow/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_periflow",
+          "signed_apk": "apps/06-PeriFlow/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/06-PeriFlow/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.periflow",
+          "signed_apk": "apps/06-PeriFlow/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.periflow",
+          "signed_apk": "apps/06-PeriFlow/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official PeriFlow app - Download now!",
+        "icon_path": "apps/06-PeriFlow/assets/icon.png",
+        "screenshots_path": "apps/06-PeriFlow/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/periflow/privacy",
+        "terms_of_service": "https://www.traffic2u.com/periflow/terms"
+      }
+    },
+    {
+      "id": 7,
+      "name": "TeleDocLocal",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Telehealth, local healthcare, virtual consultations",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.teledoclocal",
+          "signed_aab": "apps/07-TeleDocLocal/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.teledoclocal",
+          "signed_ipa": "apps/07-TeleDocLocal/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_teledoclocal",
+          "signed_apk": "apps/07-TeleDocLocal/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/07-TeleDocLocal/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.teledoclocal",
+          "signed_apk": "apps/07-TeleDocLocal/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.teledoclocal",
+          "signed_apk": "apps/07-TeleDocLocal/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official TeleDocLocal app - Download now!",
+        "icon_path": "apps/07-TeleDocLocal/assets/icon.png",
+        "screenshots_path": "apps/07-TeleDocLocal/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/teledoclocal/privacy",
+        "terms_of_service": "https://www.traffic2u.com/teledoclocal/terms"
+      }
+    },
+    {
+      "id": 8,
+      "name": "NutriBalance",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Nutrition tracking, diet planning, health goals",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.nutribalance",
+          "signed_aab": "apps/08-NutriBalance/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.nutribalance",
+          "signed_ipa": "apps/08-NutriBalance/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_nutribalance",
+          "signed_apk": "apps/08-NutriBalance/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/08-NutriBalance/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.nutribalance",
+          "signed_apk": "apps/08-NutriBalance/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.nutribalance",
+          "signed_apk": "apps/08-NutriBalance/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official NutriBalance app - Download now!",
+        "icon_path": "apps/08-NutriBalance/assets/icon.png",
+        "screenshots_path": "apps/08-NutriBalance/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/nutribalance/privacy",
+        "terms_of_service": "https://www.traffic2u.com/nutribalance/terms"
+      }
+    },
+    {
+      "id": 9,
+      "name": "MentalMate",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Mental health, meditation, wellness support",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.mentalmate",
+          "signed_aab": "apps/09-MentalMate/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.mentalmate",
+          "signed_ipa": "apps/09-MentalMate/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_mentalmate",
+          "signed_apk": "apps/09-MentalMate/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/09-MentalMate/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.mentalmate",
+          "signed_apk": "apps/09-MentalMate/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.mentalmate",
+          "signed_apk": "apps/09-MentalMate/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official MentalMate app - Download now!",
+        "icon_path": "apps/09-MentalMate/assets/icon.png",
+        "screenshots_path": "apps/09-MentalMate/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/mentalmate/privacy",
+        "terms_of_service": "https://www.traffic2u.com/mentalmate/terms"
+      }
+    },
+    {
+      "id": 10,
+      "name": "ActiveAge",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Fitness for seniors, healthy aging, exercise",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.activeage",
+          "signed_aab": "apps/10-ActiveAge/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.activeage",
+          "signed_ipa": "apps/10-ActiveAge/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_activeage",
+          "signed_apk": "apps/10-ActiveAge/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/10-ActiveAge/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.activeage",
+          "signed_apk": "apps/10-ActiveAge/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.activeage",
+          "signed_apk": "apps/10-ActiveAge/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official ActiveAge app - Download now!",
+        "icon_path": "apps/10-ActiveAge/assets/icon.png",
+        "screenshots_path": "apps/10-ActiveAge/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/activeage/privacy",
+        "terms_of_service": "https://www.traffic2u.com/activeage/terms"
+      }
+    },
+    {
+      "id": 11,
+      "name": "TaskBrain",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Task management, productivity, to-do lists",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.taskbrain",
+          "signed_aab": "apps/11-TaskBrain/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.taskbrain",
+          "signed_ipa": "apps/11-TaskBrain/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_taskbrain",
+          "signed_apk": "apps/11-TaskBrain/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/11-TaskBrain/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.taskbrain",
+          "signed_apk": "apps/11-TaskBrain/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.taskbrain",
+          "signed_apk": "apps/11-TaskBrain/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official TaskBrain app - Download now!",
+        "icon_path": "apps/11-TaskBrain/assets/icon.png",
+        "screenshots_path": "apps/11-TaskBrain/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/taskbrain/privacy",
+        "terms_of_service": "https://www.traffic2u.com/taskbrain/terms"
+      }
+    },
+    {
+      "id": 12,
+      "name": "MemoShift",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Note taking, memory management, learning",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.memoshift",
+          "signed_aab": "apps/12-MemoShift/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.memoshift",
+          "signed_ipa": "apps/12-MemoShift/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_memoshift",
+          "signed_apk": "apps/12-MemoShift/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/12-MemoShift/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.memoshift",
+          "signed_apk": "apps/12-MemoShift/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.memoshift",
+          "signed_apk": "apps/12-MemoShift/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official MemoShift app - Download now!",
+        "icon_path": "apps/12-MemoShift/assets/icon.png",
+        "screenshots_path": "apps/12-MemoShift/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/memoshift/privacy",
+        "terms_of_service": "https://www.traffic2u.com/memoshift/terms"
+      }
+    },
+    {
+      "id": 13,
+      "name": "CodeSnap",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Code snippets, developer tools, programming",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.codesnap",
+          "signed_aab": "apps/13-CodeSnap/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.codesnap",
+          "signed_ipa": "apps/13-CodeSnap/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_codesnap",
+          "signed_apk": "apps/13-CodeSnap/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/13-CodeSnap/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.codesnap",
+          "signed_apk": "apps/13-CodeSnap/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.codesnap",
+          "signed_apk": "apps/13-CodeSnap/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official CodeSnap app - Download now!",
+        "icon_path": "apps/13-CodeSnap/assets/icon.png",
+        "screenshots_path": "apps/13-CodeSnap/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/codesnap/privacy",
+        "terms_of_service": "https://www.traffic2u.com/codesnap/terms"
+      }
+    },
+    {
+      "id": 14,
+      "name": "DraftMate",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Document editing, writing tools, content creation",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.draftmate",
+          "signed_aab": "apps/14-DraftMate/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.draftmate",
+          "signed_ipa": "apps/14-DraftMate/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_draftmate",
+          "signed_apk": "apps/14-DraftMate/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/14-DraftMate/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.draftmate",
+          "signed_apk": "apps/14-DraftMate/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.draftmate",
+          "signed_apk": "apps/14-DraftMate/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official DraftMate app - Download now!",
+        "icon_path": "apps/14-DraftMate/assets/icon.png",
+        "screenshots_path": "apps/14-DraftMate/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/draftmate/privacy",
+        "terms_of_service": "https://www.traffic2u.com/draftmate/terms"
+      }
+    },
+    {
+      "id": 15,
+      "name": "FocusFlow",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Focus timer, productivity, deep work",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.focusflow",
+          "signed_aab": "apps/15-FocusFlow/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.focusflow",
+          "signed_ipa": "apps/15-FocusFlow/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_focusflow",
+          "signed_apk": "apps/15-FocusFlow/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/15-FocusFlow/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.focusflow",
+          "signed_apk": "apps/15-FocusFlow/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.focusflow",
+          "signed_apk": "apps/15-FocusFlow/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official FocusFlow app - Download now!",
+        "icon_path": "apps/15-FocusFlow/assets/icon.png",
+        "screenshots_path": "apps/15-FocusFlow/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/focusflow/privacy",
+        "terms_of_service": "https://www.traffic2u.com/focusflow/terms"
+      }
+    },
+    {
+      "id": 16,
+      "name": "PuzzleQuest",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Puzzle games, brain training, gaming",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.puzzlequest",
+          "signed_aab": "apps/16-PuzzleQuest/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.puzzlequest",
+          "signed_ipa": "apps/16-PuzzleQuest/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_puzzlequest",
+          "signed_apk": "apps/16-PuzzleQuest/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/16-PuzzleQuest/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.puzzlequest",
+          "signed_apk": "apps/16-PuzzleQuest/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.puzzlequest",
+          "signed_apk": "apps/16-PuzzleQuest/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official PuzzleQuest app - Download now!",
+        "icon_path": "apps/16-PuzzleQuest/assets/icon.png",
+        "screenshots_path": "apps/16-PuzzleQuest/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/puzzlequest/privacy",
+        "terms_of_service": "https://www.traffic2u.com/puzzlequest/terms"
+      }
+    },
+    {
+      "id": 17,
+      "name": "CityBuilderLite",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "City building, strategy games, simulation",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.citybuilderlite",
+          "signed_aab": "apps/17-CityBuilderLite/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.citybuilderlite",
+          "signed_ipa": "apps/17-CityBuilderLite/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_citybuilderlite",
+          "signed_apk": "apps/17-CityBuilderLite/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/17-CityBuilderLite/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.citybuilderlite",
+          "signed_apk": "apps/17-CityBuilderLite/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.citybuilderlite",
+          "signed_apk": "apps/17-CityBuilderLite/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official CityBuilderLite app - Download now!",
+        "icon_path": "apps/17-CityBuilderLite/assets/icon.png",
+        "screenshots_path": "apps/17-CityBuilderLite/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/citybuilderlite/privacy",
+        "terms_of_service": "https://www.traffic2u.com/citybuilderlite/terms"
+      }
+    },
+    {
+      "id": 18,
+      "name": "StoryRunner",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Interactive stories, narrative games, adventure",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.storyrunner",
+          "signed_aab": "apps/18-StoryRunner/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.storyrunner",
+          "signed_ipa": "apps/18-StoryRunner/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_storyrunner",
+          "signed_apk": "apps/18-StoryRunner/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/18-StoryRunner/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.storyrunner",
+          "signed_apk": "apps/18-StoryRunner/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.storyrunner",
+          "signed_apk": "apps/18-StoryRunner/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official StoryRunner app - Download now!",
+        "icon_path": "apps/18-StoryRunner/assets/icon.png",
+        "screenshots_path": "apps/18-StoryRunner/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/storyrunner/privacy",
+        "terms_of_service": "https://www.traffic2u.com/storyrunner/terms"
+      }
+    },
+    {
+      "id": 19,
+      "name": "SkillMatch",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Skill sharing, learning, professional development",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.skillmatch",
+          "signed_aab": "apps/19-SkillMatch/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.skillmatch",
+          "signed_ipa": "apps/19-SkillMatch/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_skillmatch",
+          "signed_apk": "apps/19-SkillMatch/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/19-SkillMatch/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.skillmatch",
+          "signed_apk": "apps/19-SkillMatch/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.skillmatch",
+          "signed_apk": "apps/19-SkillMatch/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official SkillMatch app - Download now!",
+        "icon_path": "apps/19-SkillMatch/assets/icon.png",
+        "screenshots_path": "apps/19-SkillMatch/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/skillmatch/privacy",
+        "terms_of_service": "https://www.traffic2u.com/skillmatch/terms"
+      }
+    },
+    {
+      "id": 20,
+      "name": "ZenGarden",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Meditation, relaxation, mindfulness",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.zengarden",
+          "signed_aab": "apps/20-ZenGarden/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.zengarden",
+          "signed_ipa": "apps/20-ZenGarden/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_zengarden",
+          "signed_apk": "apps/20-ZenGarden/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/20-ZenGarden/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.zengarden",
+          "signed_apk": "apps/20-ZenGarden/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.zengarden",
+          "signed_apk": "apps/20-ZenGarden/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official ZenGarden app - Download now!",
+        "icon_path": "apps/20-ZenGarden/assets/icon.png",
+        "screenshots_path": "apps/20-ZenGarden/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/zengarden/privacy",
+        "terms_of_service": "https://www.traffic2u.com/zengarden/terms"
+      }
+    },
+    {
+      "id": 21,
+      "name": "GuardVault",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Password manager, digital security, data protection",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.guardvault",
+          "signed_aab": "apps/21-GuardVault/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.guardvault",
+          "signed_ipa": "apps/21-GuardVault/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_guardvault",
+          "signed_apk": "apps/21-GuardVault/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/21-GuardVault/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.guardvault",
+          "signed_apk": "apps/21-GuardVault/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.guardvault",
+          "signed_apk": "apps/21-GuardVault/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official GuardVault app - Download now!",
+        "icon_path": "apps/21-GuardVault/assets/icon.png",
+        "screenshots_path": "apps/21-GuardVault/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/guardvault/privacy",
+        "terms_of_service": "https://www.traffic2u.com/guardvault/terms"
+      }
+    },
+    {
+      "id": 22,
+      "name": "NoTrace",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Privacy protection, anonymous browsing, data security",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.notrace",
+          "signed_aab": "apps/22-NoTrace/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.notrace",
+          "signed_ipa": "apps/22-NoTrace/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_notrace",
+          "signed_apk": "apps/22-NoTrace/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/22-NoTrace/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.notrace",
+          "signed_apk": "apps/22-NoTrace/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.notrace",
+          "signed_apk": "apps/22-NoTrace/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official NoTrace app - Download now!",
+        "icon_path": "apps/22-NoTrace/assets/icon.png",
+        "screenshots_path": "apps/22-NoTrace/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/notrace/privacy",
+        "terms_of_service": "https://www.traffic2u.com/notrace/terms"
+      }
+    },
+    {
+      "id": 23,
+      "name": "CipherText",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Encryption, secure messaging, confidential communication",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.ciphertext",
+          "signed_aab": "apps/23-CipherText/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.ciphertext",
+          "signed_ipa": "apps/23-CipherText/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_ciphertext",
+          "signed_apk": "apps/23-CipherText/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/23-CipherText/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.ciphertext",
+          "signed_apk": "apps/23-CipherText/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.ciphertext",
+          "signed_apk": "apps/23-CipherText/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official CipherText app - Download now!",
+        "icon_path": "apps/23-CipherText/assets/icon.png",
+        "screenshots_path": "apps/23-CipherText/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/ciphertext/privacy",
+        "terms_of_service": "https://www.traffic2u.com/ciphertext/terms"
+      }
+    },
+    {
+      "id": 24,
+      "name": "LocalEats",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Local food, restaurant discovery, dining",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.localeats",
+          "signed_aab": "apps/24-LocalEats/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.localeats",
+          "signed_ipa": "apps/24-LocalEats/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_localeats",
+          "signed_apk": "apps/24-LocalEats/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/24-LocalEats/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.localeats",
+          "signed_apk": "apps/24-LocalEats/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.localeats",
+          "signed_apk": "apps/24-LocalEats/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official LocalEats app - Download now!",
+        "icon_path": "apps/24-LocalEats/assets/icon.png",
+        "screenshots_path": "apps/24-LocalEats/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/localeats/privacy",
+        "terms_of_service": "https://www.traffic2u.com/localeats/terms"
+      }
+    },
+    {
+      "id": 25,
+      "name": "ArtisanHub",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Artisan marketplace, handmade goods, crafts",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.artisanhub",
+          "signed_aab": "apps/25-ArtisanHub/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.artisanhub",
+          "signed_ipa": "apps/25-ArtisanHub/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_artisanhub",
+          "signed_apk": "apps/25-ArtisanHub/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/25-ArtisanHub/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.artisanhub",
+          "signed_apk": "apps/25-ArtisanHub/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.artisanhub",
+          "signed_apk": "apps/25-ArtisanHub/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official ArtisanHub app - Download now!",
+        "icon_path": "apps/25-ArtisanHub/assets/icon.png",
+        "screenshots_path": "apps/25-ArtisanHub/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/artisanhub/privacy",
+        "terms_of_service": "https://www.traffic2u.com/artisanhub/terms"
+      }
+    },
+    {
+      "id": 26,
+      "name": "QualityCheck",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Quality assurance, testing, inspection",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.qualitycheck",
+          "signed_aab": "apps/26-QualityCheck/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.qualitycheck",
+          "signed_ipa": "apps/26-QualityCheck/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_qualitycheck",
+          "signed_apk": "apps/26-QualityCheck/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/26-QualityCheck/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.qualitycheck",
+          "signed_apk": "apps/26-QualityCheck/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.qualitycheck",
+          "signed_apk": "apps/26-QualityCheck/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official QualityCheck app - Download now!",
+        "icon_path": "apps/26-QualityCheck/assets/icon.png",
+        "screenshots_path": "apps/26-QualityCheck/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/qualitycheck/privacy",
+        "terms_of_service": "https://www.traffic2u.com/qualitycheck/terms"
+      }
+    },
+    {
+      "id": 27,
+      "name": "SkillBarter",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Service exchange, skill trading, bartering",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.skillbarter",
+          "signed_aab": "apps/27-SkillBarter/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.skillbarter",
+          "signed_ipa": "apps/27-SkillBarter/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_skillbarter",
+          "signed_apk": "apps/27-SkillBarter/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/27-SkillBarter/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.skillbarter",
+          "signed_apk": "apps/27-SkillBarter/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.skillbarter",
+          "signed_apk": "apps/27-SkillBarter/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official SkillBarter app - Download now!",
+        "icon_path": "apps/27-SkillBarter/assets/icon.png",
+        "screenshots_path": "apps/27-SkillBarter/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/skillbarter/privacy",
+        "terms_of_service": "https://www.traffic2u.com/skillbarter/terms"
+      }
+    },
+    {
+      "id": 28,
+      "name": "ClimateTrack",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Environmental tracking, sustainability, carbon footprint",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.climatetrack",
+          "signed_aab": "apps/28-ClimateTrack/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.climatetrack",
+          "signed_ipa": "apps/28-ClimateTrack/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_climatetrack",
+          "signed_apk": "apps/28-ClimateTrack/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/28-ClimateTrack/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.climatetrack",
+          "signed_apk": "apps/28-ClimateTrack/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.climatetrack",
+          "signed_apk": "apps/28-ClimateTrack/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official ClimateTrack app - Download now!",
+        "icon_path": "apps/28-ClimateTrack/assets/icon.png",
+        "screenshots_path": "apps/28-ClimateTrack/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/climatetrack/privacy",
+        "terms_of_service": "https://www.traffic2u.com/climatetrack/terms"
+      }
+    },
+    {
+      "id": 29,
+      "name": "CrewNetwork",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Team collaboration, workforce management, scheduling",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.crewnetwork",
+          "signed_aab": "apps/29-CrewNetwork/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.crewnetwork",
+          "signed_ipa": "apps/29-CrewNetwork/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_crewnetwork",
+          "signed_apk": "apps/29-CrewNetwork/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/29-CrewNetwork/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.crewnetwork",
+          "signed_apk": "apps/29-CrewNetwork/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.crewnetwork",
+          "signed_apk": "apps/29-CrewNetwork/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official CrewNetwork app - Download now!",
+        "icon_path": "apps/29-CrewNetwork/assets/icon.png",
+        "screenshots_path": "apps/29-CrewNetwork/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/crewnetwork/privacy",
+        "terms_of_service": "https://www.traffic2u.com/crewnetwork/terms"
+      }
+    },
+    {
+      "id": 30,
+      "name": "AuraRead",
+      "status": "ready_for_submission",
+      "version": "1.0.0",
+      "keywords": "Personality insights, wellness, self-discovery",
+      "stores": {
+        "google_play": {
+          "status": "pending",
+          "package_name": "com.traffic2u.auraread",
+          "signed_aab": "apps/30-AuraRead/builds/app-release.aab",
+          "rating": "Not Rated"
+        },
+        "apple_app_store": {
+          "status": "pending",
+          "bundle_id": "com.traffic2u.auraread",
+          "signed_ipa": "apps/30-AuraRead/builds/app-release.ipa",
+          "rating": "Not Rated"
+        },
+        "aptoide": {
+          "status": "pending",
+          "app_id": "traffic2u_auraread",
+          "signed_apk": "apps/30-AuraRead/builds/app-release.apk"
+        },
+        "taptap": {
+          "status": "pending",
+          "region": "Asia",
+          "signed_apk": "apps/30-AuraRead/builds/app-release.apk"
+        },
+        "amazon": {
+          "status": "pending",
+          "app_id": "com.traffic2u.auraread",
+          "signed_apk": "apps/30-AuraRead/builds/app-release.apk"
+        },
+        "samsung_galaxy": {
+          "status": "pending",
+          "app_id": "com.traffic2u.auraread",
+          "signed_apk": "apps/30-AuraRead/builds/app-release.apk"
+        }
+      },
+      "metadata": {
+        "description": "Official AuraRead app - Download now!",
+        "icon_path": "apps/30-AuraRead/assets/icon.png",
+        "screenshots_path": "apps/30-AuraRead/assets/screenshots/",
+        "privacy_policy": "https://www.traffic2u.com/auraread/privacy",
+        "terms_of_service": "https://www.traffic2u.com/auraread/terms"
+      }
+    }
+  ],
+  "totalApps": 30,
+  "releaseVersion": "1.0.0",
+  "targetPlatforms": [
+    "Android",
+    "iOS"
+  ],
+  "targetStores": [
+    "Google Play Store",
+    "Apple App Store",
+    "Aptoide",
+    "TapTap",
+    "Amazon App Store",
+    "Samsung Galaxy Store"
+  ],
+  "releaseTimeline": {
+    "phase1": "Google Play & Apple App Store (Week 1)",
+    "phase2": "Aptoide & TapTap (Week 1-2)",
+    "phase3": "Amazon & Samsung (Week 2-3)",
+    "phase4": "Regional optimizations (Week 3-4)"
+  }
+}

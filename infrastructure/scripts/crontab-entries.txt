@@ -1,0 +1,5 @@
+# Backup daily at 2 AM
+0 2 * * * /home/traffic2u/Traffic2uMarketing/infrastructure/scripts/backup.sh >> /var/log/traffic2umarketing/backup.log 2>&1
+
+# Monitor every 5 minutes
+*/5 * * * * /usr/local/bin/monitor-traffic2u >> /var/log/traffic2umarketing/monitor.log 2>&1

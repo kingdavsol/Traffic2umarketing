@@ -1,0 +1,974 @@
+version: '3.9'
+
+services:
+  # MongoDB databases for each app
+  mongo-master:
+    image: mongo:7.0
+    container_name: mongo-master
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-change-me}
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    networks:
+      - apps-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-change-me}
+    volumes:
+      - redis-data:/data
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:latest
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/nginx/sites-enabled:/etc/nginx/sites-enabled:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - api-gateway
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # API Gateway
+  api-gateway:
+    image: node:18-alpine
+    container_name: api-gateway
+    restart: always
+    working_dir: /app
+    command: npm start
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    volumes:
+      - ./api-gateway:/app
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+
+  01_snapsave:
+    build:
+      context: ./apps/01-SnapSave/backend
+      dockerfile: Dockerfile
+    container_name: 01_snapsave
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5001
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/01_snapsave?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_1:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5001"
+
+
+  02_cashflowmap:
+    build:
+      context: ./apps/02-CashFlowMap/backend
+      dockerfile: Dockerfile
+    container_name: 02_cashflowmap
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5002
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/02_cashflowmap?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_2:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5002"
+
+
+  03_gigstack:
+    build:
+      context: ./apps/03-GigStack/backend
+      dockerfile: Dockerfile
+    container_name: 03_gigstack
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5003
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/03_gigstack?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_3:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5003"
+
+
+  04_vaultpay:
+    build:
+      context: ./apps/04-VaultPay/backend
+      dockerfile: Dockerfile
+    container_name: 04_vaultpay
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5004
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/04_vaultpay?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_4:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5004"
+
+
+  05_debtbreak:
+    build:
+      context: ./apps/05-DebtBreak/backend
+      dockerfile: Dockerfile
+    container_name: 05_debtbreak
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5005
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/05_debtbreak?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_5:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5005"
+
+
+  06_periflow:
+    build:
+      context: ./apps/06-PeriFlow/backend
+      dockerfile: Dockerfile
+    container_name: 06_periflow
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5006
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/06_periflow?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_6:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5006/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5006"
+
+
+  07_teledoclocal:
+    build:
+      context: ./apps/07-TeleDocLocal/backend
+      dockerfile: Dockerfile
+    container_name: 07_teledoclocal
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5007
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/07_teledoclocal?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_7:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5007/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5007"
+
+
+  08_nutribalance:
+    build:
+      context: ./apps/08-NutriBalance/backend
+      dockerfile: Dockerfile
+    container_name: 08_nutribalance
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5008
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/08_nutribalance?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_8:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5008/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5008"
+
+
+  09_mentalmate:
+    build:
+      context: ./apps/09-MentalMate/backend
+      dockerfile: Dockerfile
+    container_name: 09_mentalmate
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5009
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/09_mentalmate?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_9:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5009/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5009"
+
+
+  10_activeage:
+    build:
+      context: ./apps/10-ActiveAge/backend
+      dockerfile: Dockerfile
+    container_name: 10_activeage
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5010
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/10_activeage?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_10:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5010/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5010"
+
+
+  11_taskbrain:
+    build:
+      context: ./apps/11-TaskBrain/backend
+      dockerfile: Dockerfile
+    container_name: 11_taskbrain
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5011
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/11_taskbrain?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_11:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5011/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5011"
+
+
+  12_memoshift:
+    build:
+      context: ./apps/12-MemoShift/backend
+      dockerfile: Dockerfile
+    container_name: 12_memoshift
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5012
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/12_memoshift?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_12:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5012/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5012"
+
+
+  13_codesnap:
+    build:
+      context: ./apps/13-CodeSnap/backend
+      dockerfile: Dockerfile
+    container_name: 13_codesnap
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5013
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/13_codesnap?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_13:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5013/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5013"
+
+
+  14_draftmate:
+    build:
+      context: ./apps/14-DraftMate/backend
+      dockerfile: Dockerfile
+    container_name: 14_draftmate
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5014
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/14_draftmate?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_14:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5014/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5014"
+
+
+  15_focusflow:
+    build:
+      context: ./apps/15-FocusFlow/backend
+      dockerfile: Dockerfile
+    container_name: 15_focusflow
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5015
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/15_focusflow?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_15:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5015/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5015"
+
+
+  16_puzzlequest:
+    build:
+      context: ./apps/16-PuzzleQuest/backend
+      dockerfile: Dockerfile
+    container_name: 16_puzzlequest
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5016
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/16_puzzlequest?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_16:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5016/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5016"
+
+
+  17_citybuilderlite:
+    build:
+      context: ./apps/17-CityBuilderLite/backend
+      dockerfile: Dockerfile
+    container_name: 17_citybuilderlite
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5017
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/17_citybuilderlite?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_17:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5017/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5017"
+
+
+  18_storyrunner:
+    build:
+      context: ./apps/18-StoryRunner/backend
+      dockerfile: Dockerfile
+    container_name: 18_storyrunner
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5018
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/18_storyrunner?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_18:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5018/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5018"
+
+
+  19_skillmatch:
+    build:
+      context: ./apps/19-SkillMatch/backend
+      dockerfile: Dockerfile
+    container_name: 19_skillmatch
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5019
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/19_skillmatch?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_19:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5019/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5019"
+
+
+  20_zengarden:
+    build:
+      context: ./apps/20-ZenGarden/backend
+      dockerfile: Dockerfile
+    container_name: 20_zengarden
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5020
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/20_zengarden?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_20:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5020/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5020"
+
+
+  21_guardvault:
+    build:
+      context: ./apps/21-GuardVault/backend
+      dockerfile: Dockerfile
+    container_name: 21_guardvault
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5021
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/21_guardvault?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_21:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5021/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5021"
+
+
+  22_notrace:
+    build:
+      context: ./apps/22-NoTrace/backend
+      dockerfile: Dockerfile
+    container_name: 22_notrace
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5022
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/22_notrace?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_22:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5022/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5022"
+
+
+  23_ciphertext:
+    build:
+      context: ./apps/23-CipherText/backend
+      dockerfile: Dockerfile
+    container_name: 23_ciphertext
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5023
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/23_ciphertext?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_23:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5023/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5023"
+
+
+  24_localeats:
+    build:
+      context: ./apps/24-LocalEats/backend
+      dockerfile: Dockerfile
+    container_name: 24_localeats
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5024
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/24_localeats?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_24:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5024/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5024"
+
+
+  25_artisanhub:
+    build:
+      context: ./apps/25-ArtisanHub/backend
+      dockerfile: Dockerfile
+    container_name: 25_artisanhub
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5025
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/25_artisanhub?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_25:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5025/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5025"
+
+
+  26_qualitycheck:
+    build:
+      context: ./apps/26-QualityCheck/backend
+      dockerfile: Dockerfile
+    container_name: 26_qualitycheck
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5026
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/26_qualitycheck?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_26:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5026/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5026"
+
+
+  27_skillbarter:
+    build:
+      context: ./apps/27-SkillBarter/backend
+      dockerfile: Dockerfile
+    container_name: 27_skillbarter
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5027
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/27_skillbarter?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_27:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5027/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5027"
+
+
+  28_climatetrack:
+    build:
+      context: ./apps/28-ClimateTrack/backend
+      dockerfile: Dockerfile
+    container_name: 28_climatetrack
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5028
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/28_climatetrack?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_28:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5028/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5028"
+
+
+  29_crewnetwork:
+    build:
+      context: ./apps/29-CrewNetwork/backend
+      dockerfile: Dockerfile
+    container_name: 29_crewnetwork
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5029
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/29_crewnetwork?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_29:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5029/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5029"
+
+
+  30_auraread:
+    build:
+      context: ./apps/30-AuraRead/backend
+      dockerfile: Dockerfile
+    container_name: 30_auraread
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5030
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-change-me}@mongo-master:27017/30_auraread?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me}@redis:6379
+      JWT_SECRET: ${JWT_SECRET_30:-change-me}
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      mongo-master:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5030/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    expose:
+      - "5030"
+
+
+volumes:
+  mongo-data:
+    driver: local
+  mongo-config:
+    driver: local
+  redis-data:
+    driver: local
+  nginx-logs:
+    driver: local
+
+networks:
+  apps-network:
+    driver: bridge

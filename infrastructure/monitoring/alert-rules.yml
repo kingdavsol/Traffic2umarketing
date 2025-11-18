@@ -1,0 +1,26 @@
+groups:
+  - name: traffic2umarketing
+    rules:
+      - alert: ContainerDown
+        expr: up{job=~".*"} == 0
+        for: 2m
+        annotations:
+          summary: "Container {{ $labels.job }} is down"
+
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes / 1e9 > 1
+        for: 5m
+        annotations:
+          summary: "High memory usage: {{ $value }}GB"
+
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 5m
+        annotations:
+          summary: "High CPU usage: {{ $value }}"
+
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / 1e9 < 10
+        for: 5m
+        annotations:
+          summary: "Disk space running low: {{ $value }}GB remaining"
