@@ -1,0 +1,278 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  vehicles  Vehicle[]
+  maintenanceRecords MaintenanceRecord[]
+  savedArticles SavedArticle[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Vehicle Model
+model Vehicle {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Vehicle Information
+  make          String
+  model         String
+  trim          String?
+  year          Int
+  mileage       Int
+  vin           String?
+  transmission  String?
+  fuelType      String?
+  engine        String?
+  driveType     String?
+
+  // Relations
+  maintenanceRecords MaintenanceRecord[]
+  notes         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@unique([userId, vin], name: "unique_vehicle_per_user")
+}
+
+// Common Problems Model
+model CommonProblem {
+  id                String   @id @default(cuid())
+  vehicleMake       String?
+  vehicleModel      String?
+  vehicleYear       Int?
+
+  title             String
+  description       String
+  symptoms          String[]
+  preventionTips    String[]
+  category          String
+  severity          String   // low, medium, high, critical
+
+  mileageMin        Int
+  mileageMax        Int?
+  frequency         Float?   // percentage of vehicles affected
+
+  estimatedCostDiy  Int      // in cents
+  estimatedCostPro  Int      // in cents
+
+  parts             Part[]
+  maintenanceGuides MaintenanceGuide[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([vehicleMake, vehicleModel])
+  @@index([category])
+}
+
+// Parts Model
+model Part {
+  id                    String   @id @default(cuid())
+  problemId             String
+  problem               CommonProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  name                  String
+  description           String?
+  oemPartNumber         String?
+  aftermarketPartNumbers String[]
+
+  estimatedCost         Int      // in cents
+  difficulty            String   // easy, medium, hard
+  tools                 String[]
+
+  priceListings         PriceListing[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([problemId])
+}
+
+// Price Listings Model
+model PriceListing {
+  id          String   @id @default(cuid())
+  partId      String
+  part        Part     @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  retailer    String   // amazon, ebay, rockauto, partsgeek
+  name        String
+  price       Int      // in cents
+  shippingCost Int     // in cents
+  totalPrice  Int      // in cents
+  url         String
+  inStock     Boolean  @default(true)
+  rating      Float?
+  reviewCount Int?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([partId])
+  @@index([retailer])
+}
+
+// Tires Model
+model Tire {
+  id          String   @id @default(cuid())
+  vehicleYear Int?
+  vehicleMake String?
+  vehicleModel String?
+
+  brand       String
+  model       String
+  size        String
+  season      String   // all-season, summer, winter, performance
+
+  treadWear   Int
+  traction    String
+  temperature String
+
+  price       Int      // in cents
+  bestValue   Boolean  @default(false)
+
+  retailer    String
+  url         String
+  rating      Float?
+  warrantyYears Int?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([vehicleYear, vehicleMake, vehicleModel])
+  @@index([season])
+}
+
+// Modifications Model
+model Modification {
+  id            String   @id @default(cuid())
+  vehicleMake   String
+  vehicleModel  String
+  vehicleYear   Int?
+
+  category      String   // performance, appearance, comfort, safety, efficiency
+  title         String
+  description   String
+  benefits      String[]
+
+  estimatedCost Int      // in cents
+  difficulty    String   // easy, medium, hard
+  popularity    Int      // 1-10 scale
+
+  ratingAverage Float?
+  reviewCount   Int?
+
+  url           String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vehicleMake, vehicleModel])
+  @@index([category])
+}
+
+// Maintenance Records Model
+model MaintenanceRecord {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date        DateTime
+  mileage     Int
+
+  category    String   // routine, repair, modification, inspection
+  title       String
+  description String?
+
+  cost        Int      // in cents
+  partsUsed   String[]
+  notes       String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([vehicleId])
+  @@index([userId])
+  @@index([date])
+}
+
+// Maintenance Guides Model
+model MaintenanceGuide {
+  id              String   @id @default(cuid())
+  problemId       String
+  problem         CommonProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String
+  steps           String[]  // JSON array of steps
+  estimatedTime   Int?      // in minutes
+  difficulty      String    // easy, medium, hard
+
+  tools           String[]
+  requiredParts   String[]
+
+  videoUrl        String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([problemId])
+}
+
+// Saved Articles Model
+model SavedArticle {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String
+  url       String
+  category  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Vehicle Valuation Model
+model VehicleValuation {
+  id            String   @id @default(cuid())
+  vehicleYear   Int
+  vehicleMake   String
+  vehicleModel  String
+  vehicleTrim   String?
+
+  mileage       Int
+  condition     String   // poor, fair, good, excellent
+
+  estimatedValue Int     // in cents
+  priceRangeLow  Int?    // in cents
+  priceRangeHigh Int?    // in cents
+
+  source        String   // kbb, edmunds, nada
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([vehicleYear, vehicleMake, vehicleModel, vehicleTrim, mileage])
+  @@index([vehicleYear, vehicleMake, vehicleModel])
+}

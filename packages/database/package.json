@@ -1,0 +1,23 @@
+{
+  "name": "@car-hub/database",
+  "version": "1.0.0",
+  "description": "Database schema and migrations for Car Maintenance Hub",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:generate": "prisma generate",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "prisma": "^5.6.0",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3"
+  }
+}
