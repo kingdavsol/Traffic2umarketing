@@ -1,0 +1,166 @@
+name: Deploy to VPS
+
+# Trigger on pushes to any branch
+on:
+  push:
+    branches:
+      - '**'
+
+# Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    # Only deploy on main and claude/* branches
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/claude/')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$VPS_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Extract branch name
+        id: branch
+        run: echo "name=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+        run: |
+          ssh -i ~/.ssh/id_rsa "$VPS_USER@$VPS_HOST" << 'SCRIPT'
+          set -e
+
+          cd /home/traffic2u
+
+          echo "==================================="
+          echo "Starting deployment..."
+          echo "==================================="
+
+          # Update .env file with secrets
+          cat > .env << EOF
+          NODE_ENV=production
+          NODE_OPTIONS="--max-old-space-size=2048"
+          DATABASE_URL=${{ env.DATABASE_URL }}
+          DATABASE_POOL_SIZE=20
+          DATABASE_SSL=true
+          NEXT_PUBLIC_APP_URL=https://petcovercompare.com
+          NEXT_PUBLIC_API_URL=https://petcovercompare.com/api
+          RESEND_API_KEY=${{ env.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL=noreply@traffic2umarketing.com
+          ENABLE_AFFILIATE_TRACKING=true
+          AFFILIATE_COOKIE_DURATION=30
+          API_RATE_LIMIT_REQUESTS=100
+          API_RATE_LIMIT_WINDOW_MS=900000
+          API_QUOTE_CACHE_TTL=86400
+          JWT_SECRET=${{ env.JWT_SECRET }}
+          ENCRYPTION_KEY=${{ env.ENCRYPTION_KEY }}
+          LOG_LEVEL=info
+          ENABLE_ANALYTICS=true
+          ENABLE_EMAIL_VERIFICATION=true
+          ENABLE_AFFILIATE_TRACKING=true
+          ENABLE_RATE_LIMITING=true
+          ENABLE_CORS=true
+          EOF
+
+          echo "[1/6] Pulling latest code from ${{ env.BRANCH }}..."
+          git fetch origin
+          git checkout ${{ env.BRANCH }}
+          git pull origin ${{ env.BRANCH }}
+
+          echo "[2/6] Installing dependencies..."
+          npm ci
+
+          echo "[3/6] Building Docker images..."
+          docker-compose build --no-cache 2>&1 | tail -20
+
+          echo "[4/6] Deploying containers..."
+          docker-compose down --remove-orphans || true
+          docker-compose up -d
+
+          echo "[5/6] Waiting for services to be healthy..."
+          sleep 10
+
+          echo "[6/6] Running database migrations..."
+          npm run db:push || true
+
+          echo ""
+          echo "==================================="
+          echo "✅ Deployment successful!"
+          echo "==================================="
+          docker-compose ps
+          SCRIPT
+
+      - name: Verify deployment
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -i ~/.ssh/id_rsa "$VPS_USER@$VPS_HOST" << 'SCRIPT'
+          echo ""
+          echo "Service Status:"
+          docker-compose ps
+
+          echo ""
+          echo "Recent logs:"
+          docker-compose logs --tail=20 | head -50
+          SCRIPT
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Deployment to VPS successful!"
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Time: $(date)"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Deployment to VPS failed!"
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+          exit 1
+
+  notify-slack:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Deployment ${{ job.status }}
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
