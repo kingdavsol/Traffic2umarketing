@@ -14,6 +14,7 @@ import MyListings from './pages/MyListings';
 import Sales from './pages/Sales';
 import Gamification from './pages/Gamification';
 import Settings from './pages/Settings';
+import BulkMarketplaceSignup from './pages/BulkMarketplaceSignup';
 import PrivateRoute from './components/PrivateRoute';
 
 // Redux
@@ -116,6 +117,7 @@ const App: React.FC = () => {
           <Route path="/sales" element={<PrivateRoute><Sales /></PrivateRoute>} />
           <Route path="/gamification" element={<PrivateRoute><Gamification /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+          <Route path="/connect-marketplaces" element={<PrivateRoute><BulkMarketplaceSignup /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

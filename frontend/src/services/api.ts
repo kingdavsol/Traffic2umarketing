@@ -105,6 +105,31 @@ class APIService {
     return this.api.get(`/marketplaces/${marketplace}/accounts`);
   }
 
+  // Bulk Marketplace Signup
+  getAvailableMarketplaces() {
+    return this.api.get('/marketplaces/available');
+  }
+
+  bulkSignupToMarketplaces(email: string, password: string, selectedMarketplaces: string[]) {
+    return this.api.post('/marketplaces/bulk-signup', {
+      email,
+      password,
+      selectedMarketplaces,
+    });
+  }
+
+  getConnectedMarketplaces() {
+    return this.api.get('/marketplaces/connected');
+  }
+
+  disconnectMarketplace(marketplace: string) {
+    return this.api.post(`/marketplaces/${marketplace}/disconnect`);
+  }
+
+  checkMarketplaceStatus(marketplace: string) {
+    return this.api.get(`/marketplaces/${marketplace}/status`);
+  }
+
   // Pricing
   estimatePrice(category: string, title: string, condition: string) {
     return this.api.get('/pricing/estimate/' + category, {

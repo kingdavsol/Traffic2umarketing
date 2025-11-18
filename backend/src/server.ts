@@ -19,6 +19,7 @@ import authRoutes from './routes/auth.routes';
 import listingRoutes from './routes/listing.routes';
 import photoRoutes from './routes/photo.routes';
 import marketplaceRoutes from './routes/marketplace.routes';
+import bulkMarketplaceSignupRoutes from './routes/bulkMarketplaceSignup.routes';
 import pricingRoutes from './routes/pricing.routes';
 import gamificationRoutes from './routes/gamification.routes';
 import salesRoutes from './routes/sales.routes';
@@ -82,7 +83,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/listings', listingRoutes);
 app.use('/api/v1/photos', photoRoutes);
-app.use('/api/v1/marketplaces', marketplaceRoutes);
+app.use('/api/v1/marketplaces', bulkMarketplaceSignupRoutes);
 app.use('/api/v1/pricing', pricingRoutes);
 app.use('/api/v1/gamification', gamificationRoutes);
 app.use('/api/v1/sales', salesRoutes);

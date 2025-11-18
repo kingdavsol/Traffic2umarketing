@@ -9,6 +9,7 @@ import {
   ListItemText,
   Divider,
   Box,
+  Button,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -17,6 +18,7 @@ import {
   LocalShipping as ShippingIcon,
   EmojiEvents as TrophyIcon,
   Settings as SettingsIcon,
+  ConnectWithoutContact as ConnectIcon,
 } from '@mui/icons-material';
 
 interface SidebarProps {
@@ -32,6 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Create Listing', icon: <AddIcon />, path: '/create-listing' },
     { text: 'My Listings', icon: <ListIcon />, path: '/listings' },
+    { text: 'Connect Marketplaces', icon: <ConnectIcon />, path: '/connect-marketplaces' },
     { text: 'Sales', icon: <ShippingIcon />, path: '/sales' },
     { text: 'Achievements', icon: <TrophyIcon />, path: '/gamification' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
