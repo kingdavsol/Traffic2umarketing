@@ -1,6 +1,6 @@
 # QuickSell Deployment Guide
 
-This guide covers deployment of QuickSell to production environments including yakit.store, Google Play Store (Android), and Apple App Store (iOS).
+This guide covers deployment of QuickSell to production environments including quicksell.monster, Google Play Store (Android), and Apple App Store (iOS).
 
 ## Prerequisites
 
@@ -10,9 +10,11 @@ This guide covers deployment of QuickSell to production environments including y
 - GitHub account (for CI/CD)
 - Git
 
-### For yakit.store
-- yakit.store account with deployment access
-- SSL certificate
+### For quicksell.monster (Web/Backend)
+- Domain quicksell.monster configured
+- Hosting provider (AWS, GCP, DigitalOcean, etc.)
+- SSL certificate (auto-renewal with Let's Encrypt)
+- Docker Container Registry access
 
 ### For Android (Google Play Store)
 - Google Play Developer account ($25 registration)
@@ -25,7 +27,7 @@ This guide covers deployment of QuickSell to production environments including y
 - Apple ID and password
 - Team ID
 
-## 1. Backend Deployment (yakit.store)
+## 1. Backend Deployment (quicksell.monster)
 
 ### Step 1: Prepare Backend for Production
 
@@ -33,6 +35,8 @@ This guide covers deployment of QuickSell to production environments including y
    ```bash
    cp .env.example .env.production
    # Edit .env.production with production values
+   # Set: FRONTEND_URL=https://quicksell.monster
+   #      API_BASE_URL=https://api.quicksell.monster
    ```
 
 2. **Build Docker image**
@@ -46,26 +50,30 @@ This guide covers deployment of QuickSell to production environments including y
    docker run -e NODE_ENV=production -p 5000:5000 quicksell-backend:1.0.0
    ```
 
-### Step 2: Deploy to yakit.store
+### Step 2: Deploy to quicksell.monster
 
 1. **Push to Docker registry**
    ```bash
    # Login to your registry (DockerHub, GitHub Container Registry, etc.)
-   docker login
-   docker tag quicksell-backend:1.0.0 your-registry/quicksell-backend:1.0.0
-   docker push your-registry/quicksell-backend:1.0.0
+   docker login registry.example.com
+   docker tag quicksell-backend:1.0.0 registry.example.com/quicksell-backend:1.0.0
+   docker push registry.example.com/quicksell-backend:1.0.0
    ```
 
-2. **Deploy to yakit.store**
+2. **Deploy to quicksell.monster**
    ```bash
-   # Using yakit.store CLI (if available)
-   yakit deploy quicksell-backend:1.0.0 --env production
+   # Option A: Using Docker Compose on VPS
+   docker-compose -f docker-compose.prod.yml up -d
 
-   # Or manually upload Docker image and configure
+   # Option B: Using Kubernetes
+   kubectl apply -f k8s/deployment.yaml
+
+   # Option C: Using your hosting provider's deployment tool
+   # (AWS ECS, Google Cloud Run, DigitalOcean App Platform, etc.)
    ```
 
 3. **Configure database**
-   - Create PostgreSQL database on yakit.store
+   - Create PostgreSQL database on your hosting provider
    - Run migrations:
      ```bash
      docker exec quicksell-backend npm run migrate
@@ -82,7 +90,7 @@ This guide covers deployment of QuickSell to production environments including y
 
 5. **Verify deployment**
    ```bash
-   curl https://your-domain.yakit.store/health
+   curl https://api.quicksell.monster/health
    ```
 
 ### Step 3: Setup CI/CD for Automatic Deployment
@@ -104,9 +112,10 @@ This guide covers deployment of QuickSell to production environments including y
            run: |
              docker build -t quicksell-backend:${{ github.sha }} ./backend
              docker push quicksell-backend:${{ github.sha }}
-         - name: Deploy to yakit.store
+         - name: Deploy to quicksell.monster
            run: |
-             yakit deploy quicksell-backend:${{ github.sha }} --env production
+             # SSH into your server and pull new image
+             ssh deploy@quicksell.monster 'cd /app && docker-compose pull && docker-compose up -d'
    ```
 
 ## 2. Web Frontend Deployment
@@ -120,9 +129,9 @@ npm run build
 
 This creates a `build/` directory with optimized files.
 
-### Step 2: Deploy to yakit.store
+### Step 2: Deploy to quicksell.monster
 
-1. **Option A: Using Docker**
+1. **Option A: Using Docker with Nginx**
    ```dockerfile
    # frontend/Dockerfile
    FROM node:18-alpine AS builder
@@ -134,37 +143,36 @@ This creates a `build/` directory with optimized files.
 
    FROM nginx:alpine
    COPY --from=builder /app/build /usr/share/nginx/html
-   COPY nginx.conf /etc/nginx/conf.d/default.conf
+   COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
    EXPOSE 80
    CMD ["nginx", "-g", "daemon off;"]
    ```
 
    ```bash
    docker build -t quicksell-frontend:1.0.0 ./frontend
-   docker push quicksell-frontend:1.0.0
-   yakit deploy quicksell-frontend:1.0.0 --env production
+   docker push registry.example.com/quicksell-frontend:1.0.0
+   # Deploy using docker-compose or your hosting provider
    ```
 
-2. **Option B: Direct Upload**
+2. **Option B: Direct Static File Upload**
    - Build: `npm run build`
-   - Upload `build/` directory to yakit.store
-   - Configure web server routing
+   - Upload `build/` directory to your hosting provider
+   - Configure web server (Nginx, Apache, etc.) with routing rules
+   - Use provided `frontend/nginx.conf` as base
 
 ### Step 3: Configure Frontend
 
 1. **Update API endpoints**
-   Edit `frontend/src/config/api.ts`:
-   ```typescript
-   const API_BASE_URL = process.env.REACT_APP_API_URL
-     || 'https://api.your-domain.yakit.store';
-   ```
-
-2. **Set environment variables**
+   Create `frontend/.env.production`:
    ```bash
-   # .env.production
-   REACT_APP_API_URL=https://api.your-domain.yakit.store
+   REACT_APP_API_URL=https://api.quicksell.monster
    REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_live_xxxx
    REACT_APP_ENV=production
+   ```
+
+2. **Build with environment**
+   ```bash
+   npm run build  # Uses .env.production automatically
    ```
 
 ## 3. Mobile App - Android Deployment
