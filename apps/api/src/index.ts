@@ -20,9 +20,13 @@ import { affiliateRoutes } from './routes/affiliates';
 import { subscriptionRoutes } from './routes/subscriptions';
 import { priceAlertRoutes } from './routes/priceAlerts';
 import { userGuideRoutes } from './routes/userGuides';
+import { adminRoutes } from './routes/admin';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
+
+// Import cron jobs
+import { startPriceAlertCron } from './jobs/priceAlertCron';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -34,7 +38,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -52,6 +56,7 @@ app.use('/api/affiliates', affiliateRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/price-alerts', priceAlertRoutes);
 app.use('/api/guides', userGuideRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -69,6 +74,13 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`🚗 Car Hub API running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  // Initialize background jobs
+  if (process.env.FEATURE_PRICE_ALERTS === 'true') {
+    startPriceAlertCron();
+  }
+
+  console.log('✅ Server initialized successfully');
 });
 
 export default app;
