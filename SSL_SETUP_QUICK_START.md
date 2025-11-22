@@ -1,51 +1,33 @@
 # SSL Setup - Quick Start
 
-## Choose Your Method
+## 🚀 Fastest Method: Direct SSH (Recommended)
 
-### 🟢 Method 1: GitHub Actions (Recommended)
-**Best for**: Automated, hands-off, no VPS access needed
-
-1. **Go to GitHub** → Actions tab
-2. **Select**: "Setup SSL Certificates and Configure Nginx"
-3. **Click**: "Run workflow" button
-4. **Wait**: ~10 minutes
-5. **Done!** ✅
-
-**Benefits**:
-- ✅ Fully automated
-- ✅ No manual SSH needed
-- ✅ Logs in GitHub
-- ✅ One-click execution
-- ✅ Easy retry if needed
-
----
-
-### 🔵 Method 2: Manual SSH
-**Best for**: Direct control, troubleshooting, offline execution
+**Copy, paste, done. ~10 minutes total.**
 
 ```bash
-# 1. Copy scripts to VPS
+# From your local machine:
 scp VPS_SSL_STANDALONE_SETUP.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
 scp VERIFY_DOMAINS_STANDALONE.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
-
-# 2. SSH to VPS
 ssh deploy-user@YOUR_VPS_IP
-
-# 3. Run setup (on VPS)
 sudo bash ~/VPS_SSL_STANDALONE_SETUP.sh
-
-# 4. Verify (on VPS)
 sudo bash ~/VERIFY_DOMAINS_STANDALONE.sh
-
-# 5. Exit
 exit
 ```
 
-**Benefits**:
-- ✅ Direct VPS access
-- ✅ Real-time feedback
-- ✅ Full control
-- ✅ Works offline
+**Done!** Your domains are live with HTTPS.
+
+---
+
+## 🔵 Alternative: GitHub Actions (Future)
+
+After merging to main branch, you can use:
+
+1. Go to GitHub Actions
+2. Select "Setup SSL Certificates and Configure Nginx"
+3. Click "Run workflow"
+4. Wait ~10 minutes
+
+**Same result, just different method.** Use SSH approach now for immediate setup.
 
 ---
 
