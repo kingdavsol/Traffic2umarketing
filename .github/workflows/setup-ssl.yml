@@ -1,0 +1,102 @@
+name: Setup SSL Certificates and Configure Nginx
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  VPS_USER: deploy-user
+  VPS_HOST: ${{ secrets.VPS_HOST }}
+
+jobs:
+  setup-ssl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Copy SSL setup script to VPS
+        run: |
+          scp -o StrictHostKeyChecking=accept-new \
+              -P 22 \
+              VPS_SSL_STANDALONE_SETUP.sh \
+              ${VPS_USER}@${VPS_HOST}:/home/${VPS_USER}/
+
+      - name: Copy verification script to VPS
+        run: |
+          scp -o StrictHostKeyChecking=accept-new \
+              -P 22 \
+              VERIFY_DOMAINS_STANDALONE.sh \
+              ${VPS_USER}@${VPS_HOST}:/home/${VPS_USER}/
+
+      - name: Run SSL setup script on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=accept-new \
+              ${VPS_USER}@${VPS_HOST} \
+              "chmod +x ~/VPS_SSL_STANDALONE_SETUP.sh && sudo bash ~/VPS_SSL_STANDALONE_SETUP.sh"
+
+      - name: Verify SSL setup on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=accept-new \
+              ${VPS_USER}@${VPS_HOST} \
+              "chmod +x ~/VERIFY_DOMAINS_STANDALONE.sh && sudo bash ~/VERIFY_DOMAINS_STANDALONE.sh"
+
+      - name: Check certificate status
+        run: |
+          ssh -o StrictHostKeyChecking=accept-new \
+              ${VPS_USER}@${VPS_HOST} \
+              "sudo certbot certificates"
+
+      - name: Verify Nginx is running
+        run: |
+          ssh -o StrictHostKeyChecking=accept-new \
+              ${VPS_USER}@${VPS_HOST} \
+              "sudo systemctl status nginx"
+
+      - name: Report success
+        if: success()
+        run: |
+          echo "✅ SSL Setup Complete!"
+          echo ""
+          echo "Configured domains:"
+          echo "  • 9gg.app (with *.9gg.app wildcard)"
+          echo "  • quicksell.monster (with www.quicksell.monster)"
+          echo ""
+          echo "Next steps:"
+          echo "  1. Test domains: curl https://9gg.app"
+          echo "  2. Deploy apps: git push origin [branch-name]"
+          echo "  3. Monitor apps: pm2 list"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "❌ SSL Setup Failed"
+          echo ""
+          echo "Troubleshooting:"
+          echo "  1. Check DNS propagation (5-30 minutes)"
+          echo "  2. Verify VPS has port 80 open for Let's Encrypt"
+          echo "  3. SSH to VPS and run: sudo bash ~/VPS_SSL_STANDALONE_SETUP.sh"
+          echo "  4. Check logs: sudo tail -f /var/log/letsencrypt/letsencrypt.log"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/id_rsa
