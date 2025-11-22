@@ -23,23 +23,23 @@ This is the fastest way to get SSL certificates installed right now.
    ```
 4. ✅ Port 80 & 443 open on VPS firewall
 
-### Quick Execution (30 seconds)
+### Quick Execution
 
-From your local machine:
+SSH to VPS and run the setup:
 
 ```bash
-# Copy scripts to VPS
-scp VPS_SSL_STANDALONE_SETUP.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
-scp VERIFY_DOMAINS_STANDALONE.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
-
 # SSH to VPS
 ssh deploy-user@YOUR_VPS_IP
 
-# Run setup (on VPS)
-sudo bash ~/VPS_SSL_STANDALONE_SETUP.sh
+# Clone the repo (scripts are in GitHub)
+git clone https://github.com/kingdavsol/Traffic2umarketing.git
+cd Traffic2umarketing
 
-# Verify (on VPS)
-sudo bash ~/VERIFY_DOMAINS_STANDALONE.sh
+# Run setup
+sudo bash VPS_SSL_STANDALONE_SETUP.sh
+
+# Verify
+sudo bash VERIFY_DOMAINS_STANDALONE.sh
 
 # Exit
 exit
@@ -69,37 +69,36 @@ Expected output:
 
 ### Detailed Step-by-Step
 
-**Step 1: Prepare scripts locally**
-
-Get the script files from repo:
-- `VPS_SSL_STANDALONE_SETUP.sh`
-- `VERIFY_DOMAINS_STANDALONE.sh`
-
-**Step 2: Copy to VPS**
-
-```bash
-scp VPS_SSL_STANDALONE_SETUP.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
-scp VERIFY_DOMAINS_STANDALONE.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
-```
-
-**Step 3: Connect to VPS**
+**Step 1: Connect to VPS**
 
 ```bash
 ssh deploy-user@YOUR_VPS_IP
 ```
 
-**Step 4: Run SSL setup**
+**Step 2: Get scripts from GitHub**
 
 ```bash
-sudo bash ~/VPS_SSL_STANDALONE_SETUP.sh
+# Option A: Clone entire repo
+git clone https://github.com/kingdavsol/Traffic2umarketing.git
+cd Traffic2umarketing
+
+# Option B: Just download the scripts
+curl -O https://raw.githubusercontent.com/kingdavsol/Traffic2umarketing/claude/plan-vps-deployment-01V5CrSGmkxds4BG7ULg6tga/VPS_SSL_STANDALONE_SETUP.sh
+curl -O https://raw.githubusercontent.com/kingdavsol/Traffic2umarketing/claude/plan-vps-deployment-01V5CrSGmkxds4BG7ULg6tga/VERIFY_DOMAINS_STANDALONE.sh
+```
+
+**Step 3: Run SSL setup**
+
+```bash
+sudo bash VPS_SSL_STANDALONE_SETUP.sh
 ```
 
 Monitor the output - takes ~5-8 minutes total.
 
-**Step 5: Verify setup**
+**Step 4: Verify setup**
 
 ```bash
-sudo bash ~/VERIFY_DOMAINS_STANDALONE.sh
+sudo bash VERIFY_DOMAINS_STANDALONE.sh
 ```
 
 This runs 10 verification tests showing:
@@ -109,7 +108,7 @@ This runs 10 verification tests showing:
 - HTTPS redirects ✓
 - Auto-renewal status ✓
 
-**Step 6: Exit SSH**
+**Step 5: Exit SSH**
 
 ```bash
 exit
@@ -393,12 +392,16 @@ sudo bash ~/VERIFY_DOMAINS_STANDALONE.sh
 ### Recommended: Direct SSH Execution (Available Now)
 
 ```bash
-# From your local machine - 30 seconds to setup
-scp VPS_SSL_STANDALONE_SETUP.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
-scp VERIFY_DOMAINS_STANDALONE.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
+# SSH to VPS
 ssh deploy-user@YOUR_VPS_IP
-sudo bash ~/VPS_SSL_STANDALONE_SETUP.sh
-sudo bash ~/VERIFY_DOMAINS_STANDALONE.sh
+
+# Clone repo
+git clone https://github.com/kingdavsol/Traffic2umarketing.git
+cd Traffic2umarketing
+
+# Run setup and verify
+sudo bash VPS_SSL_STANDALONE_SETUP.sh
+sudo bash VERIFY_DOMAINS_STANDALONE.sh
 exit
 ```
 
@@ -412,22 +415,34 @@ Takes ~10 minutes and results in:
 
 Once you merge the feature branch to main, you'll also have:
 - One-click execution in GitHub Actions tab
-- No manual SSH needed
+- Fully automated via GitHub UI
 - Automated logs and auditing
 
 ---
 
 ## 🎯 Next Steps
 
-1. **Get the scripts from repo:**
-   - `VPS_SSL_STANDALONE_SETUP.sh`
-   - `VERIFY_DOMAINS_STANDALONE.sh`
+1. **SSH to your VPS:**
+   ```bash
+   ssh deploy-user@YOUR_VPS_IP
+   ```
 
-2. **Run the SSH commands above**
+2. **Clone the repo:**
+   ```bash
+   git clone https://github.com/kingdavsol/Traffic2umarketing.git
+   cd Traffic2umarketing
+   ```
 
-3. **That's it!** SSL is installed and auto-renewing
+3. **Run the setup:**
+   ```bash
+   sudo bash VPS_SSL_STANDALONE_SETUP.sh
+   sudo bash VERIFY_DOMAINS_STANDALONE.sh
+   exit
+   ```
+
+4. **That's it!** SSL is installed and auto-renewing
 
 Then:
 - Test domains: `curl https://9gg.app`
-- Deploy apps: `git push origin [branch-name]`
+- Deploy apps: `git push origin [branch-name]` (triggers GitHub Actions)
 - Monitor: `pm2 list` on VPS

@@ -5,16 +5,24 @@
 **Copy, paste, done. ~10 minutes total.**
 
 ```bash
-# From your local machine:
-scp VPS_SSL_STANDALONE_SETUP.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
-scp VERIFY_DOMAINS_STANDALONE.sh deploy-user@YOUR_VPS_IP:/home/deploy-user/
+# SSH to VPS
 ssh deploy-user@YOUR_VPS_IP
-sudo bash ~/VPS_SSL_STANDALONE_SETUP.sh
-sudo bash ~/VERIFY_DOMAINS_STANDALONE.sh
+
+# Clone repo and get scripts
+git clone https://github.com/kingdavsol/Traffic2umarketing.git
+cd Traffic2umarketing
+
+# Run setup
+sudo bash VPS_SSL_STANDALONE_SETUP.sh
+
+# Verify
+sudo bash VERIFY_DOMAINS_STANDALONE.sh
+
+# Done!
 exit
 ```
 
-**Done!** Your domains are live with HTTPS.
+**That's it!** Your domains are live with HTTPS.
 
 ---
 
