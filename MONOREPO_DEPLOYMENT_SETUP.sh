@@ -64,8 +64,8 @@ git clone --quiet "$REPO_URL" "$TEMP_REPO" 2>/dev/null
 cd "$TEMP_REPO"
 git fetch --quiet --all 2>/dev/null
 
-# Get all claude/* branches (excluding deployment branch)
-BRANCHES=$(git branch -r | grep "origin/claude/" | sed 's/origin\///' | grep -v "plan-vps-deployment" | sort)
+# Get all claude/* branches (excluding deployment branch) - keep origin/ prefix for git clone
+BRANCHES=$(git branch -r | grep "origin/claude/" | grep -v "plan-vps-deployment" | sort)
 BRANCH_COUNT=$(echo "$BRANCHES" | wc -l)
 
 echo -e "${GREEN}✓ Found $BRANCH_COUNT branches to deploy${NC}"
@@ -86,7 +86,7 @@ while IFS= read -r BRANCH; do
     continue
   fi
 
-  # Extract branch name without org prefix for cleaner output
+  # Extract branch name for display
   BRANCH_SHORT=$(echo "$BRANCH" | sed 's/.*\///')
   echo -e "${BLUE}→ Processing branch: $BRANCH_SHORT${NC}"
 
@@ -102,8 +102,8 @@ while IFS= read -r BRANCH; do
   # Find all apps in this branch (both root-level single app and monorepo subdirectories)
   # Check for package.json at root (single app)
   if [ -f "$TEMP_BRANCH/package.json" ]; then
-    # Single app at root level
-    APP_NAME=$(echo "$BRANCH" | sed 's/claude\/\(.*\)-01.*/\1/')
+    # Single app at root level - extract app name from branch (remove origin/ and -01xxx suffix)
+    APP_NAME=$(echo "$BRANCH" | sed 's|origin/claude/\(.*\)-01.*|\1|')
 
     if [ -n "$APP_NAME" ] && [ "$APP_NAME" != "$BRANCH" ]; then
       echo -e "${BLUE}  ├─ Single app detected: $APP_NAME${NC}"
