@@ -94,8 +94,11 @@ while IFS= read -r BRANCH; do
   rm -rf "$TEMP_BRANCH" 2>/dev/null || true
   mkdir -p "$TEMP_BRANCH"
 
-  git clone --quiet --branch "$BRANCH" "$REPO_URL" "$TEMP_BRANCH" 2>&1 >/dev/null || {
-    echo -e "${RED}✗ Failed to clone $BRANCH${NC}"
+  # Strip origin/ prefix for git clone (git clone --branch doesn't accept origin/ prefix)
+  CLONE_BRANCH=$(echo "$BRANCH" | sed 's|origin/||')
+
+  git clone --quiet --branch "$CLONE_BRANCH" "$REPO_URL" "$TEMP_BRANCH" 2>&1 >/dev/null || {
+    echo -e "${RED}✗ Failed to clone $CLONE_BRANCH${NC}"
     continue
   }
 
