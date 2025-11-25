@@ -144,19 +144,29 @@ while IFS= read -r BRANCH; do
       cd "$TEMP_BRANCH"
 
       echo "    Installing dependencies..."
-      npm install --production --silent > /dev/null 2>&1 || {
+      # Try npm ci if lock file exists, otherwise npm install with legacy peer deps handling
+      if [ -f "package-lock.json" ]; then
+        npm ci --legacy-peer-deps > /tmp/npm_install.log 2>&1
+      else
+        npm install --legacy-peer-deps > /tmp/npm_install.log 2>&1
+      fi
+
+      if [ $? -ne 0 ]; then
         echo -e "${RED}    ✗ npm install failed${NC}"
+        tail -3 /tmp/npm_install.log 2>/dev/null | sed 's/^/      /'
         FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm install)"
         continue
-      }
+      fi
 
       if grep -q '"build"' package.json; then
         echo "    Building application..."
-        npm run build --silent > /dev/null 2>&1 || {
+        npm run build > /tmp/npm_build.log 2>&1
+        if [ $? -ne 0 ]; then
           echo -e "${RED}    ✗ build failed${NC}"
+          tail -3 /tmp/npm_build.log 2>/dev/null | sed 's/^/      /'
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (build)"
           continue
-        }
+        fi
       fi
 
       # Copy built app to web root
@@ -245,22 +255,32 @@ while IFS= read -r BRANCH; do
       # Install dependencies
       echo "      Installing dependencies..."
       cd "$DEPLOY_DIR"
-      npm install --production --silent > /dev/null 2>&1 || {
+      # Try npm ci if lock file exists, otherwise npm install with legacy peer deps handling
+      if [ -f "package-lock.json" ]; then
+        npm ci --legacy-peer-deps > /tmp/npm_install.log 2>&1
+      else
+        npm install --legacy-peer-deps > /tmp/npm_install.log 2>&1
+      fi
+
+      if [ $? -ne 0 ]; then
         cd "$ORIGINAL_DIR"
         echo -e "${RED}      ✗ npm install failed${NC}"
+        tail -3 /tmp/npm_install.log 2>/dev/null | sed 's/^/        /'
         FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm)"
         continue
-      }
+      fi
 
       # Build if needed
       if grep -q '"build"' package.json; then
         echo "      Building application..."
-        npm run build --silent > /dev/null 2>&1 || {
+        npm run build > /tmp/npm_build.log 2>&1
+        if [ $? -ne 0 ]; then
           cd "$ORIGINAL_DIR"
           echo -e "${RED}      ✗ build failed${NC}"
+          tail -3 /tmp/npm_build.log 2>/dev/null | sed 's/^/        /'
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (build)"
           continue
-        }
+        fi
       fi
 
       # Create .env if needed
