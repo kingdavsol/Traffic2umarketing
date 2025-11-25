@@ -92,15 +92,30 @@ while IFS= read -r BRANCH; do
 
   # Clone this specific branch to temp directory
   rm -rf "$TEMP_BRANCH" 2>/dev/null || true
-  mkdir -p "$TEMP_BRANCH"
 
-  # Strip origin/ prefix for git clone (git clone --branch doesn't accept origin/ prefix)
+  # Strip origin/ prefix for git operations
   CLONE_BRANCH=$(echo "$BRANCH" | sed 's|origin/||')
 
-  git clone --quiet --branch "$CLONE_BRANCH" "$REPO_URL" "$TEMP_BRANCH" 2>&1 >/dev/null || {
-    echo -e "${RED}✗ Failed to clone $CLONE_BRANCH${NC}"
+  # Clone repo first (gets default branch), then fetch and checkout the specific branch
+  git clone --quiet "$REPO_URL" "$TEMP_BRANCH" 2>&1 >/dev/null || {
+    echo -e "${RED}✗ Failed to clone repository${NC}"
     continue
   }
+
+  # Fetch and checkout the specific branch
+  cd "$TEMP_BRANCH"
+  git fetch --quiet origin "$CLONE_BRANCH:$CLONE_BRANCH" 2>&1 >/dev/null || {
+    cd - > /dev/null
+    echo -e "${RED}✗ Failed to fetch branch $CLONE_BRANCH${NC}"
+    continue
+  }
+
+  git checkout --quiet "$CLONE_BRANCH" 2>&1 >/dev/null || {
+    cd - > /dev/null
+    echo -e "${RED}✗ Failed to checkout branch $CLONE_BRANCH${NC}"
+    continue
+  }
+  cd - > /dev/null
 
   # Find all apps in this branch (both root-level single app and monorepo subdirectories)
   # Check for package.json at root (single app)
