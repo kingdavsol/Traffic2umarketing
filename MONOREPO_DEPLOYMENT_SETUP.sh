@@ -94,6 +94,9 @@ while IFS= read -r BRANCH; do
   # Trim leading/trailing whitespace from BRANCH
   BRANCH=$(echo "$BRANCH" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
+  # Ensure we're in the original directory before processing each branch
+  cd "$ORIGINAL_DIR"
+
   # Extract branch name for display
   BRANCH_SHORT=$(echo "$BRANCH" | sed 's/.*\///')
   echo -e "${BLUE}→ Processing branch: $BRANCH_SHORT${NC}"
