@@ -76,17 +76,24 @@ update_app() {
   echo -e "${GREEN}  ✓ Updated and restarted${NC}"
 }
 
+# Apps to skip (already running independently)
+SKIP_APPS="soltil|soltil-backend|topcoinbot-main"
+
 # If specific branch, just update that one
 if [ -n "$SPECIFIC_BRANCH" ]; then
   # Extract app name from branch
   APP_NAME=$(echo "$SPECIFIC_BRANCH" | sed 's|origin/claude/\(.*\)-01.*|\1|')
   update_app "$APP_NAME"
 else
-  # Update all deployed apps
+  # Update all deployed apps (skip independent ones)
   if [ -d "$WEB_ROOT" ]; then
     for APP_DIR in "$WEB_ROOT"/*; do
       if [ -d "$APP_DIR" ]; then
         APP_NAME=$(basename "$APP_DIR")
+        # Skip independent apps
+        if echo "$APP_NAME" | grep -qE "^($SKIP_APPS)$"; then
+          continue
+        fi
         update_app "$APP_NAME"
       fi
     done
