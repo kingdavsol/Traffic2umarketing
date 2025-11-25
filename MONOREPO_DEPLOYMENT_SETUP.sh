@@ -22,6 +22,7 @@ NGINX_SITES="/etc/nginx/sites-available"
 NGINX_ENABLED="/etc/nginx/sites-enabled"
 TEMP_REPO="/tmp/traffic2u_deploy_$$"
 TEMP_BRANCH="/tmp/traffic2u_branch_$$"
+ORIGINAL_DIR=$(pwd)  # Save original directory for reliable cd operations
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
 echo -e "${BLUE}MONOREPO-AWARE DEPLOYMENT SETUP - ALL APPS${NC}"
@@ -64,9 +65,13 @@ git clone --quiet "$REPO_URL" "$TEMP_REPO" 2>/dev/null
 cd "$TEMP_REPO"
 git fetch --quiet --all 2>/dev/null
 
-# Get all claude/* branches (excluding deployment branch)
-BRANCHES=$(git branch -r | grep "origin/claude/" | sed 's/origin\///' | grep -v "plan-vps-deployment" | sort)
+# Get all claude/* branches (excluding deployment branch) - keep origin/ prefix for git clone
+# Use sed to strip leading/trailing whitespace from git branch -r output
+BRANCHES=$(git branch -r | grep "origin/claude/" | grep -v "plan-vps-deployment" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sort)
 BRANCH_COUNT=$(echo "$BRANCHES" | wc -l)
+
+# Return to original directory before processing branches
+cd "$ORIGINAL_DIR"
 
 echo -e "${GREEN}✓ Found $BRANCH_COUNT branches to deploy${NC}"
 echo ""
@@ -86,32 +91,48 @@ while IFS= read -r BRANCH; do
     continue
   fi
 
-  # Extract branch name without org prefix for cleaner output
+  # Trim leading/trailing whitespace from BRANCH
+  BRANCH=$(echo "$BRANCH" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+  # Ensure we're in the original directory before processing each branch
+  cd "$ORIGINAL_DIR"
+
+  # Extract branch name for display
   BRANCH_SHORT=$(echo "$BRANCH" | sed 's/.*\///')
   echo -e "${BLUE}→ Processing branch: $BRANCH_SHORT${NC}"
 
-  # Checkout branch to temporary location
-  BRANCH_CLEAN=$(echo "$BRANCH" | sed 's/claude\///')
-  rm -rf "$TEMP_BRANCH"
-  mkdir -p "$TEMP_BRANCH"
+  # Clone this specific branch to temp directory
+  rm -rf "$TEMP_BRANCH" 2>/dev/null || true
 
-  cd "$TEMP_REPO"
-  git fetch --quiet origin "$BRANCH" 2>/dev/null || {
-    echo -e "${RED}✗ Failed to fetch $BRANCH${NC}"
+  # Strip origin/ prefix for git operations and trim whitespace
+  CLONE_BRANCH=$(echo "$BRANCH" | sed 's|origin/||;s/^[[:space:]]*//;s/[[:space:]]*$//')
+
+  # Clone repo first (gets default branch), then fetch and checkout the specific branch
+  git clone --quiet "$REPO_URL" "$TEMP_BRANCH" 2>&1 >/dev/null || {
+    echo -e "${RED}✗ Failed to clone repository${NC}"
     continue
   }
 
+  # Fetch and checkout the specific branch
   cd "$TEMP_BRANCH"
-  git clone --quiet --branch "$BRANCH" --single-branch "$REPO_URL" . 2>/dev/null || {
-    echo -e "${RED}✗ Failed to clone $BRANCH${NC}"
+  git fetch --quiet origin "$CLONE_BRANCH:$CLONE_BRANCH" 2>&1 >/dev/null || {
+    cd "$ORIGINAL_DIR"
+    echo -e "${RED}✗ Failed to fetch branch $CLONE_BRANCH${NC}"
     continue
   }
+
+  git checkout --quiet "$CLONE_BRANCH" 2>&1 >/dev/null || {
+    cd "$ORIGINAL_DIR"
+    echo -e "${RED}✗ Failed to checkout branch $CLONE_BRANCH${NC}"
+    continue
+  }
+  cd "$ORIGINAL_DIR"
 
   # Find all apps in this branch (both root-level single app and monorepo subdirectories)
   # Check for package.json at root (single app)
   if [ -f "$TEMP_BRANCH/package.json" ]; then
-    # Single app at root level
-    APP_NAME=$(echo "$BRANCH" | sed 's/claude\/\(.*\)-01.*/\1/')
+    # Single app at root level - extract app name from branch (remove origin/ and -01xxx suffix)
+    APP_NAME=$(echo "$BRANCH" | sed 's|origin/claude/\(.*\)-01.*|\1|')
 
     if [ -n "$APP_NAME" ] && [ "$APP_NAME" != "$BRANCH" ]; then
       echo -e "${BLUE}  ├─ Single app detected: $APP_NAME${NC}"
@@ -119,31 +140,50 @@ while IFS= read -r BRANCH; do
       # Deploy this app
       APP_DIR="$WEB_ROOT/$APP_NAME"
       mkdir -p "$APP_DIR"
-
       cd "$TEMP_BRANCH"
 
-      echo "    Installing dependencies..."
-      npm install --production --silent > /dev/null 2>&1 || {
-        echo -e "${RED}    ✗ npm install failed${NC}"
-        FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm install)"
-        continue
-      }
-
-      if grep -q '"build"' package.json; then
-        echo "    Building application..."
-        npm run build --silent > /dev/null 2>&1 || {
-          echo -e "${RED}    ✗ build failed${NC}"
-          FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (build)"
-          continue
-        }
-      fi
-
-      # Copy built app to web root
+      # Copy app files to web root first
       cp -r . "$APP_DIR/" 2>/dev/null || {
+        cd "$ORIGINAL_DIR"
         echo -e "${RED}    ✗ Failed to copy app files${NC}"
         FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (copy)"
         continue
       }
+
+      cd "$APP_DIR"
+
+      # Skip install if already deployed
+      if [ ! -d "node_modules" ]; then
+        echo "    Installing dependencies..."
+        # Try npm ci if lock file exists, otherwise npm install with legacy peer deps handling
+        if [ -f "package-lock.json" ]; then
+          npm ci --legacy-peer-deps > /tmp/npm_install.log 2>&1
+        else
+          npm install --legacy-peer-deps > /tmp/npm_install.log 2>&1
+        fi
+
+        if [ $? -ne 0 ]; then
+          cd "$ORIGINAL_DIR"
+          echo -e "${RED}    ✗ npm install failed${NC}"
+          tail -3 /tmp/npm_install.log 2>/dev/null | sed 's/^/      /'
+          FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm install)"
+          continue
+        fi
+      else
+        echo "    ⊘ Already installed (skipping)"
+      fi
+
+      if grep -q '"build"' package.json; then
+        echo "    Building application..."
+        npm run build > /tmp/npm_build.log 2>&1
+        if [ $? -ne 0 ]; then
+          cd "$ORIGINAL_DIR"
+          echo -e "${RED}    ✗ build failed${NC}"
+          tail -3 /tmp/npm_build.log 2>/dev/null | sed 's/^/      /'
+          FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (build)"
+          continue
+        fi
+      fi
 
       # Create .env if needed
       if [ ! -f "$APP_DIR/.env" ] && [ -f "$APP_DIR/.env.example" ]; then
@@ -164,6 +204,7 @@ while IFS= read -r BRANCH; do
       cd "$APP_DIR"
       if grep -q '"start"' package.json; then
         pm2 start "npm start" --name "$APP_NAME" --append-log > /dev/null 2>&1 || {
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}    ✗ Failed to start app${NC}"
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (start)"
           continue
@@ -172,11 +213,15 @@ while IFS= read -r BRANCH; do
         pm2 start "npm run dev" --name "$APP_NAME" --append-log > /dev/null 2>&1 || \
         pm2 start "node index.js" --name "$APP_NAME" --append-log > /dev/null 2>&1 || \
         pm2 start "node server.js" --name "$APP_NAME" --append-log > /dev/null 2>&1 || {
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}    ✗ Failed to start app${NC}"
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (start)"
           continue
         }
       fi
+
+      # Return to original directory after pm2 start
+      cd "$ORIGINAL_DIR"
 
       # Create Nginx config for subdomain
       create_nginx_config "$APP_NAME" "$PORT"
@@ -216,23 +261,40 @@ while IFS= read -r BRANCH; do
         continue
       }
 
-      # Install dependencies
-      echo "      Installing dependencies..."
       cd "$DEPLOY_DIR"
-      npm install --production --silent > /dev/null 2>&1 || {
-        echo -e "${RED}      ✗ npm install failed${NC}"
-        FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm)"
-        continue
-      }
+
+      # Skip install if already deployed
+      if [ ! -d "node_modules" ]; then
+        echo "      Installing dependencies..."
+        # Try npm ci if lock file exists, otherwise npm install with legacy peer deps handling
+        if [ -f "package-lock.json" ]; then
+          npm ci --legacy-peer-deps > /tmp/npm_install.log 2>&1
+        else
+          npm install --legacy-peer-deps > /tmp/npm_install.log 2>&1
+        fi
+
+        if [ $? -ne 0 ]; then
+          cd "$ORIGINAL_DIR"
+          echo -e "${RED}      ✗ npm install failed${NC}"
+          tail -3 /tmp/npm_install.log 2>/dev/null | sed 's/^/        /'
+          FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm)"
+          continue
+        fi
+      else
+        echo "      ⊘ Already installed (skipping)"
+      fi
 
       # Build if needed
       if grep -q '"build"' package.json; then
         echo "      Building application..."
-        npm run build --silent > /dev/null 2>&1 || {
+        npm run build > /tmp/npm_build.log 2>&1
+        if [ $? -ne 0 ]; then
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}      ✗ build failed${NC}"
+          tail -3 /tmp/npm_build.log 2>/dev/null | sed 's/^/        /'
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (build)"
           continue
-        }
+        fi
       fi
 
       # Create .env if needed
@@ -253,6 +315,7 @@ while IFS= read -r BRANCH; do
       # Start with PM2
       if grep -q '"start"' package.json; then
         pm2 start "npm start" --name "$APP_NAME" --append-log > /dev/null 2>&1 || {
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}      ✗ Failed to start app${NC}"
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (start)"
           continue
@@ -261,11 +324,15 @@ while IFS= read -r BRANCH; do
         pm2 start "npm run dev" --name "$APP_NAME" --append-log > /dev/null 2>&1 || \
         pm2 start "node index.js" --name "$APP_NAME" --append-log > /dev/null 2>&1 || \
         pm2 start "node server.js" --name "$APP_NAME" --append-log > /dev/null 2>&1 || {
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}      ✗ Failed to start app${NC}"
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (start)"
           continue
         }
       fi
+
+      # Return to original directory after pm2 start
+      cd "$ORIGINAL_DIR"
 
       # Create Nginx config for subdomain
       create_nginx_config "$APP_NAME" "$PORT"
@@ -274,9 +341,14 @@ while IFS= read -r BRANCH; do
       ((DEPLOY_COUNT++))
 
     done <<< "$SUBDIRS"
+    # Return to original directory after monorepo processing
+    cd "$ORIGINAL_DIR"
   fi
 
 done <<< "$BRANCHES"
+
+# Ensure we're back in original directory
+cd "$ORIGINAL_DIR"
 
 # Save PM2 state
 pm2 save > /dev/null 2>&1 || true
