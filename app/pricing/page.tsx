@@ -57,10 +57,12 @@ export default function PricingPage() {
     {
       ...SUBSCRIPTION_TIERS.FREE,
       tier: 'FREE',
+      popular: false,
     },
     {
       ...SUBSCRIPTION_TIERS.BASIC,
       tier: 'BASIC',
+      popular: false,
     },
     {
       ...SUBSCRIPTION_TIERS.BUILDER,
@@ -70,6 +72,7 @@ export default function PricingPage() {
     {
       ...SUBSCRIPTION_TIERS.PREMIUM,
       tier: 'PREMIUM',
+      popular: false,
     },
   ]
 
@@ -146,7 +149,7 @@ export default function PricingPage() {
                     <Button
                       className="w-full"
                       variant={tier.popular ? 'default' : 'outline'}
-                      onClick={() => handleSubscribe(tier.priceId, tier.tier)}
+                      onClick={() => handleSubscribe((tier as any).priceId, tier.tier)}
                       disabled={isLoading === tier.tier}
                     >
                       {isLoading === tier.tier
