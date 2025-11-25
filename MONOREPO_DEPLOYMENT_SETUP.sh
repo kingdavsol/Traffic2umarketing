@@ -90,15 +90,10 @@ while IFS= read -r BRANCH; do
   BRANCH_SHORT=$(echo "$BRANCH" | sed 's/.*\///')
   echo -e "${BLUE}→ Processing branch: $BRANCH_SHORT${NC}"
 
-  # Checkout branch to temporary location
-  BRANCH_CLEAN=$(echo "$BRANCH" | sed 's/claude\///')
-  rm -rf "$TEMP_BRANCH"
-  mkdir -p "$TEMP_BRANCH"
-
-  # Clone this specific branch to temp directory
-  cd "$TEMP_BRANCH"
-  git clone --quiet --branch "$BRANCH" --single-branch "$REPO_URL" . 2>/dev/null || {
-    echo -e "${RED}✗ Failed to clone $BRANCH${NC}"
+  # Checkout branch from already-cloned repo using git worktree
+  cd "$TEMP_REPO"
+  git worktree add "$TEMP_BRANCH" "origin/$BRANCH" 2>/dev/null || {
+    echo -e "${RED}✗ Failed to checkout $BRANCH${NC}"
     continue
   }
 
@@ -340,6 +335,8 @@ if [ -n "$FAILED_APPS" ]; then
 fi
 
 # Cleanup
+cd /tmp
+git worktree remove "$TEMP_BRANCH" 2>/dev/null || true
 rm -rf "$TEMP_REPO" "$TEMP_BRANCH"
 
 ################################################################################
