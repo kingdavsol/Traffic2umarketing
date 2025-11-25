@@ -17,10 +17,10 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 WEB_ROOT="/var/www/9gg.app"
-REPO_URL="https://github.com/kingdavsol/Traffic2umarketing.git"
+# Use existing local repo instead of cloning from GitHub
+REPO_PATH="$(git rev-parse --show-toplevel 2>/dev/null || echo '/home/user/Traffic2umarketing')"
 NGINX_SITES="/etc/nginx/sites-available"
 NGINX_ENABLED="/etc/nginx/sites-enabled"
-TEMP_REPO="/tmp/traffic2u_deploy_$$"
 TEMP_BRANCH="/tmp/traffic2u_branch_$$"
 
 ################################################################################
@@ -204,12 +204,16 @@ echo ""
 # STEP 3: Clone Repository and Get Branches
 # ============================================================================
 
-echo -e "${YELLOW}[3/6] Cloning repository and fetching branches...${NC}"
+echo -e "${YELLOW}[3/6] Fetching all branches from local repository...${NC}"
 
-rm -rf "$TEMP_REPO"
-git clone --quiet "$REPO_URL" "$TEMP_REPO" 2>/dev/null
-cd "$TEMP_REPO"
-git fetch --quiet --all 2>/dev/null
+cd "$REPO_PATH"
+echo "  Repository: $REPO_PATH"
+
+# Fetch latest from all remotes
+git fetch --all --quiet 2>/dev/null || {
+  echo -e "${RED}✗ Failed to fetch from remote${NC}"
+  exit 1
+}
 
 # Get all claude/* branches (excluding deployment and planning branches)
 BRANCHES=$(git branch -r | grep "origin/claude/" | sed 's/origin\///' | grep -v "plan-vps-deployment" | grep -v "setup-app-subdomains" | sort)
@@ -240,19 +244,19 @@ while IFS= read -r BRANCH; do
   rm -rf "$TEMP_BRANCH"
   mkdir -p "$TEMP_BRANCH"
 
-  cd "$TEMP_REPO"
-  git fetch --quiet origin "$BRANCH" 2>/dev/null || {
-    echo -e "${RED}✗ Failed to fetch $BRANCH${NC}"
-    FAILED_APPS="$FAILED_APPS\n  - $BRANCH (fetch failed)"
-    continue
+  # Checkout the branch into temp directory
+  cd "$REPO_PATH"
+  git worktree add --detach "$TEMP_BRANCH" "origin/$BRANCH" 2>/dev/null || {
+    # Fallback if worktree not available: use archive
+    git archive --format=tar "origin/$BRANCH" | tar -x -C "$TEMP_BRANCH" 2>/dev/null || {
+      echo -e "${RED}✗ Failed to checkout $BRANCH${NC}"
+      FAILED_APPS="$FAILED_APPS\n  - $BRANCH (checkout failed)"
+      rm -rf "$TEMP_BRANCH"
+      continue
+    }
   }
 
   cd "$TEMP_BRANCH"
-  git clone --quiet --branch "$BRANCH" --single-branch "$REPO_URL" . 2>/dev/null || {
-    echo -e "${RED}✗ Failed to clone $BRANCH${NC}"
-    FAILED_APPS="$FAILED_APPS\n  - $BRANCH (clone failed)"
-    continue
-  }
 
   # Find all apps in this branch (both root-level single app and monorepo subdirectories)
   # Check for package.json at root (single app)
@@ -487,7 +491,9 @@ if [ -n "$FAILED_APPS" ]; then
 fi
 
 # Cleanup
-rm -rf "$TEMP_REPO" "$TEMP_BRANCH"
+rm -rf "$TEMP_BRANCH"
+cd "$REPO_PATH"
+git worktree prune 2>/dev/null || true
 
 echo "Deployment directory: $WEB_ROOT"
 echo "To update an app, pull latest from branch and restart: pm2 restart [app-name]"
