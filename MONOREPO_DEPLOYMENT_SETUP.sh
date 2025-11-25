@@ -65,7 +65,8 @@ cd "$TEMP_REPO"
 git fetch --quiet --all 2>/dev/null
 
 # Get all claude/* branches (excluding deployment branch) - keep origin/ prefix for git clone
-BRANCHES=$(git branch -r | grep "origin/claude/" | grep -v "plan-vps-deployment" | sort)
+# Use sed to strip leading/trailing whitespace from git branch -r output
+BRANCHES=$(git branch -r | grep "origin/claude/" | grep -v "plan-vps-deployment" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sort)
 BRANCH_COUNT=$(echo "$BRANCHES" | wc -l)
 
 echo -e "${GREEN}✓ Found $BRANCH_COUNT branches to deploy${NC}"
@@ -86,6 +87,9 @@ while IFS= read -r BRANCH; do
     continue
   fi
 
+  # Trim leading/trailing whitespace from BRANCH
+  BRANCH=$(echo "$BRANCH" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
   # Extract branch name for display
   BRANCH_SHORT=$(echo "$BRANCH" | sed 's/.*\///')
   echo -e "${BLUE}→ Processing branch: $BRANCH_SHORT${NC}"
@@ -93,8 +97,8 @@ while IFS= read -r BRANCH; do
   # Clone this specific branch to temp directory
   rm -rf "$TEMP_BRANCH" 2>/dev/null || true
 
-  # Strip origin/ prefix for git operations
-  CLONE_BRANCH=$(echo "$BRANCH" | sed 's|origin/||')
+  # Strip origin/ prefix for git operations and trim whitespace
+  CLONE_BRANCH=$(echo "$BRANCH" | sed 's|origin/||;s/^[[:space:]]*//;s/[[:space:]]*$//')
 
   # Clone repo first (gets default branch), then fetch and checkout the specific branch
   git clone --quiet "$REPO_URL" "$TEMP_BRANCH" 2>&1 >/dev/null || {
