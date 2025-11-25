@@ -23,6 +23,153 @@ NGINX_ENABLED="/etc/nginx/sites-enabled"
 TEMP_REPO="/tmp/traffic2u_deploy_$$"
 TEMP_BRANCH="/tmp/traffic2u_branch_$$"
 
+################################################################################
+# HELPER FUNCTION: Create Nginx Config for Subdomain
+# MUST be defined before main script logic
+################################################################################
+
+function create_nginx_config() {
+  local APP_NAME="$1"
+  local PORT="$2"
+  local CONFIG_FILE="$NGINX_SITES/${APP_NAME}.9gg.app.conf"
+
+  # Create Nginx config (uses existing wildcard SSL cert)
+  # Using double quotes to allow variable substitution
+  cat > "$CONFIG_FILE" << 'NGINX_EOF'
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name APP_PLACEHOLDER.9gg.app;
+
+    # Use wildcard SSL certificate
+    ssl_certificate /etc/letsencrypt/live/9gg.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/9gg.app/privkey.pem;
+
+    # Security headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_types text/plain text/css text/xml text/javascript
+               application/x-javascript application/xml+rss
+               application/javascript application/json;
+
+    location / {
+        proxy_pass http://127.0.0.1:PORT_PLACEHOLDER;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+}
+
+# HTTP to HTTPS redirect
+server {
+    listen 80;
+    listen [::]:80;
+    server_name APP_PLACEHOLDER.9gg.app;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$server_name$request_uri;
+    }
+}
+NGINX_EOF
+
+  # Replace placeholders with actual values
+  sed -i "s/APP_PLACEHOLDER/$APP_NAME/g" "$CONFIG_FILE"
+  sed -i "s/PORT_PLACEHOLDER/$PORT/g" "$CONFIG_FILE"
+
+  # Enable site (create symlink)
+  ln -sf "$CONFIG_FILE" "$NGINX_ENABLED/${APP_NAME}.9gg.app.conf" 2>/dev/null || true
+
+  echo -e "${GREEN}    ✓ Nginx config created for $APP_NAME.9gg.app${NC}"
+}
+
+################################################################################
+# HELPER FUNCTION: Detect Application Port
+################################################################################
+
+function detect_port() {
+  local APP_DIR="$1"
+  local PORT=3000
+
+  # Check .env file for PORT variable
+  if [ -f "$APP_DIR/.env" ]; then
+    local ENV_PORT=$(grep "^PORT=" "$APP_DIR/.env" 2>/dev/null | cut -d= -f2 | tr -d ' ')
+    if [ -n "$ENV_PORT" ]; then
+      PORT=$ENV_PORT
+      echo "$PORT"
+      return
+    fi
+  fi
+
+  # Check package.json for start scripts that specify port
+  if [ -f "$APP_DIR/package.json" ]; then
+    # Check for common Express patterns (5000)
+    if grep -q '"express"' "$APP_DIR/package.json" 2>/dev/null; then
+      PORT=5000
+    fi
+    # Check for custom ports in scripts
+    local SCRIPT_PORT=$(grep -o '"start".*-p [0-9]*' "$APP_DIR/package.json" 2>/dev/null | grep -o '[0-9]*$' | head -1)
+    if [ -n "$SCRIPT_PORT" ]; then
+      PORT=$SCRIPT_PORT
+    fi
+  fi
+
+  # Check server.js or index.js for port definitions
+  if [ -f "$APP_DIR/server.js" ]; then
+    local FILE_PORT=$(grep -o 'listen([0-9]*' "$APP_DIR/server.js" 2>/dev/null | grep -o '[0-9]*' | head -1)
+    if [ -n "$FILE_PORT" ]; then
+      PORT=$FILE_PORT
+    fi
+  fi
+
+  echo "$PORT"
+}
+
+################################################################################
+# HELPER FUNCTION: Extract App Name from Branch Name
+################################################################################
+
+function extract_app_name() {
+  local BRANCH="$1"
+  # Handle multiple naming patterns:
+  # claude/app-name-01ABC123
+  # claude/my-app-feature-01XYZ
+  # claude/setup-app-subdomains-01...
+
+  # Remove "claude/" prefix
+  local CLEAN=$(echo "$BRANCH" | sed 's/^claude\///')
+
+  # If it starts with known prefixes, handle specially
+  if [[ "$CLEAN" == "setup-app-subdomains"* ]]; then
+    echo "setup-subdomains"
+    return
+  fi
+
+  # Remove the session ID suffix (everything from -01 onwards)
+  local NAME=$(echo "$CLEAN" | sed 's/-01[A-Za-z0-9]*$//')
+
+  echo "$NAME"
+}
+
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
 echo -e "${BLUE}MONOREPO-AWARE DEPLOYMENT SETUP - ALL APPS${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
@@ -64,8 +211,8 @@ git clone --quiet "$REPO_URL" "$TEMP_REPO" 2>/dev/null
 cd "$TEMP_REPO"
 git fetch --quiet --all 2>/dev/null
 
-# Get all claude/* branches (excluding deployment branch)
-BRANCHES=$(git branch -r | grep "origin/claude/" | sed 's/origin\///' | grep -v "plan-vps-deployment" | sort)
+# Get all claude/* branches (excluding deployment and planning branches)
+BRANCHES=$(git branch -r | grep "origin/claude/" | sed 's/origin\///' | grep -v "plan-vps-deployment" | grep -v "setup-app-subdomains" | sort)
 BRANCH_COUNT=$(echo "$BRANCHES" | wc -l)
 
 echo -e "${GREEN}✓ Found $BRANCH_COUNT branches to deploy${NC}"
@@ -90,20 +237,20 @@ while IFS= read -r BRANCH; do
   BRANCH_SHORT=$(echo "$BRANCH" | sed 's/.*\///')
   echo -e "${BLUE}→ Processing branch: $BRANCH_SHORT${NC}"
 
-  # Checkout branch to temporary location
-  BRANCH_CLEAN=$(echo "$BRANCH" | sed 's/claude\///')
   rm -rf "$TEMP_BRANCH"
   mkdir -p "$TEMP_BRANCH"
 
   cd "$TEMP_REPO"
   git fetch --quiet origin "$BRANCH" 2>/dev/null || {
     echo -e "${RED}✗ Failed to fetch $BRANCH${NC}"
+    FAILED_APPS="$FAILED_APPS\n  - $BRANCH (fetch failed)"
     continue
   }
 
   cd "$TEMP_BRANCH"
   git clone --quiet --branch "$BRANCH" --single-branch "$REPO_URL" . 2>/dev/null || {
     echo -e "${RED}✗ Failed to clone $BRANCH${NC}"
+    FAILED_APPS="$FAILED_APPS\n  - $BRANCH (clone failed)"
     continue
   }
 
@@ -111,7 +258,7 @@ while IFS= read -r BRANCH; do
   # Check for package.json at root (single app)
   if [ -f "$TEMP_BRANCH/package.json" ]; then
     # Single app at root level
-    APP_NAME=$(echo "$BRANCH" | sed 's/claude\/\(.*\)-01.*/\1/')
+    APP_NAME=$(extract_app_name "$BRANCH")
 
     if [ -n "$APP_NAME" ] && [ "$APP_NAME" != "$BRANCH" ]; then
       echo -e "${BLUE}  ├─ Single app detected: $APP_NAME${NC}"
@@ -123,7 +270,7 @@ while IFS= read -r BRANCH; do
       cd "$TEMP_BRANCH"
 
       echo "    Installing dependencies..."
-      npm install --production --silent > /dev/null 2>&1 || {
+      npm install --silent > /dev/null 2>&1 || {
         echo -e "${RED}    ✗ npm install failed${NC}"
         FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm install)"
         continue
@@ -150,11 +297,8 @@ while IFS= read -r BRANCH; do
         cp "$APP_DIR/.env.example" "$APP_DIR/.env"
       fi
 
-      # Detect port
-      PORT=3000
-      if grep -q '"express"' "$APP_DIR/package.json" 2>/dev/null; then
-        PORT=5000
-      fi
+      # Detect port intelligently
+      PORT=$(detect_port "$APP_DIR")
 
       # Stop existing PM2 process
       pm2 stop "$APP_NAME" > /dev/null 2>&1 || true
@@ -187,7 +331,8 @@ while IFS= read -r BRANCH; do
   fi
 
   # Check for monorepo structure (subdirectories with package.json)
-  SUBDIRS=$(find "$TEMP_BRANCH" -maxdepth 2 -name "package.json" -type f | grep -v "^$TEMP_BRANCH/package.json" | grep -v node_modules | sed 's|/package.json||' | sort -u)
+  # Removed maxdepth limit to find deeply nested apps
+  SUBDIRS=$(find "$TEMP_BRANCH" -name "package.json" -type f | grep -v "^$TEMP_BRANCH/package.json$" | grep -v node_modules | sed 's|/package.json||' | sort -u)
 
   if [ -n "$SUBDIRS" ]; then
     echo -e "${BLUE}  ├─ Monorepo detected: multiple apps${NC}"
@@ -219,7 +364,7 @@ while IFS= read -r BRANCH; do
       # Install dependencies
       echo "      Installing dependencies..."
       cd "$DEPLOY_DIR"
-      npm install --production --silent > /dev/null 2>&1 || {
+      npm install --silent > /dev/null 2>&1 || {
         echo -e "${RED}      ✗ npm install failed${NC}"
         FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm)"
         continue
@@ -240,11 +385,8 @@ while IFS= read -r BRANCH; do
         cp .env.example .env
       fi
 
-      # Detect port
-      PORT=3000
-      if grep -q '"express"' package.json 2>/dev/null; then
-        PORT=5000
-      fi
+      # Detect port intelligently
+      PORT=$(detect_port "$DEPLOY_DIR")
 
       # Stop existing PM2 process
       pm2 stop "$APP_NAME" > /dev/null 2>&1 || true
@@ -293,15 +435,15 @@ echo ""
 echo -e "${YELLOW}[5/6] Configuring Nginx...${NC}"
 
 # Test Nginx config
-if ! sudo nginx -t > /dev/null 2>&1; then
+if ! nginx -t > /dev/null 2>&1; then
   echo -e "${RED}✗ Nginx configuration has errors${NC}"
-  sudo nginx -t
+  nginx -t
 else
   echo -e "${GREEN}✓ Nginx configuration is valid${NC}"
 fi
 
 # Reload Nginx
-sudo systemctl reload nginx > /dev/null 2>&1 || {
+systemctl reload nginx > /dev/null 2>&1 || {
   echo -e "${RED}✗ Failed to reload Nginx${NC}"
 }
 
@@ -346,81 +488,6 @@ fi
 
 # Cleanup
 rm -rf "$TEMP_REPO" "$TEMP_BRANCH"
-
-################################################################################
-# HELPER FUNCTION: Create Nginx Config for Subdomain
-################################################################################
-
-function create_nginx_config() {
-  local APP_NAME="$1"
-  local PORT="$2"
-  local CONFIG_FILE="$NGINX_SITES/${APP_NAME}.9gg.app.conf"
-
-  # Create Nginx config (uses existing wildcard SSL cert)
-  cat > "$CONFIG_FILE" << 'NGINX_EOF'
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name APP_NAME.9gg.app;
-
-    # Use wildcard SSL certificate
-    ssl_certificate /etc/letsencrypt/live/9gg.app/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/9gg.app/privkey.pem;
-
-    # Security headers
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-
-    # Gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_types text/plain text/css text/xml text/javascript
-               application/x-javascript application/xml+rss
-               application/javascript application/json;
-
-    location / {
-        proxy_pass http://127.0.0.1:PORT;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-    }
-}
-
-# HTTP to HTTPS redirect
-server {
-    listen 80;
-    listen [::]:80;
-    server_name APP_NAME.9gg.app;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-
-    location / {
-        return 301 https://$server_name$request_uri;
-    }
-}
-NGINX_EOF
-
-  # Replace placeholders
-  sed -i "s/APP_NAME/$APP_NAME/g" "$CONFIG_FILE"
-  sed -i "s/PORT/$PORT/g" "$CONFIG_FILE"
-
-  # Enable site (create symlink)
-  ln -sf "$CONFIG_FILE" "$NGINX_ENABLED/${APP_NAME}.9gg.app.conf" 2>/dev/null || true
-}
 
 echo "Deployment directory: $WEB_ROOT"
 echo "To update an app, pull latest from branch and restart: pm2 restart [app-name]"
