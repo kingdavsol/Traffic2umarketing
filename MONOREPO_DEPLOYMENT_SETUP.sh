@@ -216,8 +216,9 @@ git fetch --all --quiet 2>/dev/null || {
 }
 
 # Get all claude/* branches (excluding deployment and planning branches)
-BRANCHES=$(git branch -r | grep "origin/claude/" | sed 's/origin\///' | grep -v "plan-vps-deployment" | grep -v "setup-app-subdomains" | sort)
-BRANCH_COUNT=$(echo "$BRANCHES" | wc -l)
+# Strip leading/trailing whitespace with xargs
+BRANCHES=$(git branch -r | grep "origin/claude/" | sed 's/origin\///' | grep -v "plan-vps-deployment" | grep -v "setup-app-subdomains" | xargs | tr ' ' '\n')
+BRANCH_COUNT=$(echo "$BRANCHES" | grep -c '^')
 
 echo -e "${GREEN}✓ Found $BRANCH_COUNT branches to deploy${NC}"
 echo ""
@@ -236,6 +237,9 @@ while IFS= read -r BRANCH; do
   if [ -z "$BRANCH" ]; then
     continue
   fi
+
+  # Trim whitespace from BRANCH name
+  BRANCH=$(echo "$BRANCH" | xargs)
 
   # Extract branch name without org prefix for cleaner output
   BRANCH_SHORT=$(echo "$BRANCH" | sed 's/.*\///')
