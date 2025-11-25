@@ -140,41 +140,50 @@ while IFS= read -r BRANCH; do
       # Deploy this app
       APP_DIR="$WEB_ROOT/$APP_NAME"
       mkdir -p "$APP_DIR"
-
       cd "$TEMP_BRANCH"
 
-      echo "    Installing dependencies..."
-      # Try npm ci if lock file exists, otherwise npm install with legacy peer deps handling
-      if [ -f "package-lock.json" ]; then
-        npm ci --legacy-peer-deps > /tmp/npm_install.log 2>&1
-      else
-        npm install --legacy-peer-deps > /tmp/npm_install.log 2>&1
-      fi
-
-      if [ $? -ne 0 ]; then
-        echo -e "${RED}    ✗ npm install failed${NC}"
-        tail -3 /tmp/npm_install.log 2>/dev/null | sed 's/^/      /'
-        FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm install)"
+      # Copy app files to web root first
+      cp -r . "$APP_DIR/" 2>/dev/null || {
+        cd "$ORIGINAL_DIR"
+        echo -e "${RED}    ✗ Failed to copy app files${NC}"
+        FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (copy)"
         continue
+      }
+
+      cd "$APP_DIR"
+
+      # Skip install if already deployed
+      if [ ! -d "node_modules" ]; then
+        echo "    Installing dependencies..."
+        # Try npm ci if lock file exists, otherwise npm install with legacy peer deps handling
+        if [ -f "package-lock.json" ]; then
+          npm ci --legacy-peer-deps > /tmp/npm_install.log 2>&1
+        else
+          npm install --legacy-peer-deps > /tmp/npm_install.log 2>&1
+        fi
+
+        if [ $? -ne 0 ]; then
+          cd "$ORIGINAL_DIR"
+          echo -e "${RED}    ✗ npm install failed${NC}"
+          tail -3 /tmp/npm_install.log 2>/dev/null | sed 's/^/      /'
+          FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm install)"
+          continue
+        fi
+      else
+        echo "    ⊘ Already installed (skipping)"
       fi
 
       if grep -q '"build"' package.json; then
         echo "    Building application..."
         npm run build > /tmp/npm_build.log 2>&1
         if [ $? -ne 0 ]; then
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}    ✗ build failed${NC}"
           tail -3 /tmp/npm_build.log 2>/dev/null | sed 's/^/      /'
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (build)"
           continue
         fi
       fi
-
-      # Copy built app to web root
-      cp -r . "$APP_DIR/" 2>/dev/null || {
-        echo -e "${RED}    ✗ Failed to copy app files${NC}"
-        FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (copy)"
-        continue
-      }
 
       # Create .env if needed
       if [ ! -f "$APP_DIR/.env" ] && [ -f "$APP_DIR/.env.example" ]; then
@@ -252,22 +261,27 @@ while IFS= read -r BRANCH; do
         continue
       }
 
-      # Install dependencies
-      echo "      Installing dependencies..."
       cd "$DEPLOY_DIR"
-      # Try npm ci if lock file exists, otherwise npm install with legacy peer deps handling
-      if [ -f "package-lock.json" ]; then
-        npm ci --legacy-peer-deps > /tmp/npm_install.log 2>&1
-      else
-        npm install --legacy-peer-deps > /tmp/npm_install.log 2>&1
-      fi
 
-      if [ $? -ne 0 ]; then
-        cd "$ORIGINAL_DIR"
-        echo -e "${RED}      ✗ npm install failed${NC}"
-        tail -3 /tmp/npm_install.log 2>/dev/null | sed 's/^/        /'
-        FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm)"
-        continue
+      # Skip install if already deployed
+      if [ ! -d "node_modules" ]; then
+        echo "      Installing dependencies..."
+        # Try npm ci if lock file exists, otherwise npm install with legacy peer deps handling
+        if [ -f "package-lock.json" ]; then
+          npm ci --legacy-peer-deps > /tmp/npm_install.log 2>&1
+        else
+          npm install --legacy-peer-deps > /tmp/npm_install.log 2>&1
+        fi
+
+        if [ $? -ne 0 ]; then
+          cd "$ORIGINAL_DIR"
+          echo -e "${RED}      ✗ npm install failed${NC}"
+          tail -3 /tmp/npm_install.log 2>/dev/null | sed 's/^/        /'
+          FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm)"
+          continue
+        fi
+      else
+        echo "      ⊘ Already installed (skipping)"
       fi
 
       # Build if needed
