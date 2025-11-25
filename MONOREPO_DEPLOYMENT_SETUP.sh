@@ -95,12 +95,7 @@ while IFS= read -r BRANCH; do
   rm -rf "$TEMP_BRANCH"
   mkdir -p "$TEMP_BRANCH"
 
-  cd "$TEMP_REPO"
-  git fetch --quiet origin "$BRANCH" 2>/dev/null || {
-    echo -e "${RED}✗ Failed to fetch $BRANCH${NC}"
-    continue
-  }
-
+  # Clone this specific branch to temp directory
   cd "$TEMP_BRANCH"
   git clone --quiet --branch "$BRANCH" --single-branch "$REPO_URL" . 2>/dev/null || {
     echo -e "${RED}✗ Failed to clone $BRANCH${NC}"
