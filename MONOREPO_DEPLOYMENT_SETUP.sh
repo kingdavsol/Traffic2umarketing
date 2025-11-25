@@ -22,6 +22,7 @@ NGINX_SITES="/etc/nginx/sites-available"
 NGINX_ENABLED="/etc/nginx/sites-enabled"
 TEMP_REPO="/tmp/traffic2u_deploy_$$"
 TEMP_BRANCH="/tmp/traffic2u_branch_$$"
+ORIGINAL_DIR=$(pwd)  # Save original directory for reliable cd operations
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
 echo -e "${BLUE}MONOREPO-AWARE DEPLOYMENT SETUP - ALL APPS${NC}"
@@ -69,6 +70,9 @@ git fetch --quiet --all 2>/dev/null
 BRANCHES=$(git branch -r | grep "origin/claude/" | grep -v "plan-vps-deployment" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sort)
 BRANCH_COUNT=$(echo "$BRANCHES" | wc -l)
 
+# Return to original directory before processing branches
+cd "$ORIGINAL_DIR"
+
 echo -e "${GREEN}✓ Found $BRANCH_COUNT branches to deploy${NC}"
 echo ""
 
@@ -109,17 +113,17 @@ while IFS= read -r BRANCH; do
   # Fetch and checkout the specific branch
   cd "$TEMP_BRANCH"
   git fetch --quiet origin "$CLONE_BRANCH:$CLONE_BRANCH" 2>&1 >/dev/null || {
-    cd - > /dev/null
+    cd "$ORIGINAL_DIR"
     echo -e "${RED}✗ Failed to fetch branch $CLONE_BRANCH${NC}"
     continue
   }
 
   git checkout --quiet "$CLONE_BRANCH" 2>&1 >/dev/null || {
-    cd - > /dev/null
+    cd "$ORIGINAL_DIR"
     echo -e "${RED}✗ Failed to checkout branch $CLONE_BRANCH${NC}"
     continue
   }
-  cd - > /dev/null
+  cd "$ORIGINAL_DIR"
 
   # Find all apps in this branch (both root-level single app and monorepo subdirectories)
   # Check for package.json at root (single app)
@@ -178,6 +182,7 @@ while IFS= read -r BRANCH; do
       cd "$APP_DIR"
       if grep -q '"start"' package.json; then
         pm2 start "npm start" --name "$APP_NAME" --append-log > /dev/null 2>&1 || {
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}    ✗ Failed to start app${NC}"
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (start)"
           continue
@@ -186,11 +191,15 @@ while IFS= read -r BRANCH; do
         pm2 start "npm run dev" --name "$APP_NAME" --append-log > /dev/null 2>&1 || \
         pm2 start "node index.js" --name "$APP_NAME" --append-log > /dev/null 2>&1 || \
         pm2 start "node server.js" --name "$APP_NAME" --append-log > /dev/null 2>&1 || {
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}    ✗ Failed to start app${NC}"
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (start)"
           continue
         }
       fi
+
+      # Return to original directory after pm2 start
+      cd "$ORIGINAL_DIR"
 
       # Create Nginx config for subdomain
       create_nginx_config "$APP_NAME" "$PORT"
@@ -234,6 +243,7 @@ while IFS= read -r BRANCH; do
       echo "      Installing dependencies..."
       cd "$DEPLOY_DIR"
       npm install --production --silent > /dev/null 2>&1 || {
+        cd "$ORIGINAL_DIR"
         echo -e "${RED}      ✗ npm install failed${NC}"
         FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (npm)"
         continue
@@ -243,6 +253,7 @@ while IFS= read -r BRANCH; do
       if grep -q '"build"' package.json; then
         echo "      Building application..."
         npm run build --silent > /dev/null 2>&1 || {
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}      ✗ build failed${NC}"
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (build)"
           continue
@@ -267,6 +278,7 @@ while IFS= read -r BRANCH; do
       # Start with PM2
       if grep -q '"start"' package.json; then
         pm2 start "npm start" --name "$APP_NAME" --append-log > /dev/null 2>&1 || {
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}      ✗ Failed to start app${NC}"
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (start)"
           continue
@@ -275,11 +287,15 @@ while IFS= read -r BRANCH; do
         pm2 start "npm run dev" --name "$APP_NAME" --append-log > /dev/null 2>&1 || \
         pm2 start "node index.js" --name "$APP_NAME" --append-log > /dev/null 2>&1 || \
         pm2 start "node server.js" --name "$APP_NAME" --append-log > /dev/null 2>&1 || {
+          cd "$ORIGINAL_DIR"
           echo -e "${RED}      ✗ Failed to start app${NC}"
           FAILED_APPS="$FAILED_APPS\n  - $APP_NAME (start)"
           continue
         }
       fi
+
+      # Return to original directory after pm2 start
+      cd "$ORIGINAL_DIR"
 
       # Create Nginx config for subdomain
       create_nginx_config "$APP_NAME" "$PORT"
@@ -288,9 +304,14 @@ while IFS= read -r BRANCH; do
       ((DEPLOY_COUNT++))
 
     done <<< "$SUBDIRS"
+    # Return to original directory after monorepo processing
+    cd "$ORIGINAL_DIR"
   fi
 
 done <<< "$BRANCHES"
+
+# Ensure we're back in original directory
+cd "$ORIGINAL_DIR"
 
 # Save PM2 state
 pm2 save > /dev/null 2>&1 || true
