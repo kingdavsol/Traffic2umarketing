@@ -1,12 +1,19 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let resend: Resend | null = null
+
+function getResend() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resend
+}
 
 export async function sendVerificationEmail(email: string, token: string) {
   const verifyUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token}`
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: process.env.EMAIL_FROM || 'noreply@captiongenius.com',
       to: email,
       subject: 'Verify your email address',
@@ -75,7 +82,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 
 export async function sendWelcomeEmail(email: string, name: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: process.env.EMAIL_FROM || 'noreply@captiongenius.com',
       to: email,
       subject: 'Welcome to CaptionGenius! 🚀',
