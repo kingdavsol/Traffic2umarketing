@@ -42,7 +42,7 @@ export async function POST(req: Request) {
           data: {
             stripeCustomerId: session.customer as string,
             stripeSubscriptionId: subscription.id,
-            subscriptionTier: tier,
+            subscriptionTier: tier as any,
             subscriptionEndsAt: new Date(subscription.current_period_end * 1000),
             monthlyCapLimit: getCapLimit(tier),
           },
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
           await prisma.user.update({
             where: { id: user.id },
             data: {
-              subscriptionTier: tier,
+              subscriptionTier: tier as any,
               subscriptionEndsAt: new Date(
                 subscription.current_period_end * 1000
               ),
