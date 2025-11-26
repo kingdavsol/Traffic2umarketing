@@ -69,25 +69,10 @@ echo -e "${GREEN}✓ Code cloned successfully${NC}"
 echo ""
 
 # ============================================================================
-# STEP 3: Verify TypeScript compilation
+# STEP 3: Clean and install dependencies
 # ============================================================================
 
-echo -e "${YELLOW}[3/8] Verifying TypeScript...${NC}"
-
-if ! npx tsc --noEmit > /tmp/quicksell_tsc.log 2>&1; then
-  echo -e "${RED}✗ TypeScript errors found${NC}"
-  cat /tmp/quicksell_tsc.log | sed 's/^/    /'
-  exit 1
-fi
-
-echo -e "${GREEN}✓ TypeScript verified${NC}"
-echo ""
-
-# ============================================================================
-# STEP 4: Clean and install dependencies
-# ============================================================================
-
-echo -e "${YELLOW}[4/8] Installing dependencies...${NC}"
+echo -e "${YELLOW}[3/8] Installing dependencies...${NC}"
 
 rm -rf node_modules .next
 npm cache clean --force > /dev/null 2>&1 || true
@@ -106,6 +91,21 @@ if [ ! -d "node_modules/next" ]; then
 fi
 
 echo -e "${GREEN}✓ Dependencies installed${NC}"
+echo ""
+
+# ============================================================================
+# STEP 4: Verify TypeScript compilation
+# ============================================================================
+
+echo -e "${YELLOW}[4/8] Verifying TypeScript...${NC}"
+
+if ! npx tsc --noEmit > /tmp/quicksell_tsc.log 2>&1; then
+  echo -e "${RED}✗ TypeScript errors found${NC}"
+  cat /tmp/quicksell_tsc.log | sed 's/^/    /'
+  exit 1
+fi
+
+echo -e "${GREEN}✓ TypeScript verified${NC}"
 echo ""
 
 # ============================================================================
