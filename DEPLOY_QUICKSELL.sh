@@ -23,6 +23,13 @@ APP_DIR="/var/www/quicksell.monster"
 APP_NAME="quicksell"
 APP_PORT=3000
 
+# Database configuration
+DB_NAME="caption_genius"
+DB_USER="quicksell_user"
+DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+DB_HOST="localhost"
+DB_PORT="5432"
+
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
 echo -e "${BLUE}QUICKSELL DEPLOYMENT${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
@@ -32,7 +39,7 @@ echo ""
 # STEP 1: Stop existing processes
 # ============================================================================
 
-echo -e "${YELLOW}[1/7] Stopping existing processes...${NC}"
+echo -e "${YELLOW}[1/8] Stopping existing processes...${NC}"
 
 pm2 stop "$APP_NAME" > /dev/null 2>&1 || true
 pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
@@ -45,10 +52,10 @@ echo -e "${GREEN}✓ Processes stopped${NC}"
 echo ""
 
 # ============================================================================
-# STEP 2: Clone/update code directly to app directory
+# STEP 2: Clone code directly to app directory
 # ============================================================================
 
-echo -e "${YELLOW}[2/7] Cloning code from GitHub...${NC}"
+echo -e "${YELLOW}[2/8] Cloning code from GitHub...${NC}"
 
 # Remove old directory and clone fresh
 rm -rf "$APP_DIR"
@@ -65,7 +72,7 @@ echo ""
 # STEP 3: Verify TypeScript compilation
 # ============================================================================
 
-echo -e "${YELLOW}[3/7] Verifying TypeScript...${NC}"
+echo -e "${YELLOW}[3/8] Verifying TypeScript...${NC}"
 
 if ! npx tsc --noEmit > /tmp/quicksell_tsc.log 2>&1; then
   echo -e "${RED}✗ TypeScript errors found${NC}"
@@ -80,7 +87,7 @@ echo ""
 # STEP 4: Clean and install dependencies
 # ============================================================================
 
-echo -e "${YELLOW}[4/7] Installing dependencies...${NC}"
+echo -e "${YELLOW}[4/8] Installing dependencies...${NC}"
 
 rm -rf node_modules .next
 npm cache clean --force > /dev/null 2>&1 || true
@@ -102,32 +109,71 @@ echo -e "${GREEN}✓ Dependencies installed${NC}"
 echo ""
 
 # ============================================================================
-# STEP 5: Create .env file
+# STEP 5: Setup PostgreSQL database
 # ============================================================================
 
-echo -e "${YELLOW}[5/7] Creating .env file...${NC}"
+echo -e "${YELLOW}[5/8] Setting up PostgreSQL database...${NC}"
 
-cat > "$APP_DIR/.env" << 'ENV_EOF'
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/caption_genius"
+# Check if PostgreSQL is installed
+if ! command -v psql &> /dev/null; then
+  echo -e "${RED}✗ PostgreSQL is not installed${NC}"
+  echo "  Install with: sudo apt install postgresql postgresql-contrib"
+  exit 1
+fi
 
-# NextAuth
-NEXTAUTH_SECRET="your-nextauth-secret-here"
+# Check if PostgreSQL is running
+if ! sudo systemctl is-active --quiet postgresql; then
+  echo -e "${YELLOW}  Starting PostgreSQL...${NC}"
+  sudo systemctl start postgresql
+fi
+
+# Create database and user
+sudo -u postgres psql << PSQL_EOF > /dev/null 2>&1 || true
+DROP DATABASE IF EXISTS $DB_NAME;
+DROP USER IF EXISTS $DB_USER;
+CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';
+CREATE DATABASE $DB_NAME OWNER $DB_USER;
+GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+PSQL_EOF
+
+# Build DATABASE_URL
+DATABASE_URL="postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME"
+
+echo -e "${GREEN}✓ Database created${NC}"
+echo "  Database: $DB_NAME"
+echo "  User: $DB_USER"
+echo ""
+
+# ============================================================================
+# STEP 6: Generate secrets and create .env file
+# ============================================================================
+
+echo -e "${YELLOW}[6/8] Generating secrets and creating .env...${NC}"
+
+# Generate NEXTAUTH_SECRET
+NEXTAUTH_SECRET=$(openssl rand -base64 32)
+
+cat > "$APP_DIR/.env" << ENV_EOF
+# Database (auto-generated)
+DATABASE_URL="$DATABASE_URL"
+
+# NextAuth (auto-generated)
+NEXTAUTH_SECRET="$NEXTAUTH_SECRET"
 NEXTAUTH_URL="https://quicksell.monster"
 
-# Resend Email
+# Resend Email (UPDATE WITH YOUR KEY)
 RESEND_API_KEY="re_your_resend_api_key"
 EMAIL_FROM="noreply@captiongenius.com"
 
-# OpenAI
+# OpenAI (UPDATE WITH YOUR KEY)
 OPENAI_API_KEY="sk_your_openai_api_key"
 
-# Stripe
+# Stripe (UPDATE WITH YOUR KEYS)
 STRIPE_SECRET_KEY="sk_live_your_stripe_secret_key"
 STRIPE_PUBLISHABLE_KEY="pk_live_your_stripe_publishable_key"
 STRIPE_WEBHOOK_SECRET="whsec_your_webhook_secret"
 
-# Stripe Price IDs
+# Stripe Price IDs (UPDATE WITH YOUR PRICE IDS)
 STRIPE_BASIC_PRICE_ID="price_basic_monthly"
 STRIPE_BUILDER_PRICE_ID="price_builder_monthly"
 STRIPE_PREMIUM_PRICE_ID="price_premium_monthly"
@@ -136,24 +182,26 @@ STRIPE_PREMIUM_PRICE_ID="price_premium_monthly"
 NEXT_PUBLIC_APP_URL="https://quicksell.monster"
 ENV_EOF
 
-echo -e "${YELLOW}  ⚠ .env created with placeholders${NC}"
-echo -e "${YELLOW}  Edit with actual values:${NC}"
+echo -e "${YELLOW}  ⚠ .env created with auto-generated values${NC}"
+echo ""
+echo -e "${YELLOW}  Update these values in: $APP_DIR/.env${NC}"
 echo ""
 echo "    nano $APP_DIR/.env"
 echo ""
-echo -e "${YELLOW}  Required values to update:${NC}"
-echo "    - DATABASE_URL"
-echo "    - NEXTAUTH_SECRET"
-echo "    - OPENAI_API_KEY"
-echo "    - STRIPE_* keys"
-echo "    - RESEND_API_KEY"
+echo -e "${YELLOW}  Required updates:${NC}"
+echo "    - RESEND_API_KEY (from Resend)"
+echo "    - OPENAI_API_KEY (from OpenAI)"
+echo "    - STRIPE_SECRET_KEY"
+echo "    - STRIPE_PUBLISHABLE_KEY"
+echo "    - STRIPE_WEBHOOK_SECRET"
+echo "    - STRIPE_*_PRICE_ID (your Stripe price IDs)"
 echo ""
 
-read -p "Press ENTER once you've updated .env with actual values (or Ctrl+C to abort): "
+read -p "Press ENTER once you've updated .env with your API keys (or Ctrl+C to abort): "
 
-# Verify .env is populated
-if grep -q "your-" "$APP_DIR/.env"; then
-  echo -e "${RED}✗ .env still contains placeholders - please update it${NC}"
+# Verify critical values are updated
+if grep -q "your_" "$APP_DIR/.env"; then
+  echo -e "${RED}✗ .env still contains placeholder values - please update it${NC}"
   exit 1
 fi
 
@@ -161,10 +209,10 @@ echo -e "${GREEN}✓ .env configured${NC}"
 echo ""
 
 # ============================================================================
-# STEP 6: Build application
+# STEP 7: Build application
 # ============================================================================
 
-echo -e "${YELLOW}[6/7] Building application...${NC}"
+echo -e "${YELLOW}[7/8] Building application...${NC}"
 
 npm run build > /tmp/quicksell_build.log 2>&1
 
@@ -183,10 +231,10 @@ echo -e "${GREEN}✓ Application built${NC}"
 echo ""
 
 # ============================================================================
-# STEP 7: Start with PM2
+# STEP 8: Start with PM2
 # ============================================================================
 
-echo -e "${YELLOW}[7/7] Starting with PM2...${NC}"
+echo -e "${YELLOW}[8/8] Starting with PM2...${NC}"
 
 cd "$APP_DIR"
 
@@ -233,6 +281,13 @@ echo "Logs:"
 pm2 logs "$APP_NAME" --lines 20
 echo ""
 
+echo "Database credentials:"
+echo "  Host: $DB_HOST"
+echo "  Port: $DB_PORT"
+echo "  Database: $DB_NAME"
+echo "  User: $DB_USER"
+echo ""
+
 echo "Useful commands:"
 echo "  View logs:      pm2 logs $APP_NAME"
 echo "  Monitor:        pm2 monit"
@@ -243,4 +298,8 @@ echo ""
 echo "Nginx logs:"
 echo "  Access: tail -f /var/log/nginx/quicksell.monster.access.log"
 echo "  Errors: tail -f /var/log/nginx/quicksell.monster.error.log"
+echo ""
+
+echo "Database access:"
+echo "  psql -U $DB_USER -h $DB_HOST -d $DB_NAME"
 echo ""
