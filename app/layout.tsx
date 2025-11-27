@@ -3,10 +3,13 @@ import { Inter } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import dynamic from 'next/dynamic'
 
+export const dynamic = 'force-dynamic'
+
 const inter = Inter({ subsets: ['latin'] })
 
-const Providers = dynamic(() => import('./providers').then(mod => ({ default: mod.Providers })), {
+const Providers = dynamic(() => import('./providers'), {
   ssr: false,
+  loading: () => null,
 })
 
 export default function RootLayout({
