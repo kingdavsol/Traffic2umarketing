@@ -22,6 +22,7 @@ NC='\033[0m'
 REPO_URL="https://github.com/kingdavsol/Traffic2umarketing.git"
 BRANCH="${1:-claude/fix-vps-deployment-013taUqhcCQwKrcLj98DZWZ1}"
 DEPLOY_DIR="/var/www/quicksell.monster"
+TEMP_DIR="/tmp/quicksell-deploy-$$"
 APP_NAME="quicksell"
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
@@ -57,26 +58,28 @@ echo -e "${BLUE}[2/9] Creating deployment directory...${NC}"
 
 # Create deployment directory if it doesn't exist
 mkdir -p "$DEPLOY_DIR"
-cd "$DEPLOY_DIR"
 
 echo -e "${GREEN}  ✓ Directory ready: $DEPLOY_DIR${NC}"
 
 echo ""
 echo -e "${BLUE}[3/9] Cloning/updating repository...${NC}"
 
-if [ -d ".git" ]; then
-  echo "  Repository exists, pulling latest changes..."
-  git fetch origin
-  git checkout "$BRANCH" 2>/dev/null || git checkout -b "${BRANCH#origin/}" "$BRANCH"
-  git pull origin "${BRANCH#origin/}" || git pull
-else
-  echo "  Cloning repository..."
-  git clone "$REPO_URL" .
-  git checkout "$BRANCH" 2>/dev/null || git checkout -b "${BRANCH#origin/}" "$BRANCH"
+# Clone to temp directory
+if [ -d "$TEMP_DIR" ]; then
+  rm -rf "$TEMP_DIR"
 fi
 
-# Move into quicksell subdirectory
-cd quicksell
+echo "  Cloning repository to temporary location..."
+git clone --branch "$BRANCH" --depth 1 "$REPO_URL" "$TEMP_DIR"
+
+echo "  Copying QuickSell files to deployment directory..."
+# Copy the quicksell subdirectory contents to the deploy directory
+rsync -av --delete "$TEMP_DIR/quicksell/" "$DEPLOY_DIR/"
+
+# Clean up temp directory
+rm -rf "$TEMP_DIR"
+
+cd "$DEPLOY_DIR"
 
 echo -e "${GREEN}  ✓ Repository ready${NC}"
 
