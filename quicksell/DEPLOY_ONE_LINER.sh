@@ -52,12 +52,32 @@ rm -rf "$TEMP_DIR"
 # Setup environment
 cd "$DEPLOY_DIR"
 if [ ! -f ".env" ]; then
+  echo "🔧 Auto-configuring .env file..."
+
+  # Generate secure passwords
+  DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
+  REDIS_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
+  JWT_SECRET=$(openssl rand -base64 48 | tr -d "=+/" | cut -c1-64)
+
+  # Copy and configure .env
   cp .env.example .env
-  echo "⚠️  Please edit .env with your credentials: nano .env"
-  echo "   Required: DB_PASSWORD, REDIS_PASSWORD, JWT_SECRET, OPENAI_API_KEY"
+  sed -i "s|DB_PASSWORD=password|DB_PASSWORD=$DB_PASSWORD|g" .env
+  sed -i "s|REDIS_PASSWORD=|REDIS_PASSWORD=$REDIS_PASSWORD|g" .env
+  sed -i "s|JWT_SECRET=your-super-secret-jwt-key-change-in-production|JWT_SECRET=$JWT_SECRET|g" .env
+  sed -i "s|NODE_ENV=development|NODE_ENV=production|g" .env
+
+  # Set production URLs
+  HOSTNAME=$(hostname -I | awk '{print $1}')
+  sed -i "s|CORS_ORIGINS=http://localhost:3000,http://localhost:8081|CORS_ORIGINS=http://$HOSTNAME,https://$HOSTNAME|g" .env
+
+  echo "✅ .env configured with secure auto-generated passwords"
+  echo "   Database Password: $DB_PASSWORD"
+  echo "   Redis Password:    $REDIS_PASSWORD"
+  echo "   Server IP:         $HOSTNAME"
   echo ""
-  read -p "Press Enter to edit .env now, or Ctrl+C to edit later..."
-  ${EDITOR:-nano} .env
+  echo "⚠️  OpenAI/Stripe API keys not set (optional features disabled)"
+  echo "   Edit .env to add: nano .env"
+  echo ""
 fi
 
 # Start services
