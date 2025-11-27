@@ -1,217 +1,308 @@
-# QuickSell - Photo to Marketplace Selling App
+# CaptionGenius - AI-Powered Social Media Caption Generator
 
-A gamified mobile and web application that allows users to quickly photograph items and automatically generate optimized listings across multiple online marketplaces (eBay, Facebook Marketplace, Craigslist, and more).
+A full-featured SaaS application that generates engaging social media captions using AI. Built with Next.js 14, TypeScript, Prisma, and OpenAI.
 
-## 🎯 Project Overview
+## Features
 
-QuickSell transforms the item selling experience by:
-- **Instant Listings**: Take a photo, get automatic listings on multiple marketplaces
-- **Smart Pricing**: AI-powered pricing estimates based on market data
-- **Automated Descriptions**: Generate professional product descriptions instantly
-- **Gamification**: Earn points, badges, and track sales with cartoon characters
-- **Multi-Platform**: Available on Web, iOS, and Android
-- **Sales Analytics**: Monitor all your listings and sales in one dashboard
-- **Smart Shipping**: Automatic shipping cost calculation and recommendations
+### Core Features
+- **AI Caption Generation**: Generate engaging captions for Instagram, Facebook, Twitter, LinkedIn, and TikTok
+- **Multi-Platform Support**: Optimized captions for 5 major social media platforms
+- **Customizable Tone & Style**: Choose from 7 different tones (Professional, Casual, Funny, etc.)
+- **Hashtag Integration**: Automatic hashtag suggestions and research
+- **Emoji Support**: Natural emoji integration in captions
 
-## 📱 Architecture
+### Unique Features
+- **Trending Memes**: Access real-time trending memes and viral content ideas
+- **Hashtag Analytics**: Discover high-performing hashtags with popularity metrics
+- **Bulk Generation**: Generate up to 10 captions at once (Premium plan)
+- **Caption Library**: Save and organize your favorite captions
+- **Caption History**: Access all previously generated captions
 
-### Project Structure
-```
-QuickSell/
-├── frontend/                 # Web application (React.js)
-├── mobile/                   # Mobile app (React Native)
-├── backend/                  # API server (Node.js/Express)
-├── shared/                   # Shared utilities and types
-├── docs/                     # Documentation
-├── docker-compose.yml        # Docker setup
-└── README.md
-```
+### Subscription Tiers
+1. **Free Tier**
+   - 10 captions per month
+   - 1 social platform
+   - Basic features
 
-## 🏗️ Tech Stack
+2. **Basic ($9/month)**
+   - 100 captions per month
+   - All 5 platforms
+   - All tone options
+   - Hashtag research
 
-### Frontend
-- **Framework**: React.js with TypeScript
-- **UI Library**: Material-UI + Custom Cartoon Components
-- **State Management**: Redux Toolkit
-- **Charts**: Chart.js for analytics
+3. **Builder ($19/month)** - Most Popular
+   - 500 captions per month
+   - Trending memes access
+   - Hashtag analytics
+   - Bulk generation (5x)
+   - Custom templates
 
-### Mobile
-- **Framework**: React Native with Expo
-- **Cross-Platform**: iOS and Android
-- **State Management**: Redux Toolkit
-- **Camera**: React Native Camera/CameraRoll
+4. **Premium ($29/month)**
+   - Unlimited captions
+   - AI caption improvement
+   - Bulk generation (10x)
+   - Advanced analytics
+   - Priority support
+   - API access
 
-### Backend
-- **Runtime**: Node.js with Express
-- **Database**: PostgreSQL + Redis
-- **Image Processing**: Sharp for optimization
-- **AI/ML**: OpenAI API for descriptions, TensorFlow.js for image classification
-- **Queue System**: Bull for async jobs
-- **Authentication**: JWT with OAuth2 social login
+### Authentication & Security
+- Email authentication with Resend
+- Email verification flow
+- Secure password hashing with bcrypt
+- NextAuth.js session management
+- Protected routes with middleware
 
-### Marketplace Integrations
-- eBay API
-- Facebook Marketplace Graph API
-- Craigslist (web scraping/API if available)
-- Letgo/OLX API
-- Mercari API
-- Poshmark API
-- Shopify (if user has store)
+### Payments
+- Stripe integration for subscriptions
+- Automatic subscription management
+- Billing portal for users
+- Webhook handling for subscription events
 
-## ✨ Key Features
+### Admin Dashboard
+- User statistics
+- Revenue analytics
+- Subscription distribution
+- Growth metrics
 
-### Phase 1: MVP (Current)
-- [x] User authentication and profiles
-- [x] Camera integration for item photos
-- [x] Basic product info capture
-- [x] AI-powered description generation
-- [x] Price estimation system
-- [x] Single marketplace listing (eBay as MVP)
-- [x] Basic gamification (points, badges)
-- [x] Simple analytics dashboard
-- [x] Free tier with ads
+## Tech Stack
 
-### Phase 2: Multi-Marketplace
-- [ ] Facebook Marketplace integration
-- [ ] Craigslist integration
-- [ ] Letgo/OLX integration
-- [ ] Batch listing to multiple platforms
-- [ ] Cross-platform analytics
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js + Resend
+- **Payments**: Stripe
+- **AI**: OpenAI GPT-4
+- **Styling**: Tailwind CSS + Radix UI
+- **Deployment**: Vercel-ready
 
-### Phase 3: Advanced Features
-- [ ] AI image classification for automatic categorization
-- [ ] Computer vision for condition assessment
-- [ ] Smart shipping cost calculator
-- [ ] Inventory management system
-- [ ] Seller reputation system
-- [ ] Advanced gamification (leaderboards, challenges)
-
-### Phase 4: Enterprise
-- [ ] Business analytics and insights
-- [ ] Bulk import/export
-- [ ] API for third-party integrations
-- [ ] White-label options
-
-## 🎮 Gamification System
-
-Users earn rewards through:
-- **Points**: Earned per listing, sale, positive review
-- **Badges**: Milestones (First Sale, 10 Items Sold, Power Seller, etc.)
-- **Levels**: Progressive seller levels with unlocked features
-- **Challenges**: Weekly missions (e.g., "Sell 5 items", "Take 20 photos")
-- **Leaderboards**: Compete with other sellers
-- **Cartoon Characters**: Progress through character evolution
-
-## 💰 Monetization
-
-### Free Tier
-- Up to 5 listings per month
-- Basic description generation
-- In-app advertisements
-- Single marketplace support (eBay)
-- Limited analytics
-
-### Premium Tier ($4.99/month)
-- Unlimited listings
-- Priority listing boost
-- Multiple marketplace support
-- Advanced analytics
-- Bulk photo uploads (up to 100 items)
-- Custom pricing adjustments
-- No ads
-
-### Premium Plus ($9.99/month)
-- All Premium features
-- AI image classification
-- Inventory management
-- Shipping cost optimization
-- Email support
-- Advanced seller insights
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- Node.js 16+
-- PostgreSQL 12+
-- Redis 6+
+
+- Node.js 18+ and npm
+- PostgreSQL database
 - OpenAI API key
-- Marketplace API keys (eBay, Facebook, etc.)
+- Resend API key (for emails)
+- Stripe account (for payments)
 
 ### Installation
 
+1. **Clone the repository**
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd QuickSell
+git clone <your-repo-url>
+cd Traffic2umarketing
+```
 
-# Install dependencies
+2. **Install dependencies**
+```bash
 npm install
+```
 
-# Set up environment variables
-cp .env.example .env
+3. **Set up environment variables**
 
-# Run database migrations
-npm run migrate
+Create a `.env` file in the root directory:
 
-# Start development server
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/caption_genius"
+
+# NextAuth
+NEXTAUTH_SECRET="your-nextauth-secret-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Resend Email
+RESEND_API_KEY="re_your_resend_api_key"
+EMAIL_FROM="noreply@captiongenius.com"
+
+# OpenAI
+OPENAI_API_KEY="sk-your-openai-api-key"
+
+# Stripe
+STRIPE_SECRET_KEY="sk_test_your_stripe_secret_key"
+STRIPE_PUBLISHABLE_KEY="pk_test_your_stripe_publishable_key"
+STRIPE_WEBHOOK_SECRET="whsec_your_webhook_secret"
+
+# Stripe Price IDs (create products in Stripe Dashboard)
+STRIPE_BASIC_PRICE_ID="price_basic_monthly"
+STRIPE_BUILDER_PRICE_ID="price_builder_monthly"
+STRIPE_PREMIUM_PRICE_ID="price_premium_monthly"
+
+# App URLs
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+4. **Set up the database**
+
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate dev
+
+# (Optional) Seed the database with sample data
+npx prisma db seed
+```
+
+5. **Run the development server**
+
+```bash
 npm run dev
 ```
 
-### Docker Setup
-```bash
-docker-compose up
+Open [http://localhost:3000](http://localhost:3000) to see the application.
+
+## Stripe Setup
+
+1. Create a Stripe account at [stripe.com](https://stripe.com)
+2. Go to Products and create three subscription products:
+   - Basic: $9/month
+   - Builder: $19/month
+   - Premium: $29/month
+3. Copy the price IDs and add them to your `.env` file
+4. Set up a webhook endpoint pointing to `/api/stripe/webhook`
+5. Copy the webhook secret and add it to your `.env` file
+
+## Resend Setup
+
+1. Create a Resend account at [resend.com](https://resend.com)
+2. Verify your domain (or use Resend's test domain for development)
+3. Create an API key
+4. Add the API key to your `.env` file
+
+## OpenAI Setup
+
+1. Create an OpenAI account at [platform.openai.com](https://platform.openai.com)
+2. Generate an API key
+3. Add the API key to your `.env` file
+4. Ensure you have credits in your OpenAI account
+
+## Deployment
+
+### Deploy to Vercel
+
+1. Push your code to GitHub
+2. Import your repository in Vercel
+3. Add all environment variables in Vercel dashboard
+4. Deploy
+
+### Database Setup for Production
+
+Use a hosted PostgreSQL database:
+- [Supabase](https://supabase.com) (Free tier available)
+- [Railway](https://railway.app)
+- [Neon](https://neon.tech)
+
+Update the `DATABASE_URL` in your production environment variables.
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+## Project Structure
+
+```
+├── app/                      # Next.js app directory
+│   ├── api/                 # API routes
+│   │   ├── auth/           # Authentication endpoints
+│   │   ├── captions/       # Caption generation endpoints
+│   │   ├── stripe/         # Stripe integration
+│   │   └── trending/       # Trending content endpoints
+│   ├── dashboard/          # Dashboard pages
+│   ├── admin/              # Admin dashboard
+│   ├── login/              # Login page
+│   ├── register/           # Registration page
+│   └── page.tsx            # Landing page
+├── components/             # React components
+│   ├── ui/                # UI components (shadcn/ui)
+│   └── dashboard/         # Dashboard-specific components
+├── lib/                   # Utility functions
+│   ├── auth.ts           # NextAuth configuration
+│   ├── db.ts             # Prisma client
+│   ├── email.ts          # Email utilities
+│   ├── openai.ts         # OpenAI integration
+│   ├── stripe.ts         # Stripe utilities
+│   └── utils.ts          # Helper functions
+├── prisma/               # Database schema
+│   └── schema.prisma
+└── types/                # TypeScript types
 ```
 
-## 📚 Documentation
+## API Routes
 
-### Getting Started
-- **[Quick Start](./QUICKSTART.md)** - Get started in 5 minutes ⚡
-- **[Getting Started Guide](./docs/GETTING_STARTED.md)** - Detailed setup instructions
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/verify-email` - Verify email address
+- `POST /api/auth/[...nextauth]` - NextAuth endpoints
 
-### Architecture & Design
-- **[Architecture Design](./docs/ARCHITECTURE.md)** - System architecture and components
-- **[Database Schema](./docs/DATABASE.md)** - Database design and tables
-- **[Marketplace Integration](./docs/MARKETPLACES.md)** - 20+ marketplace support
+### Captions
+- `POST /api/captions/generate` - Generate captions
+- `GET /api/captions/history` - Get caption history
+- `POST /api/captions/save` - Save caption to library
+- `DELETE /api/captions/save` - Remove saved caption
 
-### Features
-- **[Gamification System](./docs/GAMIFICATION.md)** - Points, badges, challenges, leaderboards
-- **[Deployment Guide](./docs/DEPLOYMENT.md)** - yakit.store, Android, iOS deployment
-- **[Roadmap](./ROADMAP.md)** - Future features and milestones
+### Trending
+- `GET /api/trending/memes` - Get trending memes
+- `GET /api/trending/hashtags` - Get trending hashtags
 
-### Contributing
-- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute
-- **[Makefile Commands](./Makefile)** - Development commands
+### Stripe
+- `POST /api/stripe/checkout` - Create checkout session
+- `POST /api/stripe/portal` - Create billing portal session
+- `POST /api/stripe/webhook` - Handle Stripe webhooks
 
-## 🔐 Security
+## Development
 
-- End-to-end encrypted user data
-- PCI DSS compliance for payments
-- OAuth2 for marketplace authentication
-- Rate limiting on API endpoints
-- Input validation and sanitization
-- Regular security audits
+### Run Prisma Studio
+```bash
+npx prisma studio
+```
 
-## 📈 Roadmap
+### Run type checking
+```bash
+npm run lint
+```
 
-- **Q1**: MVP with eBay integration and basic gamification
-- **Q2**: Multi-marketplace support and advanced analytics
-- **Q3**: AI image classification and inventory management
-- **Q4**: Enterprise features and white-label options
+### Build for production
+```bash
+npm run build
+```
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
-MIT License - see [LICENSE](./LICENSE) file
+This project is licensed under the MIT License.
 
-## 📞 Support
+## Support
 
-- Email: support@quicksell.app
-- Chat: In-app support chat
-- Documentation: docs.quicksell.app
+For support, email support@captiongenius.com or open an issue on GitHub.
+
+## Roadmap
+
+- [ ] Social media scheduling integration
+- [ ] Caption performance analytics
+- [ ] Team collaboration features
+- [ ] Mobile app (React Native)
+- [ ] API access for Premium users
+- [ ] Multi-language support
+- [ ] Caption A/B testing
+- [ ] Integration with social media management tools
+
+## Market Opportunity
+
+- **Market Size**: $15B+ (Social Media Management)
+- **Target Users**: Content creators, influencers, marketers, businesses
+- **Pain Point**: Content creators spend 30-60 minutes daily writing captions
+- **Solution**: Generate perfect captions in seconds with AI
+
+## Business Model
+
+- **Pricing**: $9-$29/month
+- **Target**: 100K+ users at scale
+- **Marketing**: SEO, organic social media, influencer partnerships
+- **Build Cost**: $2K-5K
+- **Time to Market**: 3-4 weeks
 
 ---
 
-**Making it easy to sell everything!** 🚀
+Built with ❤️ using Next.js, TypeScript, and OpenAI
