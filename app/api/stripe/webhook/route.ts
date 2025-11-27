@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/db'
 import Stripe from 'stripe'
+import type { SubscriptionTier } from '@prisma/client'
 
 export async function POST(req: Request) {
   const body = await req.text()
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
           data: {
             stripeCustomerId: session.customer as string,
             stripeSubscriptionId: subscription.id,
-            subscriptionTier: tier as any,
+            subscriptionTier: tier,
             subscriptionEndsAt: new Date(subscription.current_period_end * 1000),
             monthlyCapLimit: getCapLimit(tier),
           },
@@ -82,7 +83,7 @@ export async function POST(req: Request) {
           await prisma.user.update({
             where: { id: user.id },
             data: {
-              subscriptionTier: tier as any,
+              subscriptionTier: tier,
               subscriptionEndsAt: new Date(
                 subscription.current_period_end * 1000
               ),
@@ -119,7 +120,7 @@ export async function POST(req: Request) {
   }
 }
 
-function getTierFromPriceId(priceId: string): string {
+function getTierFromPriceId(priceId: string): SubscriptionTier {
   if (priceId === process.env.STRIPE_BASIC_PRICE_ID) return 'BASIC'
   if (priceId === process.env.STRIPE_BUILDER_PRICE_ID) return 'BUILDER'
   if (priceId === process.env.STRIPE_PREMIUM_PRICE_ID) return 'PREMIUM'
