@@ -57,6 +57,9 @@ echo ""
 
 echo -e "${YELLOW}[2/8] Cloning code from GitHub...${NC}"
 
+# Change to safe directory before removing app directory
+cd /tmp
+
 # Remove old directory and clone fresh
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
