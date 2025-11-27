@@ -7,26 +7,42 @@
 - Root/sudo access
 - Domain pointed to your server IP (optional but recommended)
 
-### Quick Deploy
+### Quick Deploy (One Command)
 
 ```bash
 # 1. SSH into your VPS
 ssh root@your-server-ip
 
 # 2. Install Docker and Docker Compose (if not installed)
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
-apt-get install -y docker-compose
+curl -fsSL https://get.docker.com | sh
+apt-get install -y docker-compose rsync
 
-# 3. Clone and deploy QuickSell
-git clone https://github.com/kingdavsol/Traffic2umarketing.git /var/www/quicksell.monster
-cd /var/www/quicksell.monster
+# 3. Run the automated deployment (one command!)
+curl -fsSL https://raw.githubusercontent.com/kingdavsol/Traffic2umarketing/claude/fix-vps-deployment-013taUqhcCQwKrcLj98DZWZ1/quicksell/DEPLOY_FROM_GITHUB.sh | sudo bash
+```
+
+### Manual Deploy (If you prefer step-by-step)
+
+```bash
+# Remove old directory if exists
+rm -rf /var/www/quicksell.monster
+
+# Clone repository to temp location
+git clone https://github.com/kingdavsol/Traffic2umarketing.git /tmp/quicksell-temp
+cd /tmp/quicksell-temp
 git checkout claude/fix-vps-deployment-013taUqhcCQwKrcLj98DZWZ1
-cd quicksell
 
-# 4. Run the automated deployment script
+# Copy QuickSell to deployment directory
+mkdir -p /var/www/quicksell.monster
+cp -r quicksell/* /var/www/quicksell.monster/
+cd /var/www/quicksell.monster
+
+# Run deployment
 chmod +x DEPLOY_FROM_GITHUB.sh
 sudo ./DEPLOY_FROM_GITHUB.sh
+
+# Clean up
+rm -rf /tmp/quicksell-temp
 ```
 
 The script will:
