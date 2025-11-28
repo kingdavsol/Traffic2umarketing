@@ -132,18 +132,18 @@ export const AchievementCelebration: React.FC<AchievementCelebrationProps> = ({
               <ellipse cx="100" cy="160" rx="45" ry="50" fill="#FF6B6B" />
 
               {/* Arms up celebrating */}
-              <ellipse cx="50" cy="120" rx="15" ry="40" fill="#FF6B6B" sx={{ transform: 'rotate(-45deg)' }} />
-              <ellipse cx="150" cy="120" rx="15" ry="40" fill="#FF6B6B" sx={{ transform: 'rotate(45deg)' }} />
+              <ellipse cx="50" cy="120" rx="15" ry="40" fill="#FF6B6B" transform="rotate(-45 50 120)" />
+              <ellipse cx="150" cy="120" rx="15" ry="40" fill="#FF6B6B" transform="rotate(45 150 120)" />
 
               {/* Feet */}
               <ellipse cx="85" cy="210" rx="15" ry="20" fill="#FF6B6B" />
               <ellipse cx="115" cy="210" rx="15" ry="20" fill="#FF6B6B" />
 
               {/* Stars */}
-              <text x="40" y="60" fontSize="24" sx={{ animation: 'pulse 0.6s ease-in-out' }}>
+              <text x="40" y="60" fontSize="24">
                 ⭐
               </text>
-              <text x="160" y="80" fontSize="24" sx={{ animation: 'pulse 0.6s ease-in-out 0.2s' }}>
+              <text x="160" y="80" fontSize="24">
                 ✨
               </text>
             </svg>
