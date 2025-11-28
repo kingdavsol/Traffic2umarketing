@@ -13,9 +13,9 @@
 # 1. SSH into your VPS
 ssh root@your-server-ip
 
-# 2. Install Docker and Docker Compose (if not installed)
+# 2. Install Docker (includes Compose V2) and rsync
 curl -fsSL https://get.docker.com | sh
-apt-get install -y docker-compose rsync
+apt-get install -y rsync
 
 # 3. Run the automated deployment (one command!)
 curl -fsSL https://raw.githubusercontent.com/kingdavsol/Traffic2umarketing/claude/fix-vps-deployment-013taUqhcCQwKrcLj98DZWZ1/quicksell/DEPLOY_FROM_GITHUB.sh | sudo bash
@@ -78,13 +78,13 @@ STRIPE_SECRET_KEY=sk_live_your-stripe-key
 
 ```bash
 # Check all containers are running
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml ps
 
 # Test backend API
 curl http://localhost:5000/health
 
 # View logs
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml logs -f
 ```
 
 ### Access Your Application
@@ -131,7 +131,7 @@ See `docs/DEPLOYMENT.md` for full Nginx configuration
 ### 3. Set Up Automated Backups
 ```bash
 # Backup database daily
-0 2 * * * docker-compose -f /var/www/quicksell.monster/quicksell/docker-compose.prod.yml exec -T postgres pg_dump -U postgres quicksell > /backups/quicksell-$(date +\%Y\%m\%d).sql
+0 2 * * * docker compose -f /var/www/quicksell.monster/docker-compose.prod.yml exec -T postgres pg_dump -U postgres quicksell > /backups/quicksell-$(date +\%Y\%m\%d).sql
 ```
 
 ### 4. Configure Monitoring
@@ -146,16 +146,16 @@ See `docs/DEPLOYMENT.md` for full Nginx configuration
 ### Containers not starting?
 ```bash
 # Check logs
-docker-compose -f docker-compose.prod.yml logs
+docker compose -f docker-compose.prod.yml logs
 
 # Restart specific service
-docker-compose -f docker-compose.prod.yml restart backend
+docker compose -f docker-compose.prod.yml restart backend
 ```
 
 ### Database connection errors?
 ```bash
 # Check PostgreSQL is healthy
-docker-compose -f docker-compose.prod.yml exec postgres pg_isready
+docker compose -f docker-compose.prod.yml exec postgres pg_isready
 
 # Verify environment variables
 cat .env | grep DB_
@@ -164,7 +164,7 @@ cat .env | grep DB_
 ### Redis connection errors?
 ```bash
 # Test Redis connection
-docker-compose -f docker-compose.prod.yml exec redis redis-cli ping
+docker compose -f docker-compose.prod.yml exec redis redis-cli ping
 
 # Check Redis password
 cat .env | grep REDIS_PASSWORD

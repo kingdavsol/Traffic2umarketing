@@ -29,8 +29,10 @@ echo "📦 Installing dependencies..."
 if ! command -v docker &> /dev/null; then
   curl -fsSL https://get.docker.com | sh
 fi
-if ! command -v docker-compose &> /dev/null; then
-  apt-get update && apt-get install -y docker-compose
+# Docker Compose V2 is bundled with Docker, verify it works
+if ! docker compose version &> /dev/null; then
+  echo "❌ Docker Compose V2 not found. Please install Docker 20.10+ which includes Compose V2"
+  exit 1
 fi
 if ! command -v rsync &> /dev/null; then
   apt-get update && apt-get install -y rsync
@@ -82,8 +84,8 @@ fi
 
 # Start services
 echo "🐳 Starting Docker containers..."
-docker-compose -f docker-compose.prod.yml down 2>/dev/null || true
-docker-compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml down 2>/dev/null || true
+docker compose -f docker-compose.prod.yml up -d --build
 
 echo ""
 echo "✅ DEPLOYMENT COMPLETE!"
@@ -93,6 +95,6 @@ echo "   Frontend: http://$(hostname -I | awk '{print $1}')"
 echo "   Backend:  http://$(hostname -I | awk '{print $1}'):5000"
 echo "   Health:   http://$(hostname -I | awk '{print $1}'):5000/health"
 echo ""
-echo "📊 Check status: cd /var/www/quicksell.monster && docker-compose -f docker-compose.prod.yml ps"
-echo "📝 View logs:    cd /var/www/quicksell.monster && docker-compose -f docker-compose.prod.yml logs -f"
+echo "📊 Check status: cd /var/www/quicksell.monster && docker compose -f docker-compose.prod.yml ps"
+echo "📝 View logs:    cd /var/www/quicksell.monster && docker compose -f docker-compose.prod.yml logs -f"
 echo ""

@@ -43,7 +43,7 @@ fi
 echo -e "${BLUE}[1/9] Checking prerequisites...${NC}"
 
 # Check for required tools
-REQUIRED_TOOLS=("git" "docker" "docker-compose")
+REQUIRED_TOOLS=("git" "docker")
 for tool in "${REQUIRED_TOOLS[@]}"; do
   if ! command -v $tool &> /dev/null; then
     echo -e "${RED}✗ $tool is not installed${NC}"
@@ -52,6 +52,14 @@ for tool in "${REQUIRED_TOOLS[@]}"; do
   fi
   echo -e "${GREEN}  ✓ $tool found${NC}"
 done
+
+# Check Docker Compose V2
+if ! docker compose version &> /dev/null; then
+  echo -e "${RED}✗ Docker Compose V2 is not available${NC}"
+  echo "Please install Docker 20.10+ which includes Compose V2"
+  exit 1
+fi
+echo -e "${GREEN}  ✓ Docker Compose V2 found${NC}"
 
 echo ""
 echo -e "${BLUE}[2/9] Creating deployment directory...${NC}"
@@ -106,19 +114,19 @@ fi
 echo ""
 echo -e "${BLUE}[5/9] Stopping existing containers...${NC}"
 
-docker-compose -f docker-compose.prod.yml down 2>/dev/null || echo "  No existing containers to stop"
+docker compose -f docker-compose.prod.yml down 2>/dev/null || echo "  No existing containers to stop"
 
 echo ""
 echo -e "${BLUE}[6/9] Building Docker images...${NC}"
 
-docker-compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.prod.yml build --no-cache
 
 echo -e "${GREEN}  ✓ Docker images built${NC}"
 
 echo ""
 echo -e "${BLUE}[7/9] Starting services...${NC}"
 
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 
 echo -e "${GREEN}  ✓ Services started${NC}"
 
@@ -130,7 +138,7 @@ echo "  Waiting for database to be ready..."
 sleep 10
 
 # Run migrations
-docker-compose -f docker-compose.prod.yml exec -T backend npm run migrate || {
+docker compose -f docker-compose.prod.yml exec -T backend npm run migrate || {
   echo -e "${YELLOW}  ⚠ Migration failed or no migrations to run${NC}"
 }
 
@@ -138,8 +146,8 @@ echo ""
 echo -e "${BLUE}[9/9] Verifying deployment...${NC}"
 
 # Check if containers are running
-RUNNING_CONTAINERS=$(docker-compose -f docker-compose.prod.yml ps --services --filter "status=running" | wc -l)
-TOTAL_CONTAINERS=$(docker-compose -f docker-compose.prod.yml ps --services | wc -l)
+RUNNING_CONTAINERS=$(docker compose -f docker-compose.prod.yml ps --services --filter "status=running" | wc -l)
+TOTAL_CONTAINERS=$(docker compose -f docker-compose.prod.yml ps --services | wc -l)
 
 echo "  Running containers: $RUNNING_CONTAINERS/$TOTAL_CONTAINERS"
 
@@ -147,7 +155,7 @@ if [ "$RUNNING_CONTAINERS" -eq "$TOTAL_CONTAINERS" ]; then
   echo -e "${GREEN}  ✓ All containers are running${NC}"
 else
   echo -e "${YELLOW}  ⚠ Some containers are not running${NC}"
-  docker-compose -f docker-compose.prod.yml ps
+  docker compose -f docker-compose.prod.yml ps
 fi
 
 # Test backend health
@@ -173,10 +181,10 @@ echo -e "  Backend API: ${BLUE}http://localhost:5000${NC}"
 echo -e "  Health Check: ${BLUE}http://localhost:5000/health${NC}"
 echo ""
 echo "Useful commands:"
-echo -e "  View logs: ${YELLOW}docker-compose -f docker-compose.prod.yml logs -f${NC}"
-echo -e "  Stop services: ${YELLOW}docker-compose -f docker-compose.prod.yml down${NC}"
-echo -e "  Restart services: ${YELLOW}docker-compose -f docker-compose.prod.yml restart${NC}"
-echo -e "  View running containers: ${YELLOW}docker-compose -f docker-compose.prod.yml ps${NC}"
+echo -e "  View logs: ${YELLOW}docker compose -f docker-compose.prod.yml logs -f${NC}"
+echo -e "  Stop services: ${YELLOW}docker compose -f docker-compose.prod.yml down${NC}"
+echo -e "  Restart services: ${YELLOW}docker compose -f docker-compose.prod.yml restart${NC}"
+echo -e "  View running containers: ${YELLOW}docker compose -f docker-compose.prod.yml ps${NC}"
 echo ""
 echo -e "${YELLOW}⚠ Remember to:${NC}"
 echo "  1. Configure your domain DNS to point to this server"
