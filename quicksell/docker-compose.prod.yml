@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -26,7 +24,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: quicksell-redis
-    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes"]
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
