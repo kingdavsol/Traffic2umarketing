@@ -8,9 +8,8 @@ RUN apk add --no-cache python3 make g++ curl
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --omit=dev && \
-    npm install --save-dev @types/node typescript ts-node
+# Install all dependencies (needed for TypeScript build)
+RUN npm install
 
 # Copy source code
 COPY src ./src
