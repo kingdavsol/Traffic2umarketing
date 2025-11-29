@@ -56,11 +56,21 @@ if [ -d ".git" ]; then
     git fetch origin "${BRANCH}"
     git checkout "${BRANCH}"
     git pull origin "${BRANCH}"
+    print_success "Repository updated"
 else
+    # Check if directory has files
+    if [ "$(ls -A ${DEPLOY_DIR})" ]; then
+        print_step "Directory not empty, removing existing files..."
+        rm -rf "${DEPLOY_DIR}"/*
+        rm -rf "${DEPLOY_DIR}"/.[!.]*
+    fi
     print_step "Cloning repository..."
-    git clone --branch "${BRANCH}" "${REPO_URL}" .
+    git clone --branch "${BRANCH}" "${REPO_URL}" "${DEPLOY_DIR}/temp"
+    mv "${DEPLOY_DIR}/temp"/* "${DEPLOY_DIR}/"
+    mv "${DEPLOY_DIR}/temp"/.git "${DEPLOY_DIR}/"
+    rm -rf "${DEPLOY_DIR}/temp"
+    print_success "Repository cloned"
 fi
-print_success "Repository updated"
 
 # Navigate to quicksell directory
 if [ ! -d "quicksell" ]; then
