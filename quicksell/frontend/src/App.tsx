@@ -7,7 +7,8 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import Dashboard from './pages/Dashboard';
+import PricingPage from './pages/PricingPage';
+import Dashboard from './pages/DashboardPage';
 import CreateListing from './pages/CreateListing';
 import ListingDetails from './pages/ListingDetails';
 import MyListings from './pages/MyListings';
@@ -108,6 +109,7 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/auth/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />} />
           <Route path="/auth/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <RegisterPage />} />
           <Route path="/login" element={<Navigate to="/auth/login" />} />
