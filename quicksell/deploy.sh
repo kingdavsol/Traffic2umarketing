@@ -152,14 +152,48 @@ docker compose -f docker-compose.prod.yml up -d
 print_success "Services started"
 
 print_step "Step 9: Waiting for services to be healthy..."
-sleep 10
+sleep 15
 
 # Check service status
 print_step "Checking service status..."
 docker compose -f docker-compose.prod.yml ps
 
-print_step "Checking backend logs..."
-docker compose -f docker-compose.prod.yml logs --tail=20 backend
+print_step "Running health checks..."
+echo ""
+
+# Test backend health
+echo -n "Testing backend health endpoint... "
+if curl -f -s http://localhost:5000/health > /dev/null 2>&1; then
+    print_success "Backend is healthy"
+    curl -s http://localhost:5000/health | head -3
+else
+    print_error "Backend health check failed"
+fi
+
+echo ""
+
+# Test critical API endpoints
+echo -n "Testing /api/v1/auth/register endpoint... "
+REGISTER_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST http://localhost:5000/api/v1/auth/register \
+    -H "Content-Type: application/json" \
+    -d '{}' 2>&1)
+HTTP_CODE=$(echo "$REGISTER_RESPONSE" | tail -1)
+
+if [ "$HTTP_CODE" = "400" ] || [ "$HTTP_CODE" = "422" ]; then
+    print_success "Register endpoint responding (HTTP $HTTP_CODE)"
+elif [ "$HTTP_CODE" = "404" ]; then
+    print_error "Register endpoint NOT FOUND (HTTP 404) - API routing issue!"
+else
+    echo -e "${YELLOW}Unexpected response (HTTP $HTTP_CODE)${NC}"
+fi
+
+echo ""
+print_step "Checking backend logs for errors..."
+docker compose -f docker-compose.prod.yml logs --tail=30 backend | grep -i "error\|fail\|exception" || echo "No errors found in recent logs"
+
+echo ""
+print_step "Checking frontend logs..."
+docker compose -f docker-compose.prod.yml logs --tail=20 frontend
 
 echo ""
 echo -e "${GREEN}========================================${NC}"
@@ -171,9 +205,12 @@ echo "  Frontend: http://$(hostname -I | awk '{print $1}'):8080"
 echo "  Backend:  http://$(hostname -I | awk '{print $1}'):5000"
 echo "  Health:   http://$(hostname -I | awk '{print $1}'):5000/health"
 echo ""
-echo "To view logs:"
-echo "  docker compose -f docker-compose.prod.yml logs -f"
+echo "Next Steps:"
+echo "  1. Test registration at: http://$(hostname -I | awk '{print $1}'):8080/auth/register"
+echo "  2. Run monitoring script: bash monitor.sh"
 echo ""
-echo "To check status:"
-echo "  docker compose -f docker-compose.prod.yml ps"
+echo "Useful Commands:"
+echo "  View logs:       docker compose -f docker-compose.prod.yml logs -f"
+echo "  Check status:    docker compose -f docker-compose.prod.yml ps"
+echo "  Run diagnostics: bash monitor.sh"
 echo ""
