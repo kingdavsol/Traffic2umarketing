@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "quicksell-vps": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@idletoaster/ssh-mcp-server@latest"
+      ],
+      "env": {
+        "SSH_HOST": "quicksell.monster",
+        "SSH_USER": "root",
+        "SSH_PORT": "22",
+        "SSH_KEY_PATH": "${HOME}/.ssh/id_rsa"
+      }
+    }
+  }
+}
