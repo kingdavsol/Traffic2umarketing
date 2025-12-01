@@ -9,7 +9,9 @@ import {
   Paper,
   Alert,
   InputAdornment,
-  IconButton
+  IconButton,
+  Checkbox,
+  FormControlLabel
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import api from '../services/api';
@@ -20,6 +22,7 @@ const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -50,6 +53,12 @@ const RegisterPage: React.FC = () => {
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setError('You must accept the Terms of Service and Privacy Policy');
       setLoading(false);
       return;
     }
@@ -178,6 +187,40 @@ const RegisterPage: React.FC = () => {
               required
               autoComplete="new-password"
               disabled={loading}
+            />
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  disabled={loading}
+                  sx={{
+                    color: error && !acceptedTerms ? 'error.main' : 'primary.main',
+                  }}
+                />
+              }
+              label={
+                <Typography variant="body2" color="text.secondary">
+                  I accept the{' '}
+                  <Link
+                    to="/legal/terms-of-service"
+                    target="_blank"
+                    style={{ color: '#667eea', textDecoration: 'none' }}
+                  >
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link
+                    to="/legal/privacy-policy"
+                    target="_blank"
+                    style={{ color: '#667eea', textDecoration: 'none' }}
+                  >
+                    Privacy Policy
+                  </Link>
+                </Typography>
+              }
+              sx={{ mt: 2, alignItems: 'flex-start' }}
             />
 
             <Button
