@@ -1,3 +1,31 @@
+/* CSS Variables */
+:root {
+  --color-primary-blue: #007AFF;
+  --color-primary-dark: #0056D4;
+  --color-dark-red: #dc3545;
+  --color-light-bg: #F5F7FF;
+  --color-text-primary: #2C3E50;
+  --color-text-secondary: #555555;
+  --color-gray-dark: #2C3E50;
+  
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  
+  --transition-fast: 0.2s ease;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
 * {
   margin: 0;
   padding: 0;
