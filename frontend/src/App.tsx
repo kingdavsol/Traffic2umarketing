@@ -21,6 +21,7 @@ import PrivateRoute from './components/PrivateRoute';
 
 // Redux
 import { RootState } from './store';
+import { initializeAuth } from './store/slices/authSlice';
 
 // Styles
 import './styles/App.css';
@@ -78,10 +79,8 @@ const App: React.FC = () => {
   );
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Verify token
-    }
+    // Initialize auth state from localStorage on app mount
+    dispatch(initializeAuth());
   }, [dispatch]);
 
   if (loading) {

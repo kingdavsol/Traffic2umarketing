@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import {
   Box,
   Container,
@@ -13,9 +14,11 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import api from '../services/api';
+import { loginSuccess } from '../store/slices/authSlice';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -43,10 +46,12 @@ const LoginPage: React.FC = () => {
     try {
       const response = await api.login(email, password);
 
-      // Store token
+      // Store token and update Redux state
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        dispatch(loginSuccess({
+          user: response.data.user,
+          token: response.data.token
+        }));
 
         // Redirect to dashboard
         navigate('/dashboard');

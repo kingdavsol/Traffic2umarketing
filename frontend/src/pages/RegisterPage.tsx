@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import {
   Box,
   Container,
@@ -15,9 +16,11 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import api from '../services/api';
+import { registerSuccess } from '../store/slices/authSlice';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -68,22 +71,22 @@ const RegisterPage: React.FC = () => {
     try {
       const response = await api.register(username, email, password);
 
-      // Handle current backend response (stub implementation)
-      if (response.data.success) {
-        setSuccess('Registration successful! Redirecting to login...');
+      // Handle backend response with token
+      if (response.data.data?.token) {
+        dispatch(registerSuccess({
+          user: response.data.data.user,
+          token: response.data.data.token
+        }));
 
-        // Redirect to login page after brief delay
+        setSuccess('Registration successful! Redirecting to dashboard...');
+
+        // Redirect to dashboard after brief delay
         setTimeout(() => {
-          navigate('/auth/login');
+          navigate('/dashboard');
         }, 1500);
-      } else if (response.data.token) {
-        // Future: when backend implements proper auth with token
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        navigate('/dashboard');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }

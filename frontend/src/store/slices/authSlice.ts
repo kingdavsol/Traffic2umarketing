@@ -43,6 +43,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.loading = false;
       localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
@@ -60,6 +61,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.loading = false;
       localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
     registerFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
@@ -72,6 +74,7 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
     },
 
     // Update user
@@ -84,6 +87,25 @@ const authSlice = createSlice({
     // Clear error
     clearError: (state) => {
       state.error = null;
+    },
+
+    // Initialize auth from localStorage
+    initializeAuth: (state) => {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          state.isAuthenticated = true;
+          state.user = user;
+          state.token = token;
+        } catch (error) {
+          // Clear invalid data
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      }
     },
   },
 });
@@ -98,6 +120,7 @@ export const {
   logout,
   updateUser,
   clearError,
+  initializeAuth,
 } = authSlice.actions;
 
 export default authSlice.reducer;
