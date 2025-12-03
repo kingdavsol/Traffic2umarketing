@@ -25,11 +25,13 @@ const RegisterPage: React.FC = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     // Validation
@@ -66,12 +68,18 @@ const RegisterPage: React.FC = () => {
     try {
       const response = await api.register(username, email, password);
 
-      // Store token
-      if (response.data.token) {
+      // Handle current backend response (stub implementation)
+      if (response.data.success) {
+        setSuccess('Registration successful! Redirecting to login...');
+
+        // Redirect to login page after brief delay
+        setTimeout(() => {
+          navigate('/auth/login');
+        }, 1500);
+      } else if (response.data.token) {
+        // Future: when backend implements proper auth with token
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-
-        // Redirect to dashboard
         navigate('/dashboard');
       }
     } catch (err: any) {
@@ -123,6 +131,12 @@ const RegisterPage: React.FC = () => {
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
+            </Alert>
+          )}
+
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
             </Alert>
           )}
 
