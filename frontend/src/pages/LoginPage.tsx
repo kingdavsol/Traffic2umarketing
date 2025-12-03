@@ -47,17 +47,17 @@ const LoginPage: React.FC = () => {
       const response = await api.login(email, password);
 
       // Store token and update Redux state
-      if (response.data.token) {
+      if (response.data.data?.token) {
         dispatch(loginSuccess({
-          user: response.data.user,
-          token: response.data.token
+          user: response.data.data.user,
+          token: response.data.data.token
         }));
 
         // Redirect to dashboard
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
