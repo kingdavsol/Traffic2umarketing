@@ -13,12 +13,18 @@ const openai = new OpenAI({
  */
 export const analyzePhoto = async (req: Request, res: Response) => {
   try {
+    // Log request details for debugging
+    logger.info('Photo analysis request received');
+    logger.info('Request body keys:', Object.keys(req.body));
+    logger.info('Request body:', JSON.stringify(req.body).substring(0, 200));
+
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
       logger.error('OPENAI_API_KEY not configured');
       return res.status(500).json({
         success: false,
         error: 'AI service not configured. Please contact administrator.',
+        details: 'OpenAI API key is missing from server configuration',
         statusCode: 500
       });
     }
@@ -28,9 +34,12 @@ export const analyzePhoto = async (req: Request, res: Response) => {
     const { image } = req.body;
 
     if (!image) {
+      logger.error('No image in request body. Body keys:', Object.keys(req.body));
       return res.status(400).json({
         success: false,
         error: 'No image provided',
+        details: 'Request must include "image" field with base64 encoded image data',
+        receivedFields: Object.keys(req.body),
         statusCode: 400
       });
     }
@@ -105,19 +114,54 @@ Be specific and accurate. If you can't determine something, use your best judgme
 
   } catch (error: any) {
     logger.error('Photo analysis error:', error);
+    logger.error('Error details:', JSON.stringify(error, null, 2));
 
     // Check for specific OpenAI errors
     if (error.code === 'insufficient_quota') {
       return res.status(503).json({
         success: false,
         error: 'AI service quota exceeded. Please try again later.',
+        details: 'OpenAI API quota has been exceeded. Check your OpenAI account billing.',
         statusCode: 503
+      });
+    }
+
+    // Check for authentication errors
+    if (error.status === 401 || error.code === 'invalid_api_key') {
+      return res.status(500).json({
+        success: false,
+        error: 'AI service authentication failed',
+        details: 'Invalid OpenAI API key. Please check server configuration.',
+        statusCode: 500
+      });
+    }
+
+    // Check for model access errors
+    if (error.status === 403 || error.code === 'model_not_found') {
+      return res.status(500).json({
+        success: false,
+        error: 'AI model access denied',
+        details: 'Your OpenAI account may need billing setup or tier upgrade to access GPT-4 Vision. Free tier accounts do not have access to vision models.',
+        openaiError: error.message,
+        statusCode: 500
+      });
+    }
+
+    // Check for rate limiting
+    if (error.status === 429) {
+      return res.status(429).json({
+        success: false,
+        error: 'Too many requests',
+        details: 'OpenAI API rate limit exceeded. Please wait and try again.',
+        statusCode: 429
       });
     }
 
     res.status(500).json({
       success: false,
       error: error.message || 'Photo analysis failed',
+      details: error.code ? `OpenAI error code: ${error.code}` : 'Unknown error occurred',
+      openaiError: error.error?.message || error.message,
       statusCode: 500
     });
   }
