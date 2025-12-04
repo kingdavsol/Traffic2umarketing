@@ -84,11 +84,18 @@ class APIService {
     });
   }
 
-  analyzePhoto(file: File) {
-    const formData = new FormData();
-    formData.append('photo', file);
-    return this.api.post('/photos/analyze', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+  async analyzePhoto(file: File) {
+    // Convert file to base64
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // Send as JSON with base64 image
+    return this.api.post('/photos/analyze', {
+      image: base64
     });
   }
 
