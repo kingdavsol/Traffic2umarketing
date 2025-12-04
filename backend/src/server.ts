@@ -41,9 +41,21 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Security middleware
 app.use(helmet());
+
+// CORS configuration - Allow frontend to access API
+const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
+  'http://localhost:3000',
+  'http://localhost:8080',
+  'http://localhost:8081',
+  'https://quicksell.monster',
+  'http://quicksell.monster'
+];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:8081'],
-  credentials: true
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Body parsing middleware
