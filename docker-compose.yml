@@ -66,6 +66,10 @@ services:
       EBAY_DEV_ID: ${EBAY_DEV_ID:-}
       EBAY_REDIRECT_URI: ${EBAY_REDIRECT_URI:-https://quicksell.monster/api/v1/oauth/ebay/callback}
       EBAY_SANDBOX: ${EBAY_SANDBOX:-false}
+      # Google OAuth
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-https://quicksell.monster/api/v1/auth/google/callback}
       # Chromium for Puppeteer (Craigslist automation)
       CHROME_PATH: /usr/bin/chromium
       PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
