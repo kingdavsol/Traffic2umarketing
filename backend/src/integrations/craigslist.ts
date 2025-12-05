@@ -72,24 +72,40 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 /**
+/**
  * Get Puppeteer browser instance
+ * First tries to connect to remote Chromium on host, falls back to local
  */
 const getBrowser = async (): Promise<Browser> => {
-  // Use Chrome installed on system or connect to browserless
-  const executablePath = process.env.CHROME_PATH || '/usr/bin/chromium-browser';
+  // Try to connect to remote Chromium first (running on VPS host)
+  const remoteUrl = process.env.CHROME_REMOTE_URL || "http://172.19.0.1:9223";
+  try {
+    const response = await fetch(remoteUrl + "/json/version");
+    const data = await response.json() as { webSocketDebuggerUrl: string };
+    if (data.webSocketDebuggerUrl) {
+      // Replace localhost with Docker host IP
+      const wsUrl = data.webSocketDebuggerUrl.replace("127.0.0.1", "172.19.0.1");
+      logger.info("Connecting to remote Chromium browser at " + wsUrl);
+      return puppeteer.connect({ browserWSEndpoint: wsUrl });
+    }
+  } catch (e) {
+    logger.warn("Remote Chromium not available, falling back to local: " + e);
+  }
+  
+  // Fallback to local launch (requires Chromium in container)
+  const executablePath = process.env.CHROME_PATH || "/usr/bin/chromium-browser";
   
   return puppeteer.launch({
     executablePath,
     headless: true,
     args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
     ],
   });
 };
-
 /**
  * Login to Craigslist account
  */
