@@ -72,7 +72,7 @@ const DashboardPage: React.FC = () => {
     setError('');
     try {
       const response = await api.analyzePhoto(file);
-      setAiData(response.data);
+      setAiData(response.data.data);
       setSuccess('Photo analyzed successfully! Review the details below.');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to analyze photo. Please try again.');
