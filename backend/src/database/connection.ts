@@ -1,7 +1,7 @@
 import { Pool, PoolClient } from 'pg';
 import { logger } from '../config/logger';
 
-let pool: Pool;
+export let pool: Pool;
 
 export const connectDatabase = async (): Promise<void> => {
   try {
