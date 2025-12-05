@@ -48,7 +48,7 @@ export const analyzePhoto = async (req: Request, res: Response) => {
 
     // Call OpenAI Vision API to analyze the product
     const response = await openai.chat.completions.create({
-      model: 'gpt-4-vision-preview',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'user',
