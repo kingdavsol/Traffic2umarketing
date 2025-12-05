@@ -12,7 +12,7 @@ export const getGoogleAuthUrl = async (req: Request, res: Response) => {
     const redirectUri = process.env.GOOGLE_REDIRECT_URI || "https://quicksell.monster/api/v1/auth/google/callback";
     const clientId = process.env.GOOGLE_CLIENT_ID;
 
-    if (\!clientId) {
+    if (!clientId) {
       return res.status(500).json({
         success: false,
         error: "Google OAuth not configured",
@@ -20,13 +20,13 @@ export const getGoogleAuthUrl = async (req: Request, res: Response) => {
       });
     }
 
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=${clientId}` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&response_type=code` +
-      `&scope=${encodeURIComponent("openid email profile")}` +
-      `&access_type=offline` +
-      `&prompt=consent`;
+    const authUrl = "https://accounts.google.com/o/oauth2/v2/auth?" +
+      "client_id=" + clientId +
+      "&redirect_uri=" + encodeURIComponent(redirectUri) +
+      "&response_type=code" +
+      "&scope=" + encodeURIComponent("openid email profile") +
+      "&access_type=offline" +
+      "&prompt=consent";
 
     res.json({
       success: true,
@@ -48,7 +48,7 @@ export const googleCallback = async (req: Request, res: Response) => {
   try {
     const { code } = req.query;
 
-    if (\!code) {
+    if (!code) {
       return res.redirect("/login?error=no_code");
     }
 
@@ -62,16 +62,16 @@ export const googleCallback = async (req: Request, res: Response) => {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         code: code as string,
-        client_id: clientId\!,
-        client_secret: clientSecret\!,
+        client_id: clientId || "",
+        client_secret: clientSecret || "",
         redirect_uri: redirectUri,
         grant_type: "authorization_code",
       }),
     });
 
-    const tokens = await tokenResponse.json();
+    const tokens = await tokenResponse.json() as { id_token?: string; access_token?: string; error?: string };
 
-    if (\!tokens.id_token) {
+    if (!tokens.id_token) {
       logger.error("No id_token in response:", tokens);
       return res.redirect("/login?error=token_failed");
     }
@@ -83,7 +83,7 @@ export const googleCallback = async (req: Request, res: Response) => {
     });
 
     const payload = ticket.getPayload();
-    if (\!payload) {
+    if (!payload) {
       return res.redirect("/login?error=invalid_token");
     }
 
@@ -94,14 +94,12 @@ export const googleCallback = async (req: Request, res: Response) => {
 
     if (user.rows.length === 0) {
       // Create new user
-      const username = name || email?.split("@")[0] || "User";
+      const username = name || (email ? email.split("@")[0] : "User");
       user = await query(
-        `INSERT INTO users (username, email, password_hash, google_id, avatar_url, subscription_tier, points, current_level)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         RETURNING id, username, email, avatar_url`,
+        "INSERT INTO users (username, email, password_hash, google_id, avatar_url, subscription_tier, points, current_level) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, username, email, avatar_url",
         [username, email, "google_oauth", googleId, picture, "free", 0, 1]
       );
-    } else if (\!user.rows[0].google_id) {
+    } else if (!user.rows[0].google_id) {
       // Link Google account to existing user
       await query(
         "UPDATE users SET google_id = $1, avatar_url = COALESCE(avatar_url, $2) WHERE email = $3",
@@ -116,21 +114,22 @@ export const googleCallback = async (req: Request, res: Response) => {
       {
         userId: dbUser.id,
         email: dbUser.email,
-        exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
+        exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
       },
       process.env.JWT_SECRET || "your-secret-key"
     );
 
     // Redirect to frontend with token
-    res.redirect(`/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+    const userJson = JSON.stringify({
       id: dbUser.id,
       email: dbUser.email,
       username: dbUser.username,
       avatar_url: dbUser.avatar_url,
-    }))}`);
+    });
+    res.redirect("/auth/callback?token=" + token + "&user=" + encodeURIComponent(userJson));
   } catch (error: any) {
     logger.error("Google callback error:", error);
-    res.redirect(`/login?error=${encodeURIComponent(error.message || "auth_failed")}`);
+    res.redirect("/login?error=" + encodeURIComponent(error.message || "auth_failed"));
   }
 };
 
@@ -139,7 +138,7 @@ export const verifyGoogleToken = async (req: Request, res: Response) => {
   try {
     const { credential } = req.body;
 
-    if (\!credential) {
+    if (!credential) {
       return res.status(400).json({
         success: false,
         error: "No credential provided",
@@ -153,7 +152,7 @@ export const verifyGoogleToken = async (req: Request, res: Response) => {
     });
 
     const payload = ticket.getPayload();
-    if (\!payload) {
+    if (!payload) {
       return res.status(401).json({
         success: false,
         error: "Invalid token",
@@ -168,14 +167,12 @@ export const verifyGoogleToken = async (req: Request, res: Response) => {
 
     if (userResult.rows.length === 0) {
       // Create new user
-      const username = name || email?.split("@")[0] || "User";
+      const username = name || (email ? email.split("@")[0] : "User");
       userResult = await query(
-        `INSERT INTO users (username, email, password_hash, google_id, avatar_url, subscription_tier, points, current_level)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         RETURNING id, username, email, avatar_url`,
+        "INSERT INTO users (username, email, password_hash, google_id, avatar_url, subscription_tier, points, current_level) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, username, email, avatar_url",
         [username, email, "google_oauth", googleId, picture, "free", 0, 1]
       );
-    } else if (\!userResult.rows[0].google_id) {
+    } else if (!userResult.rows[0].google_id) {
       // Link Google account to existing user
       await query(
         "UPDATE users SET google_id = $1, avatar_url = COALESCE(avatar_url, $2) WHERE email = $3",
