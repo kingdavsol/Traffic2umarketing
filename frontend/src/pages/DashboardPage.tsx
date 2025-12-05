@@ -17,7 +17,12 @@ import {
   TextField,
   Chip,
   Alert,
-  Paper
+  Paper,
+  Tooltip,
+  Snackbar,
+  ToggleButton,
+  ToggleButtonGroup,
+  InputAdornment
 } from '@mui/material';
 import {
   PhotoCamera,
@@ -26,7 +31,11 @@ import {
   Logout,
   AutoAwesome,
   AttachMoney,
-  Public
+  Public,
+  ContentCopy,
+  LocalShipping,
+  Store,
+  Image
 } from '@mui/icons-material';
 import api from '../services/api';
 
@@ -39,8 +48,24 @@ const DashboardPage: React.FC = () => {
   const [aiData, setAiData] = useState<any>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [copySnackbar, setCopySnackbar] = useState('');
+  const [fulfillmentType, setFulfillmentType] = useState<string>('both');
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  // Marketplace definitions with fulfillment types
+  const LOCAL_MARKETPLACES = ['Craigslist', 'Facebook', 'OfferUp'];
+  const SHIPPING_MARKETPLACES = ['Mercari', 'Poshmark', 'Etsy', 'Depop', 'Vinted'];
+  const BOTH_MARKETPLACES = ['eBay'];
+
+  const getActiveMarketplaces = () => {
+    if (fulfillmentType === 'local') {
+      return [...LOCAL_MARKETPLACES, ...BOTH_MARKETPLACES];
+    } else if (fulfillmentType === 'shipping') {
+      return [...SHIPPING_MARKETPLACES, ...BOTH_MARKETPLACES];
+    }
+    return [...LOCAL_MARKETPLACES, ...SHIPPING_MARKETPLACES, ...BOTH_MARKETPLACES];
+  };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -60,20 +85,18 @@ const DashboardPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Display image
     const reader = new FileReader();
     reader.onloadend = () => {
       setSelectedImage(reader.result as string);
     };
     reader.readAsDataURL(file);
 
-    // Analyze with AI
     setAnalyzing(true);
     setError('');
     try {
       const response = await api.analyzePhoto(file);
       setAiData(response.data.data);
-      setSuccess('Photo analyzed successfully! Review the details below.');
+      setSuccess('Photo analyzed! Use copy buttons to paste into marketplace apps.');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to analyze photo. Please try again.');
     } finally {
@@ -81,26 +104,88 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  // Copy to clipboard functions
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopySnackbar(`${label} copied!`);
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopySnackbar(`${label} copied!`);
+    }
+  };
+
+  const copyImageToClipboard = async () => {
+    if (!selectedImage) return;
+    try {
+      const response = await fetch(selectedImage);
+      const blob = await response.blob();
+      await navigator.clipboard.write([
+        new ClipboardItem({ [blob.type]: blob })
+      ]);
+      setCopySnackbar('Image copied!');
+    } catch (err) {
+      // If clipboard API fails, provide download option
+      const link = document.createElement('a');
+      link.href = selectedImage;
+      link.download = 'listing-photo.jpg';
+      link.click();
+      setCopySnackbar('Image downloaded (clipboard not supported)');
+    }
+  };
+
+  const copyAllToClipboard = async () => {
+    if (!aiData) return;
+    const fullListing = `TITLE: ${aiData.title || ''}
+
+PRICE: $${aiData.suggestedPrice || ''}
+
+CATEGORY: ${aiData.category || ''}
+
+CONDITION: ${aiData.condition || 'Used'}
+
+DESCRIPTION:
+${aiData.description || ''}
+
+---
+Listed with QuickSell`;
+    
+    await copyToClipboard(fullListing, 'Full listing');
+  };
+
   const handleCreateListing = async () => {
     if (!aiData) return;
 
     try {
-      const response = await api.createListing({
+      await api.createListing({
         title: aiData.title,
         description: aiData.description,
         price: aiData.suggestedPrice,
         category: aiData.category,
         condition: aiData.condition || 'used',
+        fulfillment_type: fulfillmentType,
       });
 
-      setSuccess('Listing created! You can now publish it to marketplaces.');
-      setTimeout(() => {
-        navigate('/listings');
-      }, 2000);
+      setSuccess('Listing saved! Use the copy buttons to post to marketplaces.');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create listing. Please try again.');
     }
   };
+
+  // Copy button component
+  const CopyButton = ({ onClick, tooltip }: { onClick: () => void; tooltip: string }) => (
+    <Tooltip title={tooltip}>
+      <IconButton size="small" onClick={onClick} sx={{ ml: 1 }}>
+        <ContentCopy fontSize="small" />
+      </IconButton>
+    </Tooltip>
+  );
 
   return (
     <Box sx={{ flexGrow: 1, minHeight: '100vh', background: '#f5f5f5' }}>
@@ -112,11 +197,7 @@ const DashboardPage: React.FC = () => {
           <IconButton color="inherit" onClick={handleMenu}>
             <AccountCircle />
           </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
             <MenuItem disabled>
               <Typography variant="body2">{user.email || 'User'}</Typography>
             </MenuItem>
@@ -188,6 +269,7 @@ const DashboardPage: React.FC = () => {
                         textAlign: 'center',
                         background: '#f9f9f9',
                         borderRadius: 2,
+                        position: 'relative',
                       }}
                     >
                       <img
@@ -199,6 +281,20 @@ const DashboardPage: React.FC = () => {
                           borderRadius: '8px',
                         }}
                       />
+                      <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<Image />}
+                        onClick={copyImageToClipboard}
+                        sx={{
+                          position: 'absolute',
+                          top: 16,
+                          right: 16,
+                          background: 'rgba(0,0,0,0.7)',
+                        }}
+                      >
+                        Copy Image
+                      </Button>
                     </Paper>
                     <Button
                       fullWidth
@@ -231,16 +327,52 @@ const DashboardPage: React.FC = () => {
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
-                <Typography variant="h5" gutterBottom fontWeight={600}>
-                  <AutoAwesome sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  AI-Generated Details
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  {aiData ? 'Review and edit the AI-generated listing' : 'Upload a photo to see AI suggestions'}
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h5" fontWeight={600}>
+                    <AutoAwesome sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    AI-Generated Details
+                  </Typography>
+                  {aiData && (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<ContentCopy />}
+                      onClick={copyAllToClipboard}
+                      sx={{ background: '#4caf50' }}
+                    >
+                      Copy All
+                    </Button>
+                  )}
+                </Box>
 
                 {aiData ? (
                   <Box>
+                    {/* Fulfillment Type Toggle */}
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Fulfillment Type:
+                      </Typography>
+                      <ToggleButtonGroup
+                        value={fulfillmentType}
+                        exclusive
+                        onChange={(e, val) => val && setFulfillmentType(val)}
+                        size="small"
+                        fullWidth
+                      >
+                        <ToggleButton value="local">
+                          <Store sx={{ mr: 1 }} fontSize="small" />
+                          Local Pickup
+                        </ToggleButton>
+                        <ToggleButton value="shipping">
+                          <LocalShipping sx={{ mr: 1 }} fontSize="small" />
+                          Shipping
+                        </ToggleButton>
+                        <ToggleButton value="both">
+                          Both
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                    </Box>
+
                     <TextField
                       fullWidth
                       label="Title"
@@ -248,6 +380,13 @@ const DashboardPage: React.FC = () => {
                       onChange={(e) => setAiData({ ...aiData, title: e.target.value })}
                       margin="normal"
                       variant="outlined"
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <CopyButton onClick={() => copyToClipboard(aiData.title, 'Title')} tooltip="Copy title" />
+                          </InputAdornment>
+                        ),
+                      }}
                     />
 
                     <TextField
@@ -259,6 +398,13 @@ const DashboardPage: React.FC = () => {
                       multiline
                       rows={4}
                       variant="outlined"
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end" sx={{ alignSelf: 'flex-start', mt: 1 }}>
+                            <CopyButton onClick={() => copyToClipboard(aiData.description, 'Description')} tooltip="Copy description" />
+                          </InputAdornment>
+                        ),
+                      }}
                     />
 
                     <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
@@ -268,6 +414,11 @@ const DashboardPage: React.FC = () => {
                         onChange={(e) => setAiData({ ...aiData, suggestedPrice: e.target.value })}
                         InputProps={{
                           startAdornment: <AttachMoney />,
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <CopyButton onClick={() => copyToClipboard(`$${aiData.suggestedPrice}`, 'Price')} tooltip="Copy price" />
+                            </InputAdornment>
+                          ),
                         }}
                         sx={{ flex: 1 }}
                       />
@@ -276,6 +427,13 @@ const DashboardPage: React.FC = () => {
                         label="Category"
                         value={aiData.category || ''}
                         onChange={(e) => setAiData({ ...aiData, category: e.target.value })}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <CopyButton onClick={() => copyToClipboard(aiData.category, 'Category')} tooltip="Copy category" />
+                            </InputAdornment>
+                          ),
+                        }}
                         sx={{ flex: 1 }}
                       />
                     </Box>
@@ -283,13 +441,20 @@ const DashboardPage: React.FC = () => {
                     <Box sx={{ mt: 3 }}>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         <Public sx={{ fontSize: 16, verticalAlign: 'middle', mr: 0.5 }} />
-                        Will be posted to 20+ marketplaces:
+                        {fulfillmentType === 'local' ? 'Local Pickup Marketplaces:' : 
+                         fulfillmentType === 'shipping' ? 'Shipping Marketplaces:' : 
+                         'All Marketplaces:'}
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                        {['eBay', 'Facebook', 'Craigslist', 'OfferUp', 'Mercari', 'Poshmark'].map((marketplace) => (
-                          <Chip key={marketplace} label={marketplace} color="primary" size="small" />
+                        {getActiveMarketplaces().map((marketplace) => (
+                          <Chip 
+                            key={marketplace} 
+                            label={marketplace} 
+                            color={LOCAL_MARKETPLACES.includes(marketplace) ? 'success' : 
+                                   SHIPPING_MARKETPLACES.includes(marketplace) ? 'info' : 'primary'} 
+                            size="small" 
+                          />
                         ))}
-                        <Chip label="+14 more" size="small" />
                       </Box>
                     </Box>
 
@@ -304,8 +469,12 @@ const DashboardPage: React.FC = () => {
                         py: 1.5,
                       }}
                     >
-                      Create Listing & Publish
+                      Save Listing
                     </Button>
+
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
+                      Use the copy buttons above to paste into marketplace apps
+                    </Typography>
                   </Box>
                 ) : (
                   <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -362,6 +531,15 @@ const DashboardPage: React.FC = () => {
           </Grid>
         </Grid>
       </Container>
+
+      {/* Copy Snackbar */}
+      <Snackbar
+        open={!!copySnackbar}
+        autoHideDuration={2000}
+        onClose={() => setCopySnackbar('')}
+        message={copySnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Box>
   );
 };
