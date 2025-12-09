@@ -44,7 +44,35 @@
     },
     "permissions": {
         "allow": [
-            "*"
+            "Bash(git *)",
+            "Bash(docker *)",
+            "Bash(docker-compose *)",
+            "Bash(npm *)",
+            "Bash(npx *)",
+            "Bash(node *)",
+            "Bash(pm2 *)",
+            "Bash(curl *)",
+            "Bash(wget *)",
+            "Bash(ls *)",
+            "Bash(cd *)",
+            "Bash(mkdir *)",
+            "Bash(cp *)",
+            "Bash(mv *)",
+            "Bash(rm *)",
+            "Bash(cat *)",
+            "Bash(grep *)",
+            "Bash(find *)",
+            "Bash(chmod *)",
+            "Bash(chown *)",
+            "Read",
+            "Edit",
+            "Write",
+            "Glob",
+            "Grep",
+            "WebFetch",
+            "WebSearch",
+            "Task",
+            "Skill"
         ]
     }
 }
