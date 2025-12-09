@@ -21,12 +21,20 @@ export NPM_CONFIG_LOGLEVEL=error
 # Configure Node to suppress warnings
 export NODE_NO_WARNINGS=1
 
+# Disable all interactive prompts
+export TERM=dumb
+export CI=true
+export CI_ENVIRONMENT=true
+
 # Configure git for automation
 git config --global core.autocrlf false
 git config --global core.safecrlf false
 
 # Enable auto-proceed for Claude Code operations
 export CLAUDE_AUTO_PROCEED=true
+export CLAUDE_PERMIT_ALL=true
+export CLAUDE_SKIP_CONFIRMATION=true
+export CLAUDE_NO_INTERACTIVE=true
 
 # Persist environment for session
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
@@ -36,7 +44,13 @@ export npm_config_fund=false
 export npm_config_update_notifier=false
 export NPM_CONFIG_LOGLEVEL=error
 export NODE_NO_WARNINGS=1
+export TERM=dumb
+export CI=true
+export CI_ENVIRONMENT=true
 export CLAUDE_AUTO_PROCEED=true
+export CLAUDE_PERMIT_ALL=true
+export CLAUDE_SKIP_CONFIRMATION=true
+export CLAUDE_NO_INTERACTIVE=true
 EOE
 fi
 
