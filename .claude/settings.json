@@ -7,13 +7,8 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash .claude/hooks/enforce-git-safety.sh",
-                        "timeout": 5000
-                    },
-                    {
-                        "type": "command",
-                        "command": "bash .claude/hooks/enforce-github-first.sh",
-                        "timeout": 5000
+                        "command": "bash .claude/hooks/enforce-github-source-of-truth.sh",
+                        "timeout": 10000
                     }
                 ]
             }
@@ -24,7 +19,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash .claude/hooks/enforce-auto-proceed.sh",
+                        "command": "bash .claude/hooks/post-tool-workflow-reminder.sh",
                         "timeout": 5000
                     }
                 ]
@@ -42,6 +37,7 @@
             "Bash(pm2 *)",
             "Bash(curl *)",
             "Bash(wget *)",
+            "Bash(ssh *)",
             "Bash(ls *)",
             "Bash(cd *)",
             "Bash(mkdir *)",
@@ -53,6 +49,7 @@
             "Bash(find *)",
             "Bash(chmod *)",
             "Bash(chown *)",
+            "Bash(make *)",
             "Read",
             "Edit",
             "Write",
