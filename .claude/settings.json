@@ -35,6 +35,11 @@
                 "hooks": [
                     {
                         "type": "command",
+                        "command": "bash .claude/hooks/auto-sync-after-push.sh",
+                        "timeout": 10000
+                    },
+                    {
+                        "type": "command",
                         "command": "bash .claude/hooks/enforce-auto-proceed.sh",
                         "timeout": 5000
                     }
