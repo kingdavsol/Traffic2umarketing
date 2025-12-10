@@ -1,269 +1,223 @@
-name: Continuous Deployment
+name: Deploy to Hostinger VPS
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches:
+      - claude/**  # Deploy on any claude/* branch
+      - main
+      - deploy
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/quicksell-backend
+  DEPLOY_USER: deploy-user
+  WEB_ROOT: /var/www/traffic2u.com
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: quicksell-test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
+    timeout-minutes: 30
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Extract branch and app name
+        id: extract
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
-    - name: Install backend dependencies
-      run: |
-        cd backend
-        npm ci
+          # Extract app name from branch (e.g., claude/caption-generator-app-01xxx -> caption-generator)
+          if [[ $BRANCH_NAME == claude/* ]]; then
+            APP_NAME=$(echo $BRANCH_NAME | sed 's/claude\/\(.*\)-01.*/\1/')
+          else
+            APP_NAME=$(echo $BRANCH_NAME | tr '/' '-')
+          fi
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+          echo "Deploying branch: $BRANCH_NAME"
+          echo "App name: $APP_NAME"
 
-    - name: Run linter
-      run: |
-        cd backend
-        npm run lint
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
-    - name: Run tests
-      env:
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_USER: postgres
-        DB_PASSWORD: password
-        DB_NAME: quicksell-test
-        REDIS_HOST: localhost
-        REDIS_PORT: 6379
-      run: |
-        cd backend
-        npm test
+      - name: Create deployment directory on VPS
+        run: |
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new \
+            ${{ env.DEPLOY_USER }}@${{ secrets.VPS_HOST }} \
+            "mkdir -p ${WEB_ROOT}/${{ steps.extract.outputs.app_name }}"
 
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
-      with:
-        files: ./backend/coverage/coverage-final.json
-        flags: backend
+      - name: Deploy application
+        run: |
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=10 \
+            ${{ env.DEPLOY_USER }}@${{ secrets.VPS_HOST }} << 'DEPLOY_SCRIPT'
+            set -e
 
-  build-backend:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+            APP_NAME="${{ steps.extract.outputs.app_name }}"
+            BRANCH_NAME="${{ steps.extract.outputs.branch_name }}"
+            APP_DIR="${WEB_ROOT}/${APP_NAME}"
 
-    permissions:
-      contents: read
-      packages: write
+            echo "=========================================="
+            echo "Deploying: $APP_NAME"
+            echo "From Branch: $BRANCH_NAME"
+            echo "To Directory: $APP_DIR"
+            echo "=========================================="
 
-    steps:
-    - uses: actions/checkout@v3
+            # Clone or update repository
+            if [ -d "$APP_DIR/.git" ]; then
+              echo "Repository exists, updating..."
+              cd "$APP_DIR"
+              git fetch origin
+              git checkout $BRANCH_NAME
+              git pull origin $BRANCH_NAME
+            else
+              echo "Cloning repository..."
+              cd /tmp
+              git clone --branch $BRANCH_NAME --single-branch \
+                http://local_proxy@127.0.0.1:45069/git/kingdavsol/Traffic2umarketing.git \
+                temp_deploy_$$
+              cp -r temp_deploy_$$/* "$APP_DIR/"
+              rm -rf temp_deploy_$$
+              cd "$APP_DIR"
+            fi
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+            # Check if package.json exists
+            if [ -f "package.json" ]; then
+              echo "Installing dependencies..."
+              npm install --production
 
-    - name: Log in to Container Registry
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+              # Check if build script exists
+              if grep -q '"build"' package.json; then
+                echo "Building application..."
+                npm run build
+              fi
+            fi
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=sha
+            # Create .env from template if it doesn't exist
+            if [ ! -f ".env" ] && [ -f ".env.example" ]; then
+              echo "Creating .env from template..."
+              cp .env.example .env
+              echo "⚠️  Remember to configure .env with actual values!"
+            fi
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: ./backend
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+            # Determine port based on app type
+            PORT=3000
+            if grep -q '"next"' package.json 2>/dev/null; then
+              PORT=3000
+            elif grep -q '"react"' package.json 2>/dev/null; then
+              if grep -q '"express"' package.json 2>/dev/null; then
+                PORT=5000
+              else
+                PORT=3000
+              fi
+            else
+              PORT=5000
+            fi
 
-  deploy-backend:
-    needs: build-backend
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+            echo "Expected port: $PORT"
 
-    steps:
-    - uses: actions/checkout@v3
+            DEPLOY_SCRIPT
 
-    - name: Deploy to production
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-        DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-        DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-        YAKIT_API_TOKEN: ${{ secrets.YAKIT_API_TOKEN }}
-      run: |
-        # Create SSH key
-        mkdir -p ~/.ssh
-        echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
-        chmod 600 ~/.ssh/deploy_key
-        ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+      - name: Start application with PM2
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ secrets.VPS_HOST }} << 'START_SCRIPT'
+            set -e
 
-        # Deploy using yakit CLI or custom script
-        # Example: yakit deploy --token $YAKIT_API_TOKEN --image quicksell-backend:latest
+            APP_NAME="${{ steps.extract.outputs.app_name }}"
+            APP_DIR="${WEB_ROOT}/${APP_NAME}"
 
-  build-frontend:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+            cd "$APP_DIR"
 
-    steps:
-    - uses: actions/checkout@v3
+            # Stop existing app if running
+            pm2 stop "$APP_NAME" 2>/dev/null || true
+            pm2 delete "$APP_NAME" 2>/dev/null || true
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
+            # Start with PM2
+            if [ -f "package.json" ]; then
+              echo "Starting application with PM2..."
 
-    - name: Install dependencies
-      run: |
-        cd frontend
-        npm ci
+              # Check for custom start script
+              if grep -q '"start"' package.json; then
+                pm2 start "npm start" --name "$APP_NAME" --append-log
+              else
+                pm2 start "npm run dev" --name "$APP_NAME" --append-log 2>/dev/null || \
+                pm2 start "node index.js" --name "$APP_NAME" --append-log 2>/dev/null || \
+                pm2 start "node server.js" --name "$APP_NAME" --append-log
+              fi
 
-    - name: Run linter
-      run: |
-        cd frontend
-        npm run lint
+              # Save PM2 state
+              pm2 save
 
-    - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
+              echo "Application started: $APP_NAME"
+            fi
 
-    - name: Upload to CDN
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: us-east-1
-      run: |
-        aws s3 sync frontend/build s3://quicksell-frontend/ --delete
+            START_SCRIPT
 
-  build-android:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Verify deployment
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ secrets.VPS_HOST }} << 'VERIFY_SCRIPT'
+            APP_NAME="${{ steps.extract.outputs.app_name }}"
 
-    steps:
-    - uses: actions/checkout@v3
+            # Wait for app to start
+            sleep 3
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+            # Check PM2 status
+            echo "Application status:"
+            pm2 list | grep "$APP_NAME" || echo "Warning: App not found in PM2 list"
 
-    - name: Install EAS CLI
-      run: npm install -g eas-cli
+            # Try to get health status
+            STATUS=$(pm2 describe "$APP_NAME" 2>/dev/null | grep "status" | awk '{print $NF}' || echo "unknown")
+            echo "Status: $STATUS"
 
-    - name: Install dependencies
-      run: |
-        cd mobile
-        npm ci
+            if [ "$STATUS" = "online" ]; then
+              echo "✓ Deployment successful!"
+            else
+              echo "⚠️  App may not be running. Check logs:"
+              pm2 logs "$APP_NAME" --lines 20
+            fi
 
-    - name: Build Android
-      env:
-        EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      run: |
-        cd mobile
-        eas build --platform android --auto-submit
+            VERIFY_SCRIPT
 
-  build-ios:
-    needs: test
-    runs-on: macos-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Display deployment summary
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "Deployment Summary"
+          echo "=========================================="
+          echo "App: ${{ steps.extract.outputs.app_name }}"
+          echo "Branch: ${{ steps.extract.outputs.branch_name }}"
+          echo "VPS: ${{ secrets.VPS_HOST }}"
+          echo "Directory: ${WEB_ROOT}/${{ steps.extract.outputs.app_name }}"
+          echo ""
+          echo "Next Steps:"
+          echo "1. Monitor app: pm2 logs ${{ steps.extract.outputs.app_name }}"
+          echo "2. Configure .env with actual API keys, database URLs, etc."
+          echo "3. Restart app: pm2 restart ${{ steps.extract.outputs.app_name }}"
+          echo "4. Setup domain: ${{ steps.extract.outputs.app_name }}.traffic2u.com"
+          echo "=========================================="
 
-    steps:
-    - uses: actions/checkout@v3
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✓ Deployment successful!"
+            echo "App '${{ steps.extract.outputs.app_name }}' has been deployed to the VPS"
+          else
+            echo "✗ Deployment failed!"
+            echo "Please check the logs above for details"
+          fi
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-
-    - name: Install EAS CLI
-      run: npm install -g eas-cli
-
-    - name: Install dependencies
-      run: |
-        cd mobile
-        npm ci
-
-    - name: Build iOS
-      env:
-        EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        APPLE_ID: ${{ secrets.APPLE_ID }}
-        APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      run: |
-        cd mobile
-        eas build --platform ios --auto-submit
-
-  notify:
-    needs: [deploy-backend, build-frontend, build-android, build-ios]
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-    - name: Send Slack notification
-      uses: slackapi/slack-github-action@v1
-      with:
-        webhook-url: ${{ secrets.SLACK_WEBHOOK }}
-        payload: |
-          {
-            "text": "Deployment ${{ job.status }}",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "QuickSell Deployment Result: *${{ job.status }}*\nCommit: ${{ github.sha }}\nAuthor: ${{ github.actor }}"
-                }
-              }
-            ]
-          }
+      - name: Upload logs as artifact (for debugging)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-logs-${{ steps.extract.outputs.app_name }}
+          path: |
+            ~/.ssh/known_hosts
+            /tmp/*.log
+          retention-days: 7
+>>>>>>> 8104ab69ba09380fd09628b5c2c03b7d267fdabb

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "vps-ssh": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-ssh"],
+      "env": {
+        "SSH_HOST": "YOUR_VPS_IP_HERE",
+        "SSH_PORT": "22",
+        "SSH_USER": "claude-deploy",
+        "SSH_PRIVATE_KEY_PATH": "/home/YOUR_LOCAL_USERNAME/.ssh/id_claude_vps",
+        "SSH_PRIVATE_KEY_PASSPHRASE": ""
+      }
+    }
+  }
+}
