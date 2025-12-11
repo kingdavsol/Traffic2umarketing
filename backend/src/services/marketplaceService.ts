@@ -46,24 +46,33 @@ const publishToEbayMarketplace = async (
   accessToken: string
 ): Promise<MarketplaceResult> => {
   try {
-    const result = await publishToEbay(accessToken, {
-      title: listing.title,
-      description: listing.description,
-      price: listing.price,
-      category: listing.category || 'Other',
-      condition: listing.condition || 'Used',
-      brand: listing.brand,
-      photos: Array.isArray(listing.photos) ? listing.photos : JSON.parse(listing.photos || '[]'),
-      fulfillmentType: listing.fulfillment_type as any,
-      sku: `QS-${listing.id}-${Date.now()}`,
-    });
+    const result = await publishToEbay(
+      accessToken,
+      {
+        title: listing.title,
+        description: listing.description,
+        price: listing.price,
+        category: listing.category || 'Other',
+        condition: listing.condition || 'Used',
+        brand: listing.brand,
+        photos: Array.isArray(listing.photos) ? listing.photos : JSON.parse(listing.photos || '[]'),
+        fulfillmentType: listing.fulfillment_type as any,
+        sku: `QS-${listing.id}-${Date.now()}`,
+      },
+      {
+        merchantLocationKey: 'default',
+        fulfillmentPolicyId: 'default',
+        paymentPolicyId: 'default',
+        returnPolicyId: 'default',
+      }
+    );
 
     if (result.success) {
       return {
         marketplace: 'ebay',
         success: true,
         listingId: result.listingId,
-        listingUrl: result.listingUrl,
+        listingUrl: result.listingUrl || `https://www.ebay.com/itm/${result.listingId}`,
       };
     } else {
       return {
@@ -187,7 +196,7 @@ export const publishListingToMarketplaces = async (
 
     // Get user's marketplace accounts
     const accounts = await getUserMarketplaceAccounts(userId);
-    const accountMap = new Map(accounts.map(acc => [acc.marketplace_name.toLowerCase(), acc]));
+    const accountMap = new Map(accounts.map((acc: any) => [acc.marketplace_name.toLowerCase(), acc]));
 
     const results: MarketplaceResult[] = [];
 
@@ -245,7 +254,7 @@ export const publishListingToMarketplaces = async (
  */
 export const getConnectedMarketplaces = async (userId: number) => {
   const accounts = await getUserMarketplaceAccounts(userId);
-  return accounts.map(acc => ({
+  return accounts.map((acc: any) => ({
     marketplace: acc.marketplace_name,
     accountName: acc.account_name,
     isActive: acc.is_active,

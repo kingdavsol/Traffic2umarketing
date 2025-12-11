@@ -202,9 +202,9 @@ export const publishListing = async (req: Request, res: Response) => {
     const results = await publishListingToMarketplaces(parseInt(id), userId, marketplaces);
 
     // Separate automatic vs copy/paste results
-    const automaticPosts = results.filter(r => !r.copyPasteData && r.success);
-    const failedPosts = results.filter(r => !r.copyPasteData && !r.success);
-    const copyPastePosts = results.filter(r => r.copyPasteData);
+    const automaticPosts = results.filter((r: any) => !r.copyPasteData && r.success);
+    const failedPosts = results.filter((r: any) => !r.copyPasteData && !r.success);
+    const copyPastePosts = results.filter((r: any) => r.copyPasteData);
 
     res.status(200).json({
       success: true,
