@@ -184,22 +184,49 @@ export const deleteListing = async (req: Request, res: Response) => {
 export const publishListing = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = (req as any).user.id;
     const { marketplaces } = req.body;
 
-    // TODO: Publish to selected marketplaces
-    // TODO: Update listing status
-    // TODO: Award bonus points
+    if (!marketplaces || !Array.isArray(marketplaces) || marketplaces.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please select at least one marketplace',
+        statusCode: 400,
+      });
+    }
+
+    // Import marketplace service
+    const { publishListingToMarketplaces } = require('../services/marketplaceService');
+
+    // Publish to selected marketplaces
+    const results = await publishListingToMarketplaces(parseInt(id), userId, marketplaces);
+
+    // Separate automatic vs copy/paste results
+    const automaticPosts = results.filter(r => !r.copyPasteData && r.success);
+    const failedPosts = results.filter(r => !r.copyPasteData && !r.success);
+    const copyPastePosts = results.filter(r => r.copyPasteData);
 
     res.status(200).json({
       success: true,
-      message: 'Listing published successfully',
+      message: 'Listing processing complete',
+      data: {
+        automaticPosts,
+        failedPosts,
+        copyPastePosts,
+        summary: {
+          total: marketplaces.length,
+          automaticSuccess: automaticPosts.length,
+          failed: failedPosts.length,
+          requiresCopyPaste: copyPastePosts.length
+        }
+      },
       statusCode: 200,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Publish listing error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to publish listing',
+      error: error.message || 'Failed to publish listing',
       statusCode: 500,
     });
   }
