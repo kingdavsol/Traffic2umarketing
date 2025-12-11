@@ -116,7 +116,7 @@ export const handleEbayOAuthCallback = async (req: Request, res: Response) => {
       return res.redirect('/settings/marketplaces?error=token_exchange_failed');
     }
 
-    const tokenData = await tokenResponse.json();
+    const tokenData: any = await tokenResponse.json();
     const { access_token, refresh_token, expires_in } = tokenData;
 
     // Save to database
