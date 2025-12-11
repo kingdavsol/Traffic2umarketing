@@ -1,18 +1,37 @@
 import { Request, Response } from 'express';
 import { logger } from '../config/logger';
-import { AppError } from '../middleware/errorHandler';
+import { query } from '../database/connection';
 
 export const getListings = async (req: Request, res: Response) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const userId = (req as any).user.id;
+    const { page = 1, limit = 10, status } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
 
-    // TODO: Fetch listings from database
-    // TODO: Filter by user ID from auth
+    let queryText = 'SELECT * FROM listings WHERE user_id = $1 AND deleted_at IS NULL';
+    const params: any[] = [userId];
+
+    if (status) {
+      queryText += ' AND status = $2';
+      params.push(status);
+    }
+
+    queryText += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(Number(limit), offset);
+
+    const result = await query(queryText, params);
+
+    const countResult = await query(
+      'SELECT COUNT(*) FROM listings WHERE user_id = $1 AND deleted_at IS NULL',
+      [userId]
+    );
 
     res.status(200).json({
       success: true,
-      data: [],
-      total: 0,
+      data: result.rows,
+      total: parseInt(countResult.rows[0].count),
+      page: Number(page),
+      limit: Number(limit),
       statusCode: 200,
     });
   } catch (error) {
@@ -27,28 +46,66 @@ export const getListings = async (req: Request, res: Response) => {
 
 export const createListing = async (req: Request, res: Response) => {
   try {
-    const { title, description, category, price, condition } = req.body;
+    const userId = (req as any).user.id;
+    const {
+      title,
+      description,
+      category,
+      price,
+      condition,
+      brand,
+      model,
+      color,
+      size,
+      fulfillment_type,
+      photos,
+      status,
+      ai_generated
+    } = req.body;
 
-    // Validate input
-    if (!title || !description || !category || !price || !condition) {
-      throw new AppError('Missing required fields', 400);
+    // Validate required fields
+    if (!title || !description) {
+      return res.status(400).json({
+        success: false,
+        error: 'Title and description are required',
+        statusCode: 400,
+      });
     }
 
-    // TODO: Create listing in database
-    // TODO: Award points to user
+    const queryText = `
+      INSERT INTO listings (
+        user_id, title, description, category, price, condition,
+        brand, model, color, size, fulfillment_type, photos, status, ai_generated
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      RETURNING *
+    `;
+
+    const params = [
+      userId,
+      title,
+      description,
+      category || null,
+      price || 0,
+      condition || null,
+      brand || null,
+      model || null,
+      color || null,
+      size || null,
+      fulfillment_type || 'both',
+      JSON.stringify(photos || []),
+      status || 'draft',
+      ai_generated || false
+    ];
+
+    const result = await query(queryText, params);
+
+    logger.info(`Listing created: ${result.rows[0].id} by user ${userId}`);
 
     res.status(201).json({
       success: true,
       message: 'Listing created successfully',
+      data: result.rows[0],
       statusCode: 201,
-      data: {
-        id: 1,
-        title,
-        description,
-        category,
-        price,
-        condition,
-      },
     });
   } catch (error) {
     logger.error('Create listing error:', error);
