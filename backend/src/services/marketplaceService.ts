@@ -18,6 +18,15 @@ interface Listing {
   photos: any;
 }
 
+interface MarketplaceAccount {
+  marketplace_name: string;
+  account_name: string;
+  access_token?: string;
+  is_active: boolean;
+  auto_sync_enabled: boolean;
+  last_sync_at?: Date;
+}
+
 interface MarketplaceResult {
   marketplace: string;
   success: boolean;
@@ -72,7 +81,7 @@ const publishToEbayMarketplace = async (
         marketplace: 'ebay',
         success: true,
         listingId: result.listingId,
-        listingUrl: result.listingUrl || `https://www.ebay.com/itm/${result.listingId}`,
+        listingUrl: `https://www.ebay.com/itm/${result.listingId}`,
       };
     } else {
       return {
@@ -196,7 +205,9 @@ export const publishListingToMarketplaces = async (
 
     // Get user's marketplace accounts
     const accounts = await getUserMarketplaceAccounts(userId);
-    const accountMap = new Map(accounts.map((acc: any) => [acc.marketplace_name.toLowerCase(), acc]));
+    const accountMap = new Map<string, MarketplaceAccount>(
+      accounts.map((acc: any) => [acc.marketplace_name.toLowerCase(), acc as MarketplaceAccount])
+    );
 
     const results: MarketplaceResult[] = [];
 
@@ -254,7 +265,7 @@ export const publishListingToMarketplaces = async (
  */
 export const getConnectedMarketplaces = async (userId: number) => {
   const accounts = await getUserMarketplaceAccounts(userId);
-  return accounts.map((acc: any) => ({
+  return accounts.map((acc: MarketplaceAccount) => ({
     marketplace: acc.marketplace_name,
     accountName: acc.account_name,
     isActive: acc.is_active,
