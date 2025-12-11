@@ -1,6 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { authenticate } from '../middleware/auth';
 import { logger } from '../config/logger';
+import {
+  getUserMarketplaces,
+  initiateEbayOAuth,
+  handleEbayOAuthCallback,
+  disconnectMarketplace,
+  getMarketplaceStatus,
+} from '../controllers/marketplaceController';
 
 const router = Router();
 
@@ -122,5 +129,40 @@ router.post('/:marketplace/post-listing', authenticate, async (req: Request, res
     });
   }
 });
+
+/**
+ * @route   GET /api/v1/marketplaces/connected
+ * @desc    Get user's connected marketplaces
+ * @access  Private
+ */
+router.get('/connected', authenticate, getUserMarketplaces);
+
+/**
+ * @route   GET /api/v1/marketplaces/ebay/connect
+ * @desc    Initiate eBay OAuth flow
+ * @access  Private
+ */
+router.get('/ebay/connect', authenticate, initiateEbayOAuth);
+
+/**
+ * @route   GET /api/v1/marketplaces/ebay/callback
+ * @desc    Handle eBay OAuth callback
+ * @access  Public (callback from eBay)
+ */
+router.get('/ebay/callback', handleEbayOAuthCallback);
+
+/**
+ * @route   POST /api/v1/marketplaces/:marketplace/disconnect
+ * @desc    Disconnect marketplace
+ * @access  Private
+ */
+router.post('/:marketplace/disconnect', authenticate, disconnectMarketplace);
+
+/**
+ * @route   GET /api/v1/marketplaces/:marketplace/status
+ * @desc    Get marketplace connection status
+ * @access  Private
+ */
+router.get('/:marketplace/status', authenticate, getMarketplaceStatus);
 
 export default router;
