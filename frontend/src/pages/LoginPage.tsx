@@ -17,7 +17,7 @@ import { Visibility, VisibilityOff, Google as GoogleIcon } from "@mui/icons-mate
 import api from "../services/api";
 import { loginSuccess } from "../store/slices/authSlice";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
