@@ -19,6 +19,7 @@ import {
   CheckCircle as CheckIcon,
   Link as LinkIcon,
   Storefront as StorefrontIcon,
+  Palette as EtsyIcon,
 } from '@mui/icons-material';
 import api from '../services/api';
 
@@ -87,6 +88,15 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
       connected: false,
       requiresAuth: false,
     },
+    {
+      id: 'etsy',
+      name: 'Etsy',
+      description: 'Auto-publish if connected, copy/paste if not',
+      icon: <EtsyIcon />,
+      autoPublish: false,
+      connected: false,
+      requiresAuth: true,
+    },
   ]);
 
   const [loading, setLoading] = useState(true);
@@ -141,9 +151,9 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
     onSelectionChange([]);
   };
 
-  const handleConnectEbay = () => {
-    // Navigate to eBay OAuth flow
-    window.location.href = '/api/v1/marketplaces/ebay/connect';
+  const handleConnect = (marketplaceId: string) => {
+    // Navigate to marketplace OAuth flow
+    window.location.href = `/api/v1/marketplaces/${marketplaceId}/connect`;
   };
 
   if (loading) {
@@ -247,9 +257,7 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                         startIcon={<LinkIcon />}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (marketplace.id === 'ebay') {
-                            handleConnectEbay();
-                          }
+                          handleConnect(marketplace.id);
                         }}
                         sx={{ ml: 'auto' }}
                       >

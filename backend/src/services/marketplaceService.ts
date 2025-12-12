@@ -1,6 +1,7 @@
 import { query } from '../database/connection';
 import { logger } from '../config/logger';
 import { createAndPublishListing as publishToEbay } from '../integrations/ebay';
+import { createAndPublishListing as publishToEtsy } from '../integrations/etsy';
 
 interface Listing {
   id: number;
@@ -96,6 +97,50 @@ const publishToEbayMarketplace = async (
       marketplace: 'ebay',
       success: false,
       error: error.message || 'Failed to publish to eBay',
+    };
+  }
+};
+
+/**
+ * Publish listing to Etsy
+ */
+const publishToEtsyMarketplace = async (
+  listing: Listing,
+  accessToken: string
+): Promise<MarketplaceResult> => {
+  try {
+    const result = await publishToEtsy(accessToken, {
+      title: listing.title,
+      description: listing.description,
+      price: listing.price,
+      category: listing.category || 'Other',
+      condition: listing.condition || 'good',
+      brand: listing.brand,
+      photos: Array.isArray(listing.photos) ? listing.photos : JSON.parse(listing.photos || '[]'),
+      quantity: 1,
+      sku: `QS-${listing.id}-${Date.now()}`,
+    });
+
+    if (result.success) {
+      return {
+        marketplace: 'etsy',
+        success: true,
+        listingId: result.listingId,
+        listingUrl: result.listingUrl || `https://www.etsy.com/listing/${result.listingId}`,
+      };
+    } else {
+      return {
+        marketplace: 'etsy',
+        success: false,
+        error: result.error,
+      };
+    }
+  } catch (error: any) {
+    logger.error('Etsy publish error:', error);
+    return {
+      marketplace: 'etsy',
+      success: false,
+      error: error.message || 'Failed to publish to Etsy',
     };
   }
 };
@@ -219,6 +264,21 @@ export const publishListingToMarketplaces = async (
       // Automatic posting for eBay if credentials exist
       if (marketplaceLower === 'ebay' && account?.access_token) {
         const result = await publishToEbayMarketplace(listing, account.access_token);
+        results.push(result);
+
+        // Save result to database
+        if (result.success) {
+          await query(
+            `UPDATE listings
+             SET marketplace_listings = marketplace_listings || $1::jsonb
+             WHERE id = $2`,
+            [JSON.stringify({ [marketplace]: { listingId: result.listingId, url: result.listingUrl } }), listingId]
+          );
+        }
+      }
+      // Automatic posting for Etsy if credentials exist
+      else if (marketplaceLower === 'etsy' && account?.access_token) {
+        const result = await publishToEtsyMarketplace(listing, account.access_token);
         results.push(result);
 
         // Save result to database

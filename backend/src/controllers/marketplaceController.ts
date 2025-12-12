@@ -147,6 +147,146 @@ export const handleEbayOAuthCallback = async (req: Request, res: Response) => {
 };
 
 /**
+ * Initiate Etsy OAuth flow
+ */
+export const initiateEtsyOAuth = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+
+    const apiKey = process.env.ETSY_API_KEY;
+    const redirectUri = process.env.ETSY_REDIRECT_URI || `${process.env.API_URL}/api/v1/marketplaces/etsy/callback`;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        success: false,
+        error: 'Etsy OAuth is not configured. Please set ETSY_API_KEY environment variable.',
+        statusCode: 500,
+      });
+    }
+
+    // Generate state with user ID
+    const state = Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString('base64');
+
+    // Generate code verifier and challenge for PKCE
+    const codeVerifier = Buffer.from(Math.random().toString()).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 128);
+
+    // Store code verifier temporarily (in production, use Redis or session)
+    // For now, we'll include it in the state (not recommended for production)
+    const stateWithVerifier = Buffer.from(JSON.stringify({ userId, codeVerifier, timestamp: Date.now() })).toString('base64');
+
+    // Etsy OAuth URL
+    const scopes = ['listings_w', 'shops_r', 'profile_r'].join('%20');
+    const authUrl = `https://www.etsy.com/oauth/connect?response_type=code&client_id=${apiKey}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${stateWithVerifier}&code_challenge=${codeVerifier}&code_challenge_method=S256`;
+
+    // Redirect to Etsy OAuth
+    res.redirect(authUrl);
+  } catch (error) {
+    logger.error('Etsy OAuth initiation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to initiate Etsy OAuth',
+      statusCode: 500,
+    });
+  }
+};
+
+/**
+ * Handle Etsy OAuth callback
+ */
+export const handleEtsyOAuthCallback = async (req: Request, res: Response) => {
+  try {
+    const { code, state, error: oauthError } = req.query;
+
+    if (oauthError) {
+      logger.error('Etsy OAuth error:', oauthError);
+      return res.redirect(`/settings/marketplaces?error=${oauthError}`);
+    }
+
+    if (!code || !state) {
+      return res.redirect('/settings/marketplaces?error=missing_parameters');
+    }
+
+    // Decode state to get user ID and code verifier
+    const stateData = JSON.parse(Buffer.from(state as string, 'base64').toString());
+    const userId = stateData.userId;
+    const codeVerifier = stateData.codeVerifier;
+
+    // Exchange code for access token
+    const apiKey = process.env.ETSY_API_KEY;
+    const redirectUri = process.env.ETSY_REDIRECT_URI || `${process.env.API_URL}/api/v1/marketplaces/etsy/callback`;
+
+    if (!apiKey) {
+      return res.redirect('/settings/marketplaces?error=oauth_not_configured');
+    }
+
+    const tokenResponse = await fetch('https://api.etsy.com/v3/public/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: apiKey,
+        redirect_uri: redirectUri,
+        code: code as string,
+        code_verifier: codeVerifier,
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      logger.error('Etsy token exchange failed:', errorData);
+      return res.redirect('/settings/marketplaces?error=token_exchange_failed');
+    }
+
+    const tokenData: any = await tokenResponse.json();
+    const { access_token, refresh_token, expires_in } = tokenData;
+
+    // Get shop name
+    const shopResponse = await fetch('https://openapi.etsy.com/v3/application/shops', {
+      headers: {
+        'Authorization': `Bearer ${access_token}`,
+        'x-api-key': apiKey,
+      },
+    });
+
+    let shopName = 'Etsy Shop';
+    if (shopResponse.ok) {
+      const shopData: any = await shopResponse.json();
+      if (shopData.results && shopData.results.length > 0) {
+        shopName = shopData.results[0].shop_name;
+      }
+    }
+
+    // Save to database
+    const expiresAt = new Date(Date.now() + expires_in * 1000);
+
+    await query(
+      `INSERT INTO marketplace_accounts
+       (user_id, marketplace_name, account_name, access_token, refresh_token, token_expires_at, is_active, auto_sync_enabled)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (user_id, marketplace_name)
+       DO UPDATE SET
+         access_token = EXCLUDED.access_token,
+         refresh_token = EXCLUDED.refresh_token,
+         token_expires_at = EXCLUDED.token_expires_at,
+         account_name = EXCLUDED.account_name,
+         is_active = true,
+         last_sync_at = CURRENT_TIMESTAMP`,
+      [userId, 'Etsy', shopName, access_token, refresh_token, expiresAt, true, true]
+    );
+
+    logger.info(`Etsy connected for user ${userId}: ${shopName}`);
+
+    // Redirect to success page
+    res.redirect('/settings/marketplaces?success=etsy_connected');
+  } catch (error: any) {
+    logger.error('Etsy OAuth callback error:', error);
+    res.redirect('/settings/marketplaces?error=connection_failed');
+  }
+};
+
+/**
  * Disconnect marketplace
  */
 export const disconnectMarketplace = async (req: Request, res: Response) => {

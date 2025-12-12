@@ -5,6 +5,8 @@ import {
   getUserMarketplaces,
   initiateEbayOAuth,
   handleEbayOAuthCallback,
+  initiateEtsyOAuth,
+  handleEtsyOAuthCallback,
   disconnectMarketplace,
   getMarketplaceStatus,
 } from '../controllers/marketplaceController';
@@ -150,6 +152,20 @@ router.get('/ebay/connect', authenticate, initiateEbayOAuth);
  * @access  Public (callback from eBay)
  */
 router.get('/ebay/callback', handleEbayOAuthCallback);
+
+/**
+ * @route   GET /api/v1/marketplaces/etsy/connect
+ * @desc    Initiate Etsy OAuth flow
+ * @access  Private
+ */
+router.get('/etsy/connect', authenticate, initiateEtsyOAuth);
+
+/**
+ * @route   GET /api/v1/marketplaces/etsy/callback
+ * @desc    Handle Etsy OAuth callback
+ * @access  Public (callback from Etsy)
+ */
+router.get('/etsy/callback', handleEtsyOAuthCallback);
 
 /**
  * @route   POST /api/v1/marketplaces/:marketplace/disconnect
