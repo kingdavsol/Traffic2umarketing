@@ -40,6 +40,9 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 // MIDDLEWARE SETUP
 // ============================================
 
+// Trust proxy - required for rate limiting behind nginx
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 
@@ -67,17 +70,31 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(morgan('combined'));
 app.use(requestLogger);
 
-// Rate limiting
+// Rate limiting - stricter for production
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: NODE_ENV === 'production' ? 50 : 100, // Tighter limit in production
   standardHeaders: true,
   legacyHeaders: false,
-  message: 'Too many requests from this IP, please try again later.'
+  message: 'Too many requests from this IP, please try again later.',
+  skip: (req) => {
+    // Skip rate limiting for health check
+    return req.path === '/health';
+  }
 });
 
-// Apply rate limiting to all routes
+// Stricter rate limit for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // Only 5 login attempts per 15 minutes
+  message: 'Too many login attempts, please try again later.',
+  skipSuccessfulRequests: true
+});
+
+// Apply rate limiting
 app.use('/api/', limiter);
+app.use('/api/v1/auth/login', authLimiter);
+app.use('/api/v1/auth/register', authLimiter);
 
 // ============================================
 // ROUTES
