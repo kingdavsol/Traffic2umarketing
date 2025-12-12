@@ -1,3 +1,4 @@
+// QuickSell - v1.1.0 - Dec 12, 2025
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
