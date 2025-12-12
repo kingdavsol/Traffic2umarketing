@@ -61,7 +61,7 @@ async function makeEtsyRequest(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData: any = await response.json();
       throw new Error(errorData.error || `Etsy API error: ${response.statusText}`);
     }
 
@@ -431,11 +431,11 @@ export const exchangeCodeForToken = async (
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData: any = await response.json();
       throw new Error(errorData.error_description || 'Token exchange failed');
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
 
     return {
       success: true,
@@ -479,7 +479,7 @@ export const refreshAccessToken = async (
       throw new Error('Token refresh failed');
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
 
     return {
       success: true,
