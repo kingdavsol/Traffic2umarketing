@@ -96,7 +96,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/listings', listingRoutes);
 app.use('/api/v1/photos', photoRoutes);
-app.use('/api/v1/marketplaces', bulkMarketplaceSignupRoutes);
+app.use('/api/v1/marketplaces', marketplaceRoutes);
 app.use('/api/v1/pricing', pricingRoutes);
 app.use('/api/v1/gamification', gamificationRoutes);
 app.use('/api/v1/sales', salesRoutes);
@@ -104,7 +104,6 @@ app.use('/api/v1/shipping', shippingRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/subscription', subscriptionRoutes);
 app.use('/api/v1/publish', publishRoutes);
-app.use('/api/v1/oauth', publishRoutes);
 
 // ============================================
 // 404 HANDLER
