@@ -17,6 +17,8 @@ import {
   Notifications as NotificationsIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
+  AccountCircle as AccountCircleIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import { logout } from '../store/slices/authSlice';
 import { RootState } from '../store';
@@ -90,29 +92,43 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             <SettingsIcon />
           </IconButton>
 
-          <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-            <Avatar
-              sx={{
-                width: 36,
-                height: 36,
-                bgcolor: '#FF6B6B',
-                color: 'white',
-                fontWeight: 'bold',
-              }}
-            >
-              {user?.firstName?.[0] || user?.username?.[0] || 'U'}
-            </Avatar>
+          <IconButton
+            onClick={handleMenuOpen}
+            sx={{ p: 0.5 }}
+            title="Account Menu"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Avatar
+                sx={{
+                  width: 36,
+                  height: 36,
+                  bgcolor: '#FF6B6B',
+                  color: 'white',
+                  fontWeight: 'bold',
+                }}
+              >
+                {user?.firstName?.[0] || user?.username?.[0] || 'U'}
+              </Avatar>
+              <AccountCircleIcon sx={{ color: '#007AFF', display: { xs: 'none', sm: 'block' } }} />
+            </Box>
           </IconButton>
 
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-            <MenuItem onClick={handleMenuClose} sx={{ pointerEvents: 'none' }}>
-              {user?.firstName} {user?.lastName}
+            <MenuItem onClick={handleMenuClose} sx={{ pointerEvents: 'none', minWidth: 200 }}>
+              <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
+              <Box>
+                <Box sx={{ fontWeight: 'bold' }}>
+                  {user?.firstName} {user?.lastName}
+                </Box>
+                <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  {user?.email}
+                </Box>
+              </Box>
             </MenuItem>
-            <MenuItem onClick={handleMenuClose} divider>
-              {user?.email}
+            <MenuItem onClick={() => { handleMenuClose(); navigate('/settings'); }}>
+              <SettingsIcon sx={{ mr: 1 }} /> Settings
             </MenuItem>
-            <MenuItem onClick={() => navigate('/settings')}>Settings</MenuItem>
-            <MenuItem onClick={handleLogout}>
+            <MenuItem onClick={() => { handleMenuClose(); handleLogout(); }}>
               <LogoutIcon sx={{ mr: 1 }} /> Logout
             </MenuItem>
           </Menu>
