@@ -29,9 +29,9 @@ export const analyzePhoto = async (req: Request, res: Response) => {
       });
     }
 
-    // Get the image from the request
+    // Get the image and optional hints from the request
     // The image should be sent as base64 in the request body
-    const { image } = req.body;
+    const { image, hints } = req.body;
 
     if (!image) {
       logger.error('No image in request body. Body keys:', Object.keys(req.body));
@@ -44,7 +44,11 @@ export const analyzePhoto = async (req: Request, res: Response) => {
       });
     }
 
-    logger.info('Analyzing photo with OpenAI Vision API...');
+    if (hints) {
+      logger.info('Analyzing photo with user-provided hints:', hints);
+    } else {
+      logger.info('Analyzing photo with OpenAI Vision API...');
+    }
 
     // Call OpenAI Vision API to analyze the product
     const response = await openai.chat.completions.create({
@@ -68,6 +72,7 @@ Analyze this product image and extract the following information in JSON format:
   "model": "Model name/number if visible",
   "features": ["key feature 1", "key feature 2", "key feature 3"]
 }
+${hints ? `\nUSER HINTS: ${hints}\nPlease incorporate these hints into your analysis, especially for the description and features.` : ''}
 
 Be specific and accurate. If you can't determine something, use your best judgment based on similar products.`
             },

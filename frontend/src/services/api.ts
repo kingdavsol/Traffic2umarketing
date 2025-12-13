@@ -84,7 +84,7 @@ class APIService {
     });
   }
 
-  async analyzePhoto(file: File) {
+  async analyzePhoto(file: File, hints?: string) {
     // Convert file to base64
     const base64 = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -93,9 +93,10 @@ class APIService {
       reader.readAsDataURL(file);
     });
 
-    // Send as JSON with base64 image
+    // Send as JSON with base64 image and optional hints
     return this.api.post('/photos/analyze', {
-      image: base64
+      image: base64,
+      ...(hints && { hints })
     });
   }
 

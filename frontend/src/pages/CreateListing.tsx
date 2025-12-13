@@ -1,385 +1,437 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
   Button,
-  Container,
-  Paper,
-  Step,
-  Stepper,
-  StepLabel,
-  Typography,
-  TextField,
-  Grid,
   Card,
-  CardMedia,
-  CardActions,
-  IconButton,
+  CardContent,
+  Container,
   FormControl,
+  Grid,
   InputLabel,
-  Select,
   MenuItem,
-  Chip,
+  Select,
+  TextField,
+  Typography,
   Alert,
   CircularProgress,
-  Snackbar,
-  Divider,
+  Chip,
+  IconButton,
+  Paper,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@mui/material';
 import {
-  CloudUpload,
-  Delete,
-  ContentCopy,
-  Save,
-  AutoAwesome,
+  CloudUpload as UploadIcon,
+  Delete as DeleteIcon,
+  Refresh as RefreshIcon,
+  Send as SendIcon,
 } from '@mui/icons-material';
+import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import api from '../services/api';
+import { createListingSuccess } from '../store/slices/listingsSlice';
+import MarketplaceSelector from '../components/MarketplaceSelector';
 
-const steps = ['Upload Photos', 'Review & Edit', 'Publish'];
-
-interface ListingData {
+interface AnalysisResult {
   title: string;
   description: string;
   category: string;
-  price: string;
+  price: number;
   condition: string;
-  brand: string;
-  model: string;
-  color: string;
-  size: string;
-  fulfillment_type: string;
+  brand?: string;
+  model?: string;
+  color?: string;
+  size?: string;
 }
 
 const CreateListing: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // State
   const [activeStep, setActiveStep] = useState(0);
   const [photos, setPhotos] = useState<File[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [listingData, setListingData] = useState<ListingData>({
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  // Form state
+  const [formData, setFormData] = useState<AnalysisResult>({
     title: '',
     description: '',
     category: '',
-    price: '',
+    price: 0,
     condition: 'good',
     brand: '',
     model: '',
     color: '',
     size: '',
-    fulfillment_type: 'both',
   });
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const files = Array.from(event.target.files);
-      const newPhotos = [...photos, ...files].slice(0, 10);
-      setPhotos(newPhotos);
+  const [selectedMarketplaces, setSelectedMarketplaces] = useState<string[]>([]);
+  const [publishResults, setPublishResults] = useState<any>(null);
+  const [aiHints, setAiHints] = useState<string>('');
 
-      const newPreviews = newPhotos.map((file) => URL.createObjectURL(file));
-      photoPreviews.forEach((url) => URL.revokeObjectURL(url));
-      setPhotoPreviews(newPreviews);
-    }
+  const steps = ['Upload Photos', 'AI Analysis', 'Review & Edit', 'Publish'];
+
+  // Photo upload
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setPhotos((prev) => [...prev, ...acceptedFiles]);
+
+    // Create preview URLs
+    acceptedFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPhotoUrls((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp']
+    },
+    maxFiles: 12,
+  });
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+    setPhotoUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleRemovePhoto = (index: number) => {
-    const newPhotos = photos.filter((_, i) => i !== index);
-    const newPreviews = photoPreviews.filter((_, i) => i !== index);
-    URL.revokeObjectURL(photoPreviews[index]);
-    setPhotos(newPhotos);
-    setPhotoPreviews(newPreviews);
-  };
-
-  const handleAnalyzeWithAI = async () => {
+  // AI Analysis
+  const analyzePhotos = async () => {
     if (photos.length === 0) {
-      setError('Please upload at least one photo first');
+      setError('Please upload at least one photo');
       return;
     }
 
     setAnalyzing(true);
-    setError('');
+    setError(null);
 
     try {
-      const formData = new FormData();
-      photos.forEach((photo) => {
-        formData.append('photos', photo);
+      // Analyze the first photo
+      const response = await api.analyzePhoto(photos[0]);
+      const result = response.data;
+
+      setFormData({
+        title: result.title || '',
+        description: result.description || '',
+        category: result.category || '',
+        price: result.suggestedPrice || 0,
+        condition: result.condition || 'good',
+        brand: result.brand || '',
+        model: result.model || '',
+        color: result.color || '',
+        size: result.size || '',
       });
 
-      const uploadResponse = await api.post('/api/v1/photos/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      if (uploadResponse.data.success && uploadResponse.data.data.photos.length > 0) {
-        const firstPhotoUrl = uploadResponse.data.data.photos[0].url;
-
-        const analysisResponse = await api.post('/api/v1/photos/analyze', {
-          photoUrl: firstPhotoUrl,
-        });
-
-        if (analysisResponse.data.success) {
-          const aiData = analysisResponse.data.data;
-          setListingData({
-            ...listingData,
-            title: aiData.title || listingData.title,
-            description: aiData.description || listingData.description,
-            category: aiData.category || listingData.category,
-            condition: aiData.condition || listingData.condition,
-            brand: aiData.brand || listingData.brand,
-            color: aiData.color || listingData.color,
-            price: aiData.suggestedPrice ? aiData.suggestedPrice.toString() : listingData.price,
-          });
-          setSuccess('AI analysis complete! Review and edit the details below.');
-          setActiveStep(1);
-        }
-      }
+      setActiveStep(2); // Move to review step
     } catch (err: any) {
-      console.error('AI analysis error:', err);
-      setError(err.response?.data?.message || 'Failed to analyze photos with AI');
+      setError(err.response?.data?.error || 'Failed to analyze photos');
     } finally {
       setAnalyzing(false);
     }
   };
 
-  const handleInputChange = (field: keyof ListingData, value: string) => {
-    setListingData({ ...listingData, [field]: value });
-  };
-
-  const handleSaveListing = async () => {
-    if (!listingData.title || !listingData.description) {
-      setError('Please provide at least a title and description');
+  // Re-analyze with AI
+  const reAnalyze = async () => {
+    if (photos.length === 0) {
+      setError('No photos to re-analyze');
       return;
     }
 
-    setLoading(true);
-    setError('');
+    setAnalyzing(true);
+    setError(null);
 
     try {
-      const formData = new FormData();
-      photos.forEach((photo) => {
-        formData.append('photos', photo);
+      const response = await api.analyzePhoto(photos[0], aiHints || undefined);
+      const result = response.data;
+
+      // Update form data with new analysis
+      setFormData({
+        ...formData,
+        title: result.title || formData.title,
+        description: result.description || formData.description,
+        category: result.category || formData.category,
+        price: result.suggestedPrice || formData.price,
+        condition: result.condition || formData.condition,
+        brand: result.brand || formData.brand,
+        model: result.model || formData.model,
+        color: result.color || formData.color,
+        size: result.size || formData.size,
       });
 
-      const uploadResponse = await api.post('/api/v1/photos/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      const photoUrls = uploadResponse.data.success
-        ? uploadResponse.data.data.photos.map((p: any) => p.url)
-        : [];
-
-      const listingPayload = {
-        title: listingData.title,
-        description: listingData.description,
-        category: listingData.category,
-        price: parseFloat(listingData.price) || 0,
-        condition: listingData.condition,
-        brand: listingData.brand,
-        model: listingData.model,
-        color: listingData.color,
-        size: listingData.size,
-        fulfillment_type: listingData.fulfillment_type,
-        photos: photoUrls,
-        status: 'draft',
-        ai_generated: analyzing,
-      };
-
-      const response = await api.post('/api/v1/listings', listingPayload);
-
-      if (response.data.success) {
-        setSuccess('Listing saved successfully!');
-        setActiveStep(2);
-      }
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
-      console.error('Save listing error:', err);
-      setError(err.response?.data?.message || 'Failed to save listing');
+      setError(err.response?.data?.error || 'Failed to re-analyze photos');
     } finally {
-      setLoading(false);
+      setAnalyzing(false);
     }
   };
 
-  const handleCopyToClipboard = (marketplace: string) => {
-    let copyText = '';
-
-    switch (marketplace) {
-      case 'craigslist':
-        copyText = `${listingData.title}\n\n${listingData.description}\n\nPrice: $${listingData.price}\nCondition: ${listingData.condition}\nBrand: ${listingData.brand}\nLocation: Local pickup or shipping available`;
-        break;
-
-      case 'ebay':
-        copyText = `Title: ${listingData.title}\n\nDescription:\n${listingData.description}\n\nCondition: ${listingData.condition}\nBrand: ${listingData.brand}\nModel: ${listingData.model}\nColor: ${listingData.color}\nPrice: $${listingData.price}`;
-        break;
-
-      case 'facebook':
-        copyText = `${listingData.title}\n\n${listingData.description}\n\nPrice: $${listingData.price}\nCondition: ${listingData.condition}${listingData.brand ? `\nBrand: ${listingData.brand}` : ''}`;
-        break;
-
-      default:
-        copyText = `${listingData.title}\n\n${listingData.description}\n\nPrice: $${listingData.price}`;
-    }
-
-    navigator.clipboard.writeText(copyText).then(
-      () => {
-        setSuccess(`Copied to clipboard for ${marketplace.charAt(0).toUpperCase() + marketplace.slice(1)}!`);
-      },
-      (err) => {
-        setError('Failed to copy to clipboard');
-        console.error('Clipboard error:', err);
-      }
-    );
+  // Form handlers
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const handleNext = () => {
-    if (activeStep === 0 && photos.length === 0) {
-      setError('Please upload at least one photo');
+  const handleSelectChange = (name: string, value: any) => {
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  // Submit listing
+  const handleSubmit = async () => {
+    if (!formData.title || !formData.description) {
+      setError('Title and description are required');
       return;
     }
-    if (activeStep === 1) {
-      handleSaveListing();
-    } else {
-      setActiveStep((prevStep) => prevStep + 1);
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      // Create listing
+      const listingResponse = await api.createListing({
+        ...formData,
+        photos: photoUrls,
+        status: 'draft',
+        ai_generated: true,
+      });
+
+      const listing = listingResponse.data.data;
+      dispatch(createListingSuccess(listing));
+
+      // If marketplaces selected, publish immediately
+      if (selectedMarketplaces.length > 0) {
+        const publishResponse = await api.publishListing(listing.id, selectedMarketplaces);
+        setPublishResults(publishResponse.data.data);
+        setActiveStep(3); // Move to publish results step
+      } else {
+        // No marketplaces selected, just navigate to listings
+        navigate('/listings');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to create listing');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
-  };
-
-  const getStepContent = (step: number) => {
-    switch (step) {
-      case 0:
+  // Render steps
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0: // Upload Photos
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Upload Product Photos
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Upload up to 10 photos. First photo will be your main image.
-            </Typography>
-
-            <Box sx={{ mt: 3 }}>
-              <Button
-                variant="contained"
-                component="label"
-                startIcon={<CloudUpload />}
-                disabled={photos.length >= 10}
-              >
-                Upload Photos
-                <input
-                  type="file"
-                  hidden
-                  multiple
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-              </Button>
-              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                {photos.length}/10 photos uploaded
+            <Paper
+              {...getRootProps()}
+              sx={{
+                p: 4,
+                border: '2px dashed',
+                borderColor: isDragActive ? 'primary.main' : 'grey.300',
+                bgcolor: isDragActive ? 'action.hover' : 'background.paper',
+                cursor: 'pointer',
+                textAlign: 'center',
+              }}
+            >
+              <input {...getInputProps()} />
+              <UploadIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                {isDragActive ? 'Drop photos here' : 'Drag & drop photos, or click to select'}
               </Typography>
-            </Box>
+              <Typography variant="body2" color="text.secondary">
+                Upload up to 12 photos (JPEG, PNG, WebP)
+              </Typography>
+            </Paper>
 
-            {photoPreviews.length > 0 && (
+            {photoUrls.length > 0 && (
               <Grid container spacing={2} sx={{ mt: 2 }}>
-                {photoPreviews.map((preview, index) => (
+                {photoUrls.map((url, index) => (
                   <Grid item xs={6} sm={4} md={3} key={index}>
-                    <Card>
-                      <CardMedia
-                        component="img"
-                        height="140"
-                        image={preview}
-                        alt={`Photo ${index + 1}`}
+                    <Box sx={{ position: 'relative' }}>
+                      <img
+                        src={url}
+                        alt={`Upload ${index + 1}`}
+                        style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 8 }}
                       />
-                      <CardActions>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleRemovePhoto(index)}
-                        >
-                          <Delete />
-                        </IconButton>
-                        {index === 0 && (
-                          <Chip label="Main" size="small" color="primary" />
-                        )}
-                      </CardActions>
-                    </Card>
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: 5,
+                          right: 5,
+                          bgcolor: 'background.paper',
+                        }}
+                        onClick={() => removePhoto(index)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
                   </Grid>
                 ))}
               </Grid>
             )}
 
-            {photos.length > 0 && (
-              <Box sx={{ mt: 3 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<AutoAwesome />}
-                  onClick={handleAnalyzeWithAI}
-                  disabled={analyzing}
-                >
-                  {analyzing ? (
-                    <>
-                      <CircularProgress size={20} sx={{ mr: 1 }} />
-                      Analyzing with AI...
-                    </>
-                  ) : (
-                    'Analyze with AI'
-                  )}
-                </Button>
-              </Box>
-            )}
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+              <Button onClick={() => navigate('/listings')}>Cancel</Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  if (photos.length === 0) {
+                    setError('Please upload at least one photo');
+                    return;
+                  }
+                  setActiveStep(1);
+                }}
+              >
+                Next
+              </Button>
+            </Box>
           </Box>
         );
 
-      case 1:
+      case 1: // AI Analysis
+        return (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="h5" gutterBottom>
+              Ready to analyze your photos?
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              Our AI will generate a title, description, category, and suggested price for your listing.
+            </Typography>
+
+            {analyzing ? (
+              <Box>
+                <CircularProgress size={60} sx={{ mb: 2 }} />
+                <Typography variant="body1">Analyzing photos...</Typography>
+              </Box>
+            ) : (
+              <Button
+                variant="contained"
+                size="large"
+                onClick={analyzePhotos}
+                startIcon={<SendIcon />}
+              >
+                Analyze with AI
+              </Button>
+            )}
+
+            <Box sx={{ mt: 3 }}>
+              <Button onClick={() => setActiveStep(0)}>Back</Button>
+            </Box>
+          </Box>
+        );
+
+      case 2: // Review & Edit
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Review & Edit Listing Details
-            </Typography>
-            <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6">Review & Edit Listing</Typography>
+              <Button
+                startIcon={<RefreshIcon />}
+                onClick={reAnalyze}
+                disabled={analyzing}
+              >
+                {analyzing ? 'Re-analyzing...' : 'Re-analyze with AI'}
+              </Button>
+            </Box>
+
+            {success && (
+              <Alert severity="success" sx={{ mb: 2 }}>
+                Listing re-analyzed successfully!
+              </Alert>
+            )}
+
+            <Box sx={{ mb: 3 }}>
+              <TextField
+                fullWidth
+                label="AI Hints (Optional)"
+                placeholder="e.g., This is a vintage item from the 1980s, focus on retro styling"
+                value={aiHints}
+                onChange={(e) => setAiHints(e.target.value)}
+                multiline
+                rows={2}
+                helperText="Provide hints to help AI generate better descriptions when re-analyzing"
+              />
+            </Box>
+
+            <Grid container spacing={3}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Title"
-                  value={listingData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
                   required
                 />
               </Grid>
+
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Description"
-                  value={listingData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
                   multiline
                   rows={4}
                   required
                 />
               </Grid>
+
               <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Category"
-                  value={listingData.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
-                />
+                <FormControl fullWidth>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={formData.category}
+                    label="Category"
+                    onChange={(e) => handleSelectChange('category', e.target.value)}
+                  >
+                    <MenuItem value="Electronics">Electronics</MenuItem>
+                    <MenuItem value="Clothing">Clothing</MenuItem>
+                    <MenuItem value="Home & Garden">Home & Garden</MenuItem>
+                    <MenuItem value="Sports">Sports</MenuItem>
+                    <MenuItem value="Toys">Toys</MenuItem>
+                    <MenuItem value="Books">Books</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
+
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Price ($)"
+                  label="Price"
+                  name="price"
                   type="number"
-                  value={listingData.price}
-                  onChange={(e) => handleInputChange('price', e.target.value)}
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  InputProps={{ startAdornment: '$' }}
+                  required
                 />
               </Grid>
+
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>Condition</InputLabel>
                   <Select
-                    value={listingData.condition}
+                    value={formData.condition}
                     label="Condition"
-                    onChange={(e) => handleInputChange('condition', e.target.value)}
+                    onChange={(e) => handleSelectChange('condition', e.target.value)}
                   >
                     <MenuItem value="new">New</MenuItem>
                     <MenuItem value="like_new">Like New</MenuItem>
@@ -389,255 +441,172 @@ const CreateListing: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
+
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Brand"
-                  value={listingData.brand}
-                  onChange={(e) => handleInputChange('brand', e.target.value)}
+                  label="Brand (Optional)"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleInputChange}
                 />
               </Grid>
+
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Model"
-                  value={listingData.model}
-                  onChange={(e) => handleInputChange('model', e.target.value)}
+                  label="Model (Optional)"
+                  name="model"
+                  value={formData.model}
+                  onChange={handleInputChange}
                 />
               </Grid>
+
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Color"
-                  value={listingData.color}
-                  onChange={(e) => handleInputChange('color', e.target.value)}
+                  label="Color (Optional)"
+                  name="color"
+                  value={formData.color}
+                  onChange={handleInputChange}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Size"
-                  value={listingData.size}
-                  onChange={(e) => handleInputChange('size', e.target.value)}
+
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Select Marketplaces to Publish
+                </Typography>
+                <MarketplaceSelector
+                  selectedMarketplaces={selectedMarketplaces}
+                  onSelectionChange={setSelectedMarketplaces}
                 />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Fulfillment</InputLabel>
-                  <Select
-                    value={listingData.fulfillment_type}
-                    label="Fulfillment"
-                    onChange={(e) => handleInputChange('fulfillment_type', e.target.value)}
-                  >
-                    <MenuItem value="ship">Ship Only</MenuItem>
-                    <MenuItem value="local">Local Pickup Only</MenuItem>
-                    <MenuItem value="both">Both</MenuItem>
-                  </Select>
-                </FormControl>
               </Grid>
             </Grid>
+
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+              <Button onClick={() => setActiveStep(1)}>Back</Button>
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                disabled={submitting}
+              >
+                {submitting ? 'Creating...' : 'Create Listing'}
+              </Button>
+            </Box>
           </Box>
         );
 
-      case 2:
+      case 3: // Publish Results
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Publish to Marketplaces
-            </Typography>
-            <Alert severity="success" sx={{ mt: 2, mb: 3 }}>
-              Listing saved successfully! You earned 10 points.
-            </Alert>
-
-            <Typography variant="body1" gutterBottom>
-              Copy your listing details to publish on these marketplaces:
+            <Typography variant="h5" gutterBottom>
+              Publishing Results
             </Typography>
 
-            <Grid container spacing={2} sx={{ mt: 2 }}>
-              <Grid item xs={12} sm={4}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h6" gutterBottom>
-                    Craigslist
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<ContentCopy />}
-                    onClick={() => handleCopyToClipboard('craigslist')}
-                    fullWidth
-                  >
-                    Copy for Craigslist
-                  </Button>
-                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                    Opens in your browser
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ mt: 1 }}
-                    href="https://www.craigslist.org"
-                    target="_blank"
-                  >
-                    Go to Craigslist
-                  </Button>
-                </Paper>
-              </Grid>
+            {publishResults && (
+              <Box sx={{ mt: 3 }}>
+                {publishResults.automaticPosts?.length > 0 && (
+                  <Card sx={{ mb: 2 }}>
+                    <CardContent>
+                      <Typography variant="h6" color="success.main" gutterBottom>
+                        ✓ Automatically Published
+                      </Typography>
+                      {publishResults.automaticPosts.map((post: any, index: number) => (
+                        <Chip
+                          key={index}
+                          label={`${post.marketplace} - ${post.listingUrl}`}
+                          color="success"
+                          sx={{ m: 0.5 }}
+                        />
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
 
-              <Grid item xs={12} sm={4}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h6" gutterBottom>
-                    eBay
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<ContentCopy />}
-                    onClick={() => handleCopyToClipboard('ebay')}
-                    fullWidth
-                  >
-                    Copy for eBay
-                  </Button>
-                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                    Paste in eBay listing form
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ mt: 1 }}
-                    href="https://www.ebay.com/sl/sell"
-                    target="_blank"
-                  >
-                    Go to eBay
-                  </Button>
-                </Paper>
-              </Grid>
+                {publishResults.copyPastePosts?.length > 0 && (
+                  <Card sx={{ mb: 2 }}>
+                    <CardContent>
+                      <Typography variant="h6" color="info.main" gutterBottom>
+                        Copy & Paste Instructions
+                      </Typography>
+                      {publishResults.copyPastePosts.map((post: any, index: number) => (
+                        <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            {post.marketplace}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Title:</strong> {post.copyPasteData.title}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Description:</strong> {post.copyPasteData.description}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Price:</strong> ${post.copyPasteData.price}
+                          </Typography>
+                          <Typography variant="caption" component="div" sx={{ mt: 1 }}>
+                            {post.copyPasteData.instructions.map((instruction: string, i: number) => (
+                              <div key={i}>{instruction}</div>
+                            ))}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
 
-              <Grid item xs={12} sm={4}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h6" gutterBottom>
-                    Facebook Marketplace
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<ContentCopy />}
-                    onClick={() => handleCopyToClipboard('facebook')}
-                    fullWidth
-                  >
-                    Copy for Facebook
-                  </Button>
-                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                    Paste in Facebook listing
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ mt: 1 }}
-                    href="https://www.facebook.com/marketplace/create"
-                    target="_blank"
-                  >
-                    Go to Facebook
-                  </Button>
-                </Paper>
-              </Grid>
-            </Grid>
+                {publishResults.failedPosts?.length > 0 && (
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" color="error.main" gutterBottom>
+                        ✗ Failed to Publish
+                      </Typography>
+                      {publishResults.failedPosts.map((post: any, index: number) => (
+                        <Alert key={index} severity="error" sx={{ mb: 1 }}>
+                          {post.marketplace}: {post.error}
+                        </Alert>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+              </Box>
+            )}
 
-            <Divider sx={{ my: 3 }} />
-
-            <Box sx={{ textAlign: 'center' }}>
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/dashboard')}
-              >
+            <Box sx={{ mt: 3 }}>
+              <Button variant="contained" onClick={() => navigate('/listings')}>
                 View My Listings
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => window.location.reload()}
-                sx={{ ml: 2 }}
-              >
-                Create Another Listing
               </Button>
             </Box>
           </Box>
         );
 
       default:
-        return 'Unknown step';
+        return null;
     }
   };
 
   return (
-    <Container maxWidth="md">
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Create New Listing
-        </Typography>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Create New Listing
+      </Typography>
 
-        <Stepper activeStep={activeStep} sx={{ mt: 3, mb: 4 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
 
-        <Paper sx={{ p: 3 }}>
-          {getStepContent(activeStep)}
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-            <Button
-              disabled={activeStep === 0}
-              onClick={handleBack}
-            >
-              Back
-            </Button>
-            <Box>
-              {activeStep === 1 && (
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={handleSaveListing}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <CircularProgress size={20} sx={{ mr: 1 }} />
-                      Saving...
-                    </>
-                  ) : (
-                    'Save Listing'
-                  )}
-                </Button>
-              )}
-              {activeStep < 2 && activeStep !== 1 && (
-                <Button variant="contained" onClick={handleNext}>
-                  Next
-                </Button>
-              )}
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
-
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="error" onClose={() => setError('')}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
         </Alert>
-      </Snackbar>
+      )}
 
-      <Snackbar
-        open={!!success}
-        autoHideDuration={6000}
-        onClose={() => setSuccess('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="success" onClose={() => setSuccess('')}>
-          {success}
-        </Alert>
-      </Snackbar>
+      <Card>
+        <CardContent>{renderStepContent()}</CardContent>
+      </Card>
     </Container>
   );
 };
