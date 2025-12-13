@@ -1,4 +1,4 @@
-// QuickSell - v1.2.3 - Dec 13, 2025 - Layout accepts children fix
+// QuickSell - v1.2.4 - Dec 13, 2025 - Hamburger menu fix
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
@@ -7,7 +7,7 @@ import App from './App';
 import { store } from './store';
 
 // Force bundle hash change
-console.log('QuickSell v1.2.3 - Build 20251213-4 - Layout children support');
+console.log('QuickSell v1.2.4 - Build 20251213-5 - Hamburger menu working');
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

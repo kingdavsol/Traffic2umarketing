@@ -30,7 +30,7 @@ function Layout({ children }: LayoutProps) {
         user={user}
       />
       <div className="layout-body">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="layout-main">
           {children || <Outlet />}
         </main>
