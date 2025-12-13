@@ -7,7 +7,11 @@ import Navigation from './Navigation';
 import Sidebar from './Sidebar';
 import './Layout.css';
 
-function Layout() {
+interface LayoutProps {
+  children?: React.ReactNode;
+}
+
+function Layout({ children }: LayoutProps) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -28,7 +32,7 @@ function Layout() {
       <div className="layout-body">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="layout-main">
-          <Outlet />
+          {children || <Outlet />}
         </main>
       </div>
     </div>
