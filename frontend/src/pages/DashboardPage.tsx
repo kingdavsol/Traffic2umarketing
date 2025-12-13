@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -8,11 +7,6 @@ import {
   Card,
   CardContent,
   Grid,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Menu,
-  MenuItem,
   CircularProgress,
   TextField,
   Chip,
@@ -22,13 +16,12 @@ import {
   Snackbar,
   ToggleButton,
   ToggleButtonGroup,
-  InputAdornment
+  InputAdornment,
+  IconButton
 } from '@mui/material';
 import {
   PhotoCamera,
   CloudUpload,
-  AccountCircle,
-  Logout,
   AutoAwesome,
   AttachMoney,
   Public,
@@ -37,12 +30,11 @@ import {
   Store,
   Image
 } from '@mui/icons-material';
+import Layout from '../components/Layout';
 import api from '../services/api';
 
 const DashboardPage: React.FC = () => {
-  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [aiData, setAiData] = useState<any>(null);
@@ -50,8 +42,6 @@ const DashboardPage: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [copySnackbar, setCopySnackbar] = useState('');
   const [fulfillmentType, setFulfillmentType] = useState<string>('both');
-
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   // Marketplace definitions with fulfillment types
   const LOCAL_MARKETPLACES = ['Craigslist', 'Facebook', 'OfferUp'];
@@ -65,20 +55,6 @@ const DashboardPage: React.FC = () => {
       return [...SHIPPING_MARKETPLACES, ...BOTH_MARKETPLACES];
     }
     return [...LOCAL_MARKETPLACES, ...SHIPPING_MARKETPLACES, ...BOTH_MARKETPLACES];
-  };
-
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/');
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,28 +164,8 @@ Listed with QuickSell`;
   );
 
   return (
-    <Box sx={{ flexGrow: 1, minHeight: '100vh', background: '#f5f5f5' }}>
-      <AppBar position="static" sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
-            QuickSell Dashboard
-          </Typography>
-          <IconButton color="inherit" onClick={handleMenu}>
-            <AccountCircle />
-          </IconButton>
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-            <MenuItem disabled>
-              <Typography variant="body2">{user.email || 'User'}</Typography>
-            </MenuItem>
-            <MenuItem onClick={handleLogout}>
-              <Logout sx={{ mr: 1 }} fontSize="small" />
-              Logout
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Layout>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
             {error}
@@ -530,17 +486,17 @@ Listed with QuickSell`;
             </Grid>
           </Grid>
         </Grid>
-      </Container>
 
-      {/* Copy Snackbar */}
-      <Snackbar
-        open={!!copySnackbar}
-        autoHideDuration={2000}
-        onClose={() => setCopySnackbar('')}
-        message={copySnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      />
-    </Box>
+        {/* Copy Snackbar */}
+        <Snackbar
+          open={!!copySnackbar}
+          autoHideDuration={2000}
+          onClose={() => setCopySnackbar('')}
+          message={copySnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        />
+      </Container>
+    </Layout>
   );
 };
 
