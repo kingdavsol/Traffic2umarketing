@@ -64,7 +64,7 @@ export const analyzePhoto = async (req: Request, res: Response) => {
 Analyze this product image and extract the following information in JSON format:
 {
   "title": "Clear, descriptive product title (e.g., 'Logitech MX Master 3 Wireless Mouse - Black')",
-  "description": "Detailed product description mentioning key features, condition, and any visible details. Write 2-3 paragraphs.",
+  "description": "Professional formatted description with these sections:\n\nOverview:\n[Opening paragraph about the product]\n\nItem Details:\n• Model: [model info]\n• Capacity/Size: [specs]\n• Features: [key features as bullet points]\n• Condition: [detailed condition notes]\n\nWhat's Included:\n• [item 1]\n• [item 2]\n• [item 3]\n\nShipping & Pick-up:\n[Brief shipping/pickup message and call to action]",
   "suggestedPrice": "Estimated fair market price in USD (just the number, e.g., 79.99)",
   "category": "Product category (e.g., 'Electronics', 'Computers & Accessories', 'Home & Garden', etc.)",
   "condition": "Product condition based on visible wear (options: 'new', 'like-new', 'good', 'fair', 'poor')",
@@ -74,7 +74,7 @@ Analyze this product image and extract the following information in JSON format:
 }
 ${hints ? `\nUSER HINTS: ${hints}\nPlease incorporate these hints into your analysis, especially for the description and features.` : ''}
 
-Be specific and accurate. If you can't determine something, use your best judgment based on similar products.`
+Be specific and accurate. Use bullet points (•) for lists. Format with clear section headers. If you can't determine something, use your best judgment based on similar products.`
             },
             {
               type: 'image_url',
