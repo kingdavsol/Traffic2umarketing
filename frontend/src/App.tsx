@@ -19,6 +19,7 @@ import BulkMarketplaceSignup from './pages/BulkMarketplaceSignup';
 import Referrals from './pages/Referrals';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
+import CaseStudies from './pages/CaseStudies';
 import GoogleCallback from './pages/auth/GoogleCallback';
 import { TermsOfService, PrivacyPolicy, CookiePolicy } from './pages/legal';
 import PrivateRoute from './components/PrivateRoute';
@@ -146,6 +147,7 @@ const App: React.FC = () => {
           <Route path="/connect-marketplaces" element={<PrivateRoute><BulkMarketplaceSignup /></PrivateRoute>} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/legal/terms-of-service" element={<TermsOfService />} />
           <Route path="/legal/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/legal/cookie-policy" element={<CookiePolicy />} />
