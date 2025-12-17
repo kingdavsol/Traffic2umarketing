@@ -20,7 +20,7 @@ export const sendWelcomeEmail = async ({ email, username }: WelcomeEmailParams) 
 
     // Send welcome email
     const emailResult = await resend.emails.send({
-      from: 'QuickSell <noreply@quicksell.monster>',
+      from: 'QuickSell <noreply@service.quicksell.monster>',
       to: email,
       subject: 'Welcome to QuickSell - Start Listing in 60 Seconds!',
       html: `
@@ -140,7 +140,7 @@ export const sendConfirmationEmail = async (email: string, confirmationToken: st
     const confirmationLink = `https://quicksell.monster/confirm-email?token=${confirmationToken}`;
 
     const result = await resend.emails.send({
-      from: 'QuickSell <noreply@quicksell.monster>',
+      from: 'QuickSell <noreply@service.quicksell.monster>',
       to: email,
       subject: 'Confirm Your Email Address - QuickSell',
       html: `
@@ -196,7 +196,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string) 
     const resetLink = `https://quicksell.monster/reset-password?token=${resetToken}`;
 
     const result = await resend.emails.send({
-      from: 'QuickSell <noreply@quicksell.monster>',
+      from: 'QuickSell <noreply@service.quicksell.monster>',
       to: email,
       subject: 'Reset Your Password - QuickSell',
       html: `
