@@ -8,7 +8,7 @@ import { getConnectedMarketplaces } from '../services/marketplaceService';
  */
 export const getUserMarketplaces = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const marketplaces = await getConnectedMarketplaces(userId);
 
     res.status(200).json({
@@ -31,7 +31,7 @@ export const getUserMarketplaces = async (req: Request, res: Response) => {
  */
 export const initiateEbayOAuth = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
 
     // eBay OAuth URLs (Sandbox or Production)
     const ebayAuthUrl = process.env.EBAY_OAUTH_URL || 'https://auth.ebay.com/oauth2/authorize';
