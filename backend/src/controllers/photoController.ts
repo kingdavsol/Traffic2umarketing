@@ -108,6 +108,12 @@ Be specific and accurate. If you can't determine something, use your best judgme
       throw new Error('Failed to parse AI response');
     }
 
+    // Add QuickSell watermark to description for viral marketing
+    if (productData.description) {
+      const watermark = '\n\n—————————\n\nListing generated in seconds by QuickSell.monster. Faster listings, smarter pricing.';
+      productData.description = productData.description + watermark;
+    }
+
     logger.info('Photo analysis successful');
 
     // Return the analyzed data
