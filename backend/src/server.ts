@@ -27,6 +27,7 @@ import shippingRoutes from './routes/shipping.routes';
 import notificationRoutes from './routes/notification.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import publishRoutes from './routes/publish.routes';
+import referralRoutes from './routes/referral.routes';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -121,6 +122,7 @@ app.use('/api/v1/shipping', shippingRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/subscription', subscriptionRoutes);
 app.use('/api/v1/publish', publishRoutes);
+app.use('/api/v1/referrals', referralRoutes);
 
 // ============================================
 // 404 HANDLER

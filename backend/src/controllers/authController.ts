@@ -6,10 +6,11 @@ import { AppError } from '../middleware/errorHandler';
 import { createUser, getUserByEmail } from '../services/userService';
 import { sendWelcomeEmail } from '../services/emailService';
 import { trackUserRegistration, trackUserLogin } from '../services/analyticsService';
+import { trackReferralSignup, validateReferralCode, completeReferral } from '../services/referralService';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, referralCode } = req.body;
 
     // Validate input
     if (!username || !email || !password) {
@@ -18,6 +19,18 @@ export const register = async (req: Request, res: Response) => {
         error: 'Missing required fields',
         statusCode: 400,
       });
+    }
+
+    // Validate referral code if provided
+    if (referralCode) {
+      const isValid = await validateReferralCode(referralCode);
+      if (!isValid) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid referral code',
+          statusCode: 400,
+        });
+      }
     }
 
     // Check if user exists
@@ -37,9 +50,26 @@ export const register = async (req: Request, res: Response) => {
     // Create user in database
     const user = await createUser(username, email, passwordHash);
 
-    // Send welcome email (non-blocking - don't wait for result)
+    // Track referral if code was provided
+    if (referralCode) {
+      try {
+        const referral = await trackReferralSignup(referralCode, email, user.id);
+        // Complete referral immediately and award credits
+        await completeReferral(referral.id, 5);
+        logger.info('Referral tracked and completed', { referralId: referral.id, userId: user.id });
+      } catch (error: any) {
+        // Log but don't block registration if referral tracking fails
+        logger.error('Failed to track referral during registration', {
+          email,
+          referralCode,
+          error: error.message
+        });
+      }
+    }
+
+    // Send welcome email with referral link (non-blocking - don't wait for result)
     // Email failure should not block user registration
-    sendWelcomeEmail({ email, username }).catch((error) => {
+    sendWelcomeEmail({ email, username, userId: user.id }).catch((error) => {
       logger.error('Failed to send welcome email during registration', {
         email,
         error: error.message

@@ -1,21 +1,35 @@
 import { Resend } from 'resend';
 import { logger } from '../config/logger';
+import { getUserReferralCode } from './referralService';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface WelcomeEmailParams {
   email: string;
   username: string;
+  userId?: number;
 }
 
 /**
  * Send welcome email to new user and add to contact list
  */
-export const sendWelcomeEmail = async ({ email, username }: WelcomeEmailParams) => {
+export const sendWelcomeEmail = async ({ email, username, userId }: WelcomeEmailParams) => {
   try {
     if (!process.env.RESEND_API_KEY) {
       logger.warn('RESEND_API_KEY not configured - skipping welcome email');
       return { success: false, reason: 'API key not configured' };
+    }
+
+    // Get user's referral code if userId provided
+    let referralLink = '';
+    let referralCode = '';
+    if (userId) {
+      try {
+        referralCode = await getUserReferralCode(userId);
+        referralLink = `${process.env.FRONTEND_URL || 'https://quicksell.monster'}/auth/register?ref=${referralCode}`;
+      } catch (error: any) {
+        logger.warn('Failed to get referral code for welcome email', { userId, error: error.message });
+      }
     }
 
     // Send welcome email
@@ -70,6 +84,23 @@ export const sendWelcomeEmail = async ({ email, username }: WelcomeEmailParams) 
               </ul>
 
               <p>Need help? Reply to this email or visit our <a href="https://quicksell.monster">help center</a>.</p>
+
+              ${referralLink ? `
+              <div style="background: #f0f4ff; border: 2px dashed #667eea; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                <h3 style="color: #667eea; margin-top: 0;">🎁 Get 5 Free Credits!</h3>
+                <p style="margin: 10px 0;"><strong>Share QuickSell with friends and earn credits!</strong></p>
+                <p style="margin: 10px 0;">When someone signs up using your link, you both get 5 free credits to generate more listings.</p>
+                <div style="background: white; padding: 12px; border-radius: 4px; margin: 15px 0; font-family: monospace; word-break: break-all; font-size: 13px;">
+                  ${referralLink}
+                </div>
+                <center>
+                  <a href="${referralLink}" class="cta-button" style="background: #FFD700; color: #333; font-size: 14px; padding: 12px 24px;">Share Your Referral Link</a>
+                </center>
+                <p style="font-size: 13px; color: #666; margin: 15px 0 0 0;">
+                  Your referral code: <strong>${referralCode}</strong>
+                </p>
+              </div>
+              ` : ''}
 
               <p>Happy selling!<br>
               <strong>The QuickSell Team</strong></p>
