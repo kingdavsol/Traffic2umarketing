@@ -13,7 +13,7 @@ export const connectDatabase = async (): Promise<void> => {
       database: process.env.DB_NAME || 'quicksell',
       max: 20,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 15000, // Increased from 2s to 15s for post-reboot scenarios
     });
 
     // Test connection
