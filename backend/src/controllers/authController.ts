@@ -4,6 +4,7 @@ import bcryptjs from 'bcryptjs';
 import { logger } from '../config/logger';
 import { AppError } from '../middleware/errorHandler';
 import { createUser, getUserByEmail } from '../services/userService';
+import { sendWelcomeEmail } from '../services/emailService';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -34,6 +35,15 @@ export const register = async (req: Request, res: Response) => {
 
     // Create user in database
     const user = await createUser(username, email, passwordHash);
+
+    // Send welcome email (non-blocking - don't wait for result)
+    // Email failure should not block user registration
+    sendWelcomeEmail({ email, username }).catch((error) => {
+      logger.error('Failed to send welcome email during registration', {
+        email,
+        error: error.message
+      });
+    });
 
     // Create JWT token
     const token = jwt.encode(
