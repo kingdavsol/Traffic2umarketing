@@ -110,7 +110,7 @@ Be specific and accurate. If you can't determine something, use your best judgme
 
     // Add QuickSell watermark to description for viral marketing
     if (productData.description) {
-      const watermark = '\n\n—————————\n\nListing generated in seconds by QuickSell.monster. Faster listings, smarter pricing.';
+      const watermark = '\n\n—————————\n\nListing generated in seconds by https://QuickSell.monster\nFaster listings, smarter pricing.';
       productData.description = productData.description + watermark;
     }
 
