@@ -24,6 +24,9 @@ import PrivateRoute from './components/PrivateRoute';
 import { RootState } from './store';
 import { initializeAuth } from './store/slices/authSlice';
 
+// Analytics
+import { initializePostHog, identifyUser } from './lib/posthog';
+
 // Styles
 import './styles/App.css';
 
@@ -75,14 +78,27 @@ const theme = createTheme({
 
 const App: React.FC = () => {
   const dispatch = useDispatch();
-  const { isAuthenticated, loading } = useSelector(
+  const { isAuthenticated, loading, user } = useSelector(
     (state: RootState) => state.auth
   );
 
   useEffect(() => {
+    // Initialize PostHog analytics
+    initializePostHog();
+
     // Initialize auth state from localStorage on app mount
     dispatch(initializeAuth());
   }, [dispatch]);
+
+  // Identify user in PostHog when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      identifyUser(user.id, {
+        email: user.email,
+        username: user.username,
+      });
+    }
+  }, [isAuthenticated, user]);
 
   if (loading) {
     return (

@@ -5,6 +5,7 @@ import { logger } from '../config/logger';
 import { AppError } from '../middleware/errorHandler';
 import { createUser, getUserByEmail } from '../services/userService';
 import { sendWelcomeEmail } from '../services/emailService';
+import { trackUserRegistration, trackUserLogin } from '../services/analyticsService';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -44,6 +45,9 @@ export const register = async (req: Request, res: Response) => {
         error: error.message
       });
     });
+
+    // Track user registration in analytics
+    trackUserRegistration(user.id, email, username);
 
     // Create JWT token
     const token = jwt.encode(
@@ -110,6 +114,9 @@ export const login = async (req: Request, res: Response) => {
         statusCode: 401,
       });
     }
+
+    // Track user login in analytics
+    trackUserLogin(user.id, user.email);
 
     // Generate JWT token
     const token = jwt.encode(

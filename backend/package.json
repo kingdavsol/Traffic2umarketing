@@ -46,6 +46,7 @@
     "node-cache": "^5.1.2",
     "openai": "^4.68.0",
     "pg": "^8.9.0",
+    "posthog-node": "^5.17.4",
     "puppeteer-core": "^24.32.0",
     "redis": "^4.6.5",
     "resend": "^6.6.0",

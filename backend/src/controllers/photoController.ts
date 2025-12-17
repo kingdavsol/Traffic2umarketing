@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import OpenAI from 'openai';
 import { logger } from '../config/logger';
+import { trackPhotoAnalysis, trackError } from '../services/analyticsService';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
