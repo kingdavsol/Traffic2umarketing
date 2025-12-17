@@ -151,7 +151,7 @@ export const handleEbayOAuthCallback = async (req: Request, res: Response) => {
  */
 export const initiateEtsyOAuth = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
 
     const apiKey = process.env.ETSY_API_KEY;
     const redirectUri = process.env.ETSY_REDIRECT_URI || `${process.env.API_URL}/api/v1/marketplaces/etsy/callback`;
@@ -291,7 +291,7 @@ export const handleEtsyOAuthCallback = async (req: Request, res: Response) => {
  */
 export const disconnectMarketplace = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { marketplace } = req.params;
 
     await query(
@@ -321,7 +321,7 @@ export const disconnectMarketplace = async (req: Request, res: Response) => {
  */
 export const getMarketplaceStatus = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { marketplace } = req.params;
 
     const result = await query(
