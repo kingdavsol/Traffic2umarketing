@@ -17,6 +17,8 @@ import Gamification from './pages/Gamification';
 import Settings from './pages/Settings';
 import BulkMarketplaceSignup from './pages/BulkMarketplaceSignup';
 import Referrals from './pages/Referrals';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import GoogleCallback from './pages/auth/GoogleCallback';
 import { TermsOfService, PrivacyPolicy, CookiePolicy } from './pages/legal';
 import PrivateRoute from './components/PrivateRoute';
@@ -142,6 +144,8 @@ const App: React.FC = () => {
           <Route path="/referrals" element={<PrivateRoute><Referrals /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="/connect-marketplaces" element={<PrivateRoute><BulkMarketplaceSignup /></PrivateRoute>} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/legal/terms-of-service" element={<TermsOfService />} />
           <Route path="/legal/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/legal/cookie-policy" element={<CookiePolicy />} />
