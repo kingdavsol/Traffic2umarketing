@@ -1,6 +1,6 @@
 # PostHog Analytics Setup Guide
 
-## Quick Setup (5 minutes)
+## Quick Setup (3 minutes)
 
 ### Step 1: Create PostHog Account
 1. Go to https://app.posthog.com/signup
@@ -10,36 +10,64 @@
 ### Step 2: Get Your API Keys
 1. In PostHog dashboard, go to **Project Settings** → **Project API Key**
 2. Copy your **Project API Key** (starts with `phc_`)
-3. You'll need this same key for both frontend and backend
+3. Keep this key handy for the next steps
 
-### Step 3: Add to Environment Variables
+### Step 3: Automated Setup with PostHog Wizard
 
 **On VPS, run these commands:**
 
 ```bash
 # Navigate to QuickSell directory
+cd /var/www/quicksell.monster/frontend
+
+# Run PostHog wizard (will prompt for API key)
+npx -y @posthog/wizard@latest
+
+# The wizard will:
+# - Detect React automatically
+# - Prompt for your PostHog API key
+# - Add initialization code
+# - Configure environment variables
+
+# After wizard completes, add backend environment variable
+cd ../backend
+echo "" >> .env
+echo "# PostHog Analytics" >> .env
+echo "POSTHOG_API_KEY=phc_YOUR_KEY_HERE" >> .env
+echo "POSTHOG_HOST=https://app.posthog.com" >> .env
+
+# Edit and replace with your actual key
+nano .env
+
+# Rebuild and restart
+cd ../frontend && npm run build
+cd ..
+docker compose restart backend
+systemctl reload nginx
+```
+
+**Alternative: Manual Frontend Setup**
+
+If the wizard doesn't work, use manual setup:
+
+```bash
 cd /var/www/quicksell.monster
 
-# Add PostHog keys to backend .env
-echo "" >> backend/.env
-echo "# PostHog Analytics" >> backend/.env
-echo "POSTHOG_API_KEY=phc_YOUR_KEY_HERE" >> backend/.env
-echo "POSTHOG_HOST=https://app.posthog.com" >> backend/.env
-
-# Add PostHog keys to frontend .env (create if doesn't exist)
+# Frontend
 cat > frontend/.env << 'EOF'
 REACT_APP_API_URL=/api/v1
 REACT_APP_POSTHOG_KEY=phc_YOUR_KEY_HERE
 REACT_APP_POSTHOG_HOST=https://app.posthog.com
 EOF
 
-# Replace "phc_YOUR_KEY_HERE" with your actual key
-nano backend/.env  # Edit and replace the key
-nano frontend/.env  # Edit and replace the key
+# Backend
+echo "POSTHOG_API_KEY=phc_YOUR_KEY_HERE" >> backend/.env
+echo "POSTHOG_HOST=https://app.posthog.com" >> backend/.env
 
-# Rebuild and restart
+# Replace keys and rebuild
+nano frontend/.env
+nano backend/.env
 cd frontend && npm run build
-cd ..
 docker compose restart backend
 systemctl reload nginx
 ```
