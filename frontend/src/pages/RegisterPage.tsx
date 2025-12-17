@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import {
   Box,
@@ -21,6 +21,7 @@ import { registerSuccess } from '../store/slices/authSlice';
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,6 +31,17 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  // Extract referral code from URL on mount
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) {
+      setReferralCode(ref);
+      // Show info message about referral
+      setSuccess('You\'ve been referred! Sign up to get 5 free credits.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +81,7 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const response = await api.register(username, email, password);
+      const response = await api.register(username, email, password, referralCode || undefined);
 
       // Handle backend response with token
       if (response.data.data?.token) {

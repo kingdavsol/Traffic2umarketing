@@ -40,8 +40,8 @@ class APIService {
     return this.api.post('/auth/login', { email, password });
   }
 
-  register(username: string, email: string, password: string) {
-    return this.api.post('/auth/register', { username, email, password });
+  register(username: string, email: string, password: string, referralCode?: string) {
+    return this.api.post('/auth/register', { username, email, password, referralCode });
   }
 
   logout() {
@@ -235,6 +235,31 @@ class APIService {
 
   deleteNotification(id: number) {
     return this.api.delete(`/notifications/${id}`);
+  }
+
+  // Referrals
+  getReferralCode() {
+    return this.api.get('/referrals/code');
+  }
+
+  getCredits() {
+    return this.api.get('/referrals/credits');
+  }
+
+  getReferralStats() {
+    return this.api.get('/referrals/stats');
+  }
+
+  getReferrals(limit = 10) {
+    return this.api.get('/referrals', { params: { limit } });
+  }
+
+  getCreditTransactions(limit = 20) {
+    return this.api.get('/referrals/transactions', { params: { limit } });
+  }
+
+  validateReferralCode(code: string) {
+    return this.api.get(`/referrals/validate/${code}`);
   }
 }
 

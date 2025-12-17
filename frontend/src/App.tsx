@@ -16,6 +16,7 @@ import Sales from './pages/Sales';
 import Gamification from './pages/Gamification';
 import Settings from './pages/Settings';
 import BulkMarketplaceSignup from './pages/BulkMarketplaceSignup';
+import Referrals from './pages/Referrals';
 import GoogleCallback from './pages/auth/GoogleCallback';
 import { TermsOfService, PrivacyPolicy, CookiePolicy } from './pages/legal';
 import PrivateRoute from './components/PrivateRoute';
@@ -138,6 +139,7 @@ const App: React.FC = () => {
           <Route path="/listing/:id" element={<PrivateRoute><ListingDetails /></PrivateRoute>} />
           <Route path="/sales" element={<PrivateRoute><Sales /></PrivateRoute>} />
           <Route path="/gamification" element={<PrivateRoute><Gamification /></PrivateRoute>} />
+          <Route path="/referrals" element={<PrivateRoute><Referrals /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="/connect-marketplaces" element={<PrivateRoute><BulkMarketplaceSignup /></PrivateRoute>} />
           <Route path="/legal/terms-of-service" element={<TermsOfService />} />
