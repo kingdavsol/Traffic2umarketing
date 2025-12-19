@@ -112,7 +112,7 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
 
     try {
       const response = await api.getConnectedMarketplaces();
-      const connectedMarketplaces = response.data;
+      const connectedMarketplaces = response.data.data || response.data;
 
       setMarketplaces((prev) =>
         prev.map((marketplace) => {
