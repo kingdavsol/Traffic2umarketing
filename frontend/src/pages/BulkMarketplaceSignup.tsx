@@ -77,7 +77,7 @@ export const BulkMarketplaceSignup: React.FC = () => {
   const loadMarketplaces = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/marketplaces/available');
+      const response = await api.getAvailableMarketplaces();
       if (response.data.success) {
         setAvailableMarketplaces(response.data.data);
       }
@@ -151,11 +151,7 @@ export const BulkMarketplaceSignup: React.FC = () => {
     setSubmitting(true);
 
     try {
-      const response = await api.post('/marketplaces/bulk-signup', {
-        email,
-        password,
-        selectedMarketplaces,
-      });
+      const response = await api.bulkSignupToMarketplaces(email, password, selectedMarketplaces);
 
       if (response.data.success) {
         setResults(response.data.data.results);
