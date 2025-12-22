@@ -36,7 +36,7 @@ export const EmptyStateGuide: React.FC<EmptyStateGuideProps> = ({ type, onAction
         'Take a clear photo of your item',
         'AI will auto-generate a description',
         'AI will suggest optimal pricing',
-        'Publish to 22+ marketplaces with 1 click',
+        'Publish to all major marketplaces with 1 click',
       ],
       actionText: 'Create Your First Listing',
       actionLink: '/create-listing',
@@ -59,7 +59,7 @@ export const EmptyStateGuide: React.FC<EmptyStateGuideProps> = ({ type, onAction
     marketplaces: {
       icon: '🏪',
       title: 'No Marketplaces Connected',
-      description: 'Connect your accounts to instantly reach 22+ marketplaces. Your items will sell on all of them!',
+      description: 'Connect your accounts to instantly reach all major marketplaces. Your items will sell on all of them!',
       tips: [
         'One universal password',
         'Auto-sync across platforms',

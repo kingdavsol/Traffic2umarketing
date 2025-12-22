@@ -69,8 +69,8 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({ user
       recs.push({
         id: 'marketplaces',
         priority: 'high',
-        title: '🏪 Unlock 22+ Marketplaces',
-        description: 'One password = 22+ marketplaces. Your items will sell everywhere.',
+        title: '🏪 Unlock All Major Marketplaces',
+        description: 'One password = all major marketplaces. Your items will sell everywhere.',
         icon: <SpeedIcon />,
         action: { text: 'Connect Marketplaces', link: '/connect-marketplaces' },
         reward: { points: 25 },

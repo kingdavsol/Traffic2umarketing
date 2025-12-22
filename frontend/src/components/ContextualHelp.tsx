@@ -150,7 +150,7 @@ export const HelpContent = {
     description: 'When you connect your marketplaces, your listings appear on all of them automatically.',
     examples: [
       'List once on eBay, see it on Facebook',
-      'Sell to 22+ million buyers across platforms',
+      'Reach millions of buyers across all major platforms',
       'Auto-sync inventory across all sites',
     ],
     tip: 'More marketplaces = More visibility = More sales',

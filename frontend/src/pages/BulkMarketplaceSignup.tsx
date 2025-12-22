@@ -215,7 +215,7 @@ export const BulkMarketplaceSignup: React.FC = () => {
               <ConnectWithoutContactIcon /> Connect to Multiple Marketplaces
             </Typography>
             <Typography variant="body1" color="textSecondary">
-              Sign up to sell on 22+ marketplaces with just one email and password. We'll securely store
+              Sign up to sell on all major marketplaces with just one email and password. We'll securely store
               your credentials and automatically connect your account to each marketplace.
             </Typography>
           </Box>

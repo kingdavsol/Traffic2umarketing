@@ -160,7 +160,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ open, onClos
                         </Typography>
                         <ul style={{ margin: 0, paddingLeft: 20, fontSize: '0.875rem' }}>
                           <li>Set up your profile</li>
-                          <li>Connect to 22+ marketplaces</li>
+                          <li>Connect to all major marketplaces</li>
                           <li>Upload your first photo</li>
                           <li>Create your first listing</li>
                           <li>Earn rewards! 🏆</li>
