@@ -10,6 +10,7 @@ import {
   disconnectMarketplace,
   getMarketplaceStatus,
 } from '../controllers/marketplaceController';
+import bulkMarketplaceSignupController from '../controllers/bulkMarketplaceSignupController';
 
 const router = Router();
 
@@ -55,6 +56,20 @@ router.get('/', async (req: Request, res: Response) => {
     });
   }
 });
+
+/**
+ * @route   GET /api/v1/marketplaces/available
+ * @desc    Get list of available marketplaces for bulk signup
+ * @access  Public
+ */
+router.get('/available', bulkMarketplaceSignupController.getAvailableMarketplaces);
+
+/**
+ * @route   POST /api/v1/marketplaces/bulk-signup
+ * @desc    Bulk signup to multiple marketplaces
+ * @access  Private
+ */
+router.post('/bulk-signup', authenticate, bulkMarketplaceSignupController.bulkSignupToMarketplaces);
 
 /**
  * @route   POST /api/v1/marketplaces/:marketplace/connect
