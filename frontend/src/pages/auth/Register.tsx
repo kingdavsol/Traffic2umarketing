@@ -34,6 +34,7 @@ import {
 } from '../../store/slices/authSlice';
 import api from '../../services/api';
 import { RootState } from '../../store';
+import OnboardingWizard from '../../components/OnboardingWizard';
 
 interface PasswordStrength {
   score: number;
@@ -62,6 +63,7 @@ function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [referralCode, setReferralCode] = useState('');
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{
     username?: string;
     email?: string;
@@ -196,10 +198,8 @@ function RegisterPage() {
         // Store auth data
         dispatch(registerSuccess({ user, token }));
 
-        // Navigate to onboarding
-        navigate('/onboarding', {
-          state: { message: 'Account created successfully! Welcome to QuickSell.' },
-        });
+        // Auto-open onboarding wizard for new users
+        setShowOnboarding(true);
       } else {
         dispatch(registerFailure(response.data.error || 'Registration failed'));
       }
@@ -215,6 +215,16 @@ function RegisterPage() {
   const handleGoogleSignup = () => {
     // TODO: Implement Google OAuth
     dispatch(registerFailure('Google Sign-Up coming soon! Please use email/password for now.'));
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    navigate('/dashboard', { replace: true });
+  };
+
+  const handleOnboardingClose = () => {
+    setShowOnboarding(false);
+    navigate('/dashboard', { replace: true });
   };
 
   return (
@@ -528,6 +538,13 @@ function RegisterPage() {
           </Box>
         </Paper>
       </Container>
+
+      {/* Onboarding Wizard - Auto-opens after successful registration */}
+      <OnboardingWizard
+        open={showOnboarding}
+        onClose={handleOnboardingClose}
+        onComplete={handleOnboardingComplete}
+      />
     </Box>
   );
 }

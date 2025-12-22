@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import './Landing.css';
 
 function LandingPage() {
+  const [demoPhotos, setDemoPhotos] = useState<string[]>([]);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [demoError, setDemoError] = useState<string | null>(null);
+
   const features = [
     {
       icon: '📸',
@@ -96,6 +102,65 @@ function LandingPage() {
 
   const marketplaces = ['eBay', 'Facebook', 'Craigslist', 'Mercari', 'Poshmark', 'OfferUp', 'Etsy', 'Amazon', '+ 12 more'];
 
+  const handleDemoPhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const fileArray = Array.from(files).slice(0, 3); // Max 3 photos
+    const readers = fileArray.map((file) => {
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(readers).then((images) => {
+      setDemoPhotos(images);
+      setAnalysisResult(null);
+      setDemoError(null);
+    });
+  };
+
+  const handleAnalyzeDemo = async () => {
+    if (demoPhotos.length === 0) {
+      setDemoError('Please upload at least one photo');
+      return;
+    }
+
+    setAnalyzing(true);
+    setDemoError(null);
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/v1/photos/analyze`,
+        {
+          images: demoPhotos,
+        }
+      );
+
+      if (response.data.success) {
+        setAnalysisResult(response.data.data);
+      } else {
+        setDemoError(response.data.error || 'Analysis failed');
+      }
+    } catch (error: any) {
+      console.error('Demo analysis error:', error);
+      setDemoError(
+        error.response?.data?.error || 'Failed to analyze photos. Please try again.'
+      );
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const getConfidenceColor = (score: number) => {
+    if (score >= 80) return '#4caf50';
+    if (score >= 60) return '#2196f3';
+    if (score >= 40) return '#ff9800';
+    return '#f44336';
+  };
+
   return (
     <div className="landing">
       {/* Navigation */}
@@ -140,15 +205,15 @@ function LandingPage() {
               <h1>Sell Anything in 30 Seconds</h1>
               <p className="hero-tagline">One Photo. AI Magic. 20+ Marketplaces.</p>
               <p className="hero-description">
-                QuickSell uses AI to transform your product photos into professional listings, 
+                QuickSell uses AI to transform your product photos into professional listings,
                 then instantly posts them to eBay, Facebook Marketplace, Craigslist, and 17+ other platforms.
               </p>
               <div className="hero-buttons">
                 <Link to="/auth/register" className="btn btn-primary btn-large">
                   Start Selling Free →
                 </Link>
-                <a href="#how-it-works" className="btn btn-secondary btn-large">
-                  See How It Works
+                <a href="#try-demo" className="btn btn-secondary btn-large">
+                  Try Demo
                 </a>
               </div>
               <p className="hero-subtext">✓ No credit card required  ✓ 7-day free trial  ✓ Cancel anytime</p>
@@ -228,6 +293,165 @@ function LandingPage() {
                 <span key={index} className="marketplace-badge">{marketplace}</span>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Try Demo Section */}
+      <section className="try-demo" id="try-demo">
+        <div className="container">
+          <h2>Try It Now - No Signup Required</h2>
+          <p className="section-subtitle">Upload a photo and see AI magic in action</p>
+
+          <div className="demo-container">
+            <div className="demo-upload">
+              <h3>📸 Upload Your Photo</h3>
+              <p>Upload 1-3 photos of any item you want to sell</p>
+
+              <label className="demo-upload-btn">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleDemoPhotoUpload}
+                  style={{ display: 'none' }}
+                />
+                {demoPhotos.length > 0 ? 'Change Photos' : 'Choose Photos'}
+              </label>
+
+              {demoPhotos.length > 0 && (
+                <div className="demo-photos-preview">
+                  {demoPhotos.map((photo, index) => (
+                    <img key={index} src={photo} alt={`Upload ${index + 1}`} className="demo-photo-thumb" />
+                  ))}
+                  <p className="demo-photo-count">{demoPhotos.length} photo{demoPhotos.length > 1 ? 's' : ''} selected</p>
+                </div>
+              )}
+
+              <button
+                className="btn btn-primary btn-large"
+                onClick={handleAnalyzeDemo}
+                disabled={analyzing || demoPhotos.length === 0}
+                style={{ marginTop: '1rem' }}
+              >
+                {analyzing ? '🤖 Analyzing...' : '✨ Analyze with AI'}
+              </button>
+
+              {demoError && (
+                <div className="demo-error">
+                  ⚠️ {demoError}
+                </div>
+              )}
+            </div>
+
+            {analysisResult && (
+              <div className="demo-results">
+                <h3>🎯 AI Analysis Results</h3>
+
+                {/* Confidence Scores */}
+                {analysisResult.analysis_metadata && (
+                  <div className="confidence-scores">
+                    <h4>Confidence Scores</h4>
+                    <div className="score-grid">
+                      {Object.entries(analysisResult.analysis_metadata.confidence_scores).map(([key, value]: [string, any]) => {
+                        if (key === 'overall') return null;
+                        return (
+                          <div key={key} className="score-item">
+                            <div className="score-label">{key.charAt(0).toUpperCase() + key.slice(1)}</div>
+                            <div className="score-bar">
+                              <div
+                                className="score-fill"
+                                style={{
+                                  width: `${value}%`,
+                                  backgroundColor: getConfidenceColor(value)
+                                }}
+                              />
+                            </div>
+                            <div className="score-value">{value}%</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="overall-confidence">
+                      <strong>Overall Confidence: </strong>
+                      <span style={{ color: getConfidenceColor(analysisResult.analysis_metadata.confidence_scores.overall) }}>
+                        {analysisResult.analysis_metadata.confidence_scores.overall}%
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Quality Checks */}
+                {analysisResult.analysis_metadata?.quality_checks && (
+                  <div className="quality-checks">
+                    <h4>Photo Quality</h4>
+                    {analysisResult.analysis_metadata.quality_checks.map((qc: any, index: number) => (
+                      <div key={index} className="quality-item">
+                        <div className="quality-status">
+                          Photo {index + 1}: {qc.is_acceptable ? '✅ Good' : '⚠️ Issues Found'}
+                        </div>
+                        {qc.issues.length > 0 && (
+                          <div className="quality-issues">
+                            {qc.issues.map((issue: string, i: number) => (
+                              <div key={i} className="issue">🔴 {issue}</div>
+                            ))}
+                          </div>
+                        )}
+                        {qc.warnings.length > 0 && (
+                          <div className="quality-warnings">
+                            {qc.warnings.map((warning: string, i: number) => (
+                              <div key={i} className="warning">🟡 {warning}</div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Generated Listing Preview */}
+                <div className="listing-preview">
+                  <h4>Generated Listing</h4>
+                  <div className="preview-content">
+                    <div className="preview-field">
+                      <strong>Title:</strong>
+                      <p>{analysisResult.title}</p>
+                    </div>
+                    <div className="preview-field">
+                      <strong>Suggested Price:</strong>
+                      <p className="price">${analysisResult.suggestedPrice}</p>
+                    </div>
+                    <div className="preview-field">
+                      <strong>Category:</strong>
+                      <p>{analysisResult.category}</p>
+                    </div>
+                    <div className="preview-field">
+                      <strong>Condition:</strong>
+                      <p>{analysisResult.condition}</p>
+                    </div>
+                    {analysisResult.brand && (
+                      <div className="preview-field">
+                        <strong>Brand:</strong>
+                        <p>{analysisResult.brand}</p>
+                      </div>
+                    )}
+                    <div className="preview-field">
+                      <strong>Description:</strong>
+                      <p className="description">{analysisResult.description}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <div className="demo-cta">
+                  <h4>🚀 Ready to sell for real?</h4>
+                  <p>Sign up free to post this listing to 20+ marketplaces instantly!</p>
+                  <Link to="/auth/register" className="btn btn-primary btn-large">
+                    Create Free Account →
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
