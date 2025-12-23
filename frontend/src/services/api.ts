@@ -73,6 +73,10 @@ class APIService {
     return this.api.post(`/listings/${id}/publish`, { marketplaces });
   }
 
+  getAssistedPostingUrls(id: number, marketplaces: string[]) {
+    return this.api.post(`/listings/${id}/assisted-posting`, { marketplaces });
+  }
+
   // Photos
   uploadPhotos(listingId: number, files: File[]) {
     const formData = new FormData();

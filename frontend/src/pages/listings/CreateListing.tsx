@@ -26,6 +26,7 @@ import {
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
   Send as SendIcon,
+  OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
@@ -74,6 +75,8 @@ const CreateListingPage: React.FC = () => {
 
   const [selectedMarketplaces, setSelectedMarketplaces] = useState<string[]>([]);
   const [publishResults, setPublishResults] = useState<any>(null);
+  const [assistedPostingLoading, setAssistedPostingLoading] = useState(false);
+  const [createdListingId, setCreatedListingId] = useState<number | null>(null);
 
   const steps = ['Upload Photos', 'AI Analysis', 'Review & Edit', 'Publish'];
 
@@ -191,6 +194,29 @@ const CreateListingPage: React.FC = () => {
     });
   };
 
+  // Assisted Posting - Open pre-filled tabs
+  const handleAssistedPosting = async (listingId: number, marketplaces: string[]) => {
+    setAssistedPostingLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.getAssistedPostingUrls(listingId, marketplaces);
+      const { urls, copyPasteTemplate } = response.data.data;
+
+      // Open each marketplace URL in a new tab
+      urls.forEach((urlData: any) => {
+        window.open(urlData.url, '_blank');
+      });
+
+      // Show success message with copy-paste template
+      alert(`Opened ${urls.length} marketplace tabs!\n\nCopy-paste template:\n${copyPasteTemplate}`);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to generate assisted posting URLs');
+    } finally {
+      setAssistedPostingLoading(false);
+    }
+  };
+
   // Submit listing
   const handleSubmit = async () => {
     if (!formData.title || !formData.description) {
@@ -212,6 +238,7 @@ const CreateListingPage: React.FC = () => {
 
       const listing = listingResponse.data.data;
       dispatch(createListingSuccess(listing));
+      setCreatedListingId(listing.id);
 
       // If marketplaces selected, publish immediately
       if (selectedMarketplaces.length > 0) {
@@ -512,9 +539,28 @@ const CreateListingPage: React.FC = () => {
                 {publishResults.copyPastePosts?.length > 0 && (
                   <Card sx={{ mb: 2 }}>
                     <CardContent>
-                      <Typography variant="h6" color="info.main" gutterBottom>
-                        Copy & Paste Instructions
-                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h6" color="info.main">
+                          Copy & Paste Instructions
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<OpenInNewIcon />}
+                          onClick={() => {
+                            if (createdListingId) {
+                              const marketplaces = publishResults.copyPastePosts.map((post: any) => post.marketplace.toLowerCase());
+                              handleAssistedPosting(createdListingId, marketplaces);
+                            }
+                          }}
+                          disabled={assistedPostingLoading || !createdListingId}
+                        >
+                          {assistedPostingLoading ? 'Opening...' : 'Open in Browser'}
+                        </Button>
+                      </Box>
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        Click "Open in Browser" to open pre-filled marketplace tabs. The listing details will be ready to paste!
+                      </Alert>
                       {publishResults.copyPastePosts.map((post: any, index: number) => (
                         <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
                           <Typography variant="subtitle2" gutterBottom>
