@@ -74,31 +74,31 @@ async function bulkSignupToMarketplaces(params: BulkSignupParams): Promise<Signu
 
       // Check if already connected
       const existing = await pool.query(
-        'SELECT id FROM marketplace_accounts WHERE user_id =  AND marketplace_name = ',
+        'SELECT id FROM marketplace_accounts WHERE user_id = $1 AND marketplace_name = $2',
         [userId, marketplace]
       );
 
       if (existing.rows.length > 0) {
         // Update existing
         await pool.query(
-          `UPDATE marketplace_accounts 
-           SET account_name = , encrypted_password = , is_active = true, updated_at = NOW()
-           WHERE user_id =  AND marketplace_name = `,
+          `UPDATE marketplace_accounts
+           SET account_name = $1, encrypted_password = $2, is_active = true, updated_at = NOW()
+           WHERE user_id = $3 AND marketplace_name = $4`,
           [email, encryptedPassword, userId, marketplace]
         );
       } else {
         // Insert new
         await pool.query(
-          `INSERT INTO marketplace_accounts 
+          `INSERT INTO marketplace_accounts
            (user_id, marketplace_name, account_name, encrypted_password, is_active, auto_sync_enabled)
-           VALUES (, , , , true, true)`,
+           VALUES ($1, $2, $3, $4, true, true)`,
           [userId, marketplace, email, encryptedPassword]
         );
       }
 
       // Award gamification points (25 points per marketplace)
       await pool.query(
-        'UPDATE users SET points = points + 25 WHERE id = ',
+        'UPDATE users SET points = points + 25 WHERE id = $1',
         [userId]
       );
 
@@ -130,8 +130,8 @@ async function bulkSignupToMarketplaces(params: BulkSignupParams): Promise<Signu
 async function getUserMarketplaces(userId: number): Promise<any[]> {
   const result = await pool.query(
     `SELECT id, marketplace_name, account_name, is_active, auto_sync_enabled, created_at, updated_at
-     FROM marketplace_accounts 
-     WHERE user_id =  AND is_active = true
+     FROM marketplace_accounts
+     WHERE user_id = $1 AND is_active = true
      ORDER BY created_at DESC`,
     [userId]
   );
@@ -143,9 +143,9 @@ async function getUserMarketplaces(userId: number): Promise<any[]> {
  */
 async function disconnectMarketplace(userId: number, marketplace: string): Promise<void> {
   await pool.query(
-    `UPDATE marketplace_accounts 
+    `UPDATE marketplace_accounts
      SET is_active = false, updated_at = NOW()
-     WHERE user_id =  AND marketplace_name = `,
+     WHERE user_id = $1 AND marketplace_name = $2`,
     [userId, marketplace]
   );
   logger.info(`User ${userId} disconnected from ${marketplace}`);
@@ -156,9 +156,9 @@ async function disconnectMarketplace(userId: number, marketplace: string): Promi
  */
 async function getMarketplaceCredentials(userId: number, marketplace: string): Promise<{ email: string; password: string } | null> {
   const result = await pool.query(
-    `SELECT account_name, encrypted_password 
-     FROM marketplace_accounts 
-     WHERE user_id =  AND marketplace_name =  AND is_active = true`,
+    `SELECT account_name, encrypted_password
+     FROM marketplace_accounts
+     WHERE user_id = $1 AND marketplace_name = $2 AND is_active = true`,
     [userId, marketplace]
   );
 
