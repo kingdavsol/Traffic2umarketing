@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { authenticate } from '../middleware/auth';
 import { logger } from '../config/logger';
+import { getAssistedPostingUrls } from '../controllers/listingController';
 
 const router = Router();
 
@@ -151,6 +152,13 @@ router.post('/:id/publish', authenticate, async (req: Request, res: Response) =>
     });
   }
 });
+
+/**
+ * @route   POST /api/v1/listings/:id/assisted-posting
+ * @desc    Get pre-filled marketplace URLs for assisted posting
+ * @access  Private
+ */
+router.post('/:id/assisted-posting', authenticate, getAssistedPostingUrls);
 
 /**
  * @route   POST /api/v1/listings/batch

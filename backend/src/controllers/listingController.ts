@@ -231,3 +231,65 @@ export const publishListing = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getAssistedPostingUrls = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).user.id;
+    const { marketplaces } = req.body;
+
+    if (!marketplaces || !Array.isArray(marketplaces) || marketplaces.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please select at least one marketplace',
+        statusCode: 400,
+      });
+    }
+
+    // Get listing from database
+    const result = await query(
+      'SELECT * FROM listings WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL',
+      [id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Listing not found',
+        statusCode: 404,
+      });
+    }
+
+    const listing = result.rows[0];
+
+    // Import assisted posting service
+    const { generateAssistedPostingUrls, getCopyPasteTemplate } = require('../services/assistedPostingService');
+
+    // Generate URLs for selected marketplaces
+    const urls = await generateAssistedPostingUrls(listing, marketplaces);
+
+    // Generate copy-paste template
+    const copyPasteTemplate = getCopyPasteTemplate(listing, marketplaces[0]);
+
+    logger.info(`Generated assisted posting URLs for listing ${id}, marketplaces: ${marketplaces.join(', ')}`);
+
+    res.status(200).json({
+      success: true,
+      message: `Generated ${urls.length} assisted posting URL(s)`,
+      data: {
+        urls,
+        copyPasteTemplate,
+        listingId: id,
+        listingTitle: listing.title
+      },
+      statusCode: 200,
+    });
+  } catch (error: any) {
+    logger.error('Get assisted posting URLs error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to generate assisted posting URLs',
+      statusCode: 500,
+    });
+  }
+};
