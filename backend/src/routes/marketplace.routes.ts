@@ -66,10 +66,17 @@ router.get('/available', bulkMarketplaceSignupController.getAvailableMarketplace
 
 /**
  * @route   POST /api/v1/marketplaces/bulk-signup
- * @desc    Bulk signup to multiple marketplaces
+ * @desc    Bulk signup to multiple marketplaces (DEPRECATED - use /bulk-connect)
  * @access  Private
  */
 router.post('/bulk-signup', authenticate, bulkMarketplaceSignupController.bulkSignupToMarketplaces);
+
+/**
+ * @route   POST /api/v1/marketplaces/bulk-connect
+ * @desc    Connect to multiple marketplaces with individual credentials
+ * @access  Private
+ */
+router.post('/bulk-connect', authenticate, bulkMarketplaceSignupController.bulkConnectMarketplaces);
 
 /**
  * @route   POST /api/v1/marketplaces/:marketplace/connect

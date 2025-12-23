@@ -1,6 +1,6 @@
 /**
  * Bulk Marketplace Signup Page
- * Allows users to signup to multiple marketplaces with one universal email/password
+ * Allows users to connect individual marketplace accounts with their specific credentials
  */
 
 import React, { useState, useEffect } from 'react';
@@ -9,29 +9,38 @@ import {
   Paper,
   TextField,
   Button,
-  Grid,
-  Card,
-  CardContent,
-  CardHeader,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Alert,
   CircularProgress,
-  LinearProgress,
   Typography,
   Box,
+  Link,
+  IconButton,
+  Collapse,
   Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Card,
+  CardContent,
+  InputAdornment,
 } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
-import { useDispatch, useSelector } from 'react-redux';
+import {
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
+  OpenInNew as OpenInNewIcon,
+  Visibility,
+  VisibilityOff,
+  ConnectWithoutContact as ConnectIcon,
+  Info as InfoIcon,
+} from '@mui/icons-material';
+import { useSelector } from 'react-redux';
 import api from '../services/api';
 import logger from '../config/logger';
 
@@ -43,6 +52,16 @@ interface MarketplaceOption {
   tier: number;
   active: boolean;
   connected?: boolean;
+  hasApi?: boolean;
+  signupUrl?: string;
+}
+
+interface MarketplaceCredentials {
+  [marketplaceId: string]: {
+    email: string;
+    password: string;
+    showPassword: boolean;
+  };
 }
 
 interface SignupResult {
@@ -52,24 +71,31 @@ interface SignupResult {
   error?: string;
 }
 
-export const BulkMarketplaceSignup: React.FC = () => {
-  const dispatch = useDispatch();
-  const auth = useSelector((state: any) => state.auth);
+// Marketplace signup URLs
+const MARKETPLACE_SIGNUP_URLS: Record<string, string> = {
+  'eBay': 'https://signup.ebay.com/pa/crte',
+  'Facebook': 'https://www.facebook.com/marketplace',
+  'Craigslist': 'https://accounts.craigslist.org/login',
+  'Mercari': 'https://www.mercari.com/signup/',
+  'Poshmark': 'https://poshmark.com/signup',
+  'Etsy': 'https://www.etsy.com/join',
+  'Depop': 'https://www.depop.com/signup/',
+  'Vinted': 'https://www.vinted.com/signup',
+  'OfferUp': 'https://offerup.com/signup',
+};
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [selectedMarketplaces, setSelectedMarketplaces] = useState<string[]>([]);
+export const BulkMarketplaceSignup: React.FC = () => {
+  const auth = useSelector((state: any) => state.auth);
   const [availableMarketplaces, setAvailableMarketplaces] = useState<MarketplaceOption[]>([]);
+  const [credentials, setCredentials] = useState<MarketplaceCredentials>({});
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [results, setResults] = useState<SignupResult[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [showInfoDialog, setShowInfoDialog] = useState(true);
 
-  // Load available marketplaces on mount
   useEffect(() => {
     loadMarketplaces();
   }, []);
@@ -79,7 +105,19 @@ export const BulkMarketplaceSignup: React.FC = () => {
       setLoading(true);
       const response = await api.getAvailableMarketplaces();
       if (response.data.success) {
-        setAvailableMarketplaces(response.data.data);
+        const marketplaces = response.data.data;
+        setAvailableMarketplaces(marketplaces);
+
+        // Initialize credentials state for each marketplace
+        const initialCredentials: MarketplaceCredentials = {};
+        marketplaces.forEach((m: MarketplaceOption) => {
+          initialCredentials[m.id] = {
+            email: '',
+            password: '',
+            showPassword: false,
+          };
+        });
+        setCredentials(initialCredentials);
       }
     } catch (err) {
       logger.error('Failed to load marketplaces:', err);
@@ -89,91 +127,102 @@ export const BulkMarketplaceSignup: React.FC = () => {
     }
   };
 
-  const handleMarketplaceToggle = (marketplace: string) => {
-    setSelectedMarketplaces((prev) =>
-      prev.includes(marketplace)
-        ? prev.filter((m) => m !== marketplace)
-        : [...prev, marketplace]
-    );
+  const handleCredentialChange = (
+    marketplaceId: string,
+    field: 'email' | 'password',
+    value: string
+  ) => {
+    setCredentials((prev) => ({
+      ...prev,
+      [marketplaceId]: {
+        ...prev[marketplaceId],
+        [field]: value,
+      },
+    }));
   };
 
-  const handleSelectAllTier1 = () => {
-    const tier1 = availableMarketplaces.filter((m) => m.tier === 1).map((m) => m.id);
-    setSelectedMarketplaces((prev) => {
-      const filtered = prev.filter((m) => !availableMarketplaces.some((am) => am.tier === 1 && am.id === m));
-      return filtered.length === tier1.length ? [] : [...new Set([...filtered, ...tier1])];
-    });
-  };
-
-  const handleSelectAll = () => {
-    const allMarketplaces = availableMarketplaces.map((m) => m.id);
-    setSelectedMarketplaces(
-      selectedMarketplaces.length === allMarketplaces.length ? [] : allMarketplaces
-    );
-  };
-
-  const handlePasswordChange = (value: string) => {
-    setPassword(value);
-    setPasswordsMatch(value === confirmPassword);
-  };
-
-  const handleConfirmPasswordChange = (value: string) => {
-    setConfirmPassword(value);
-    setPasswordsMatch(password === value);
+  const togglePasswordVisibility = (marketplaceId: string) => {
+    setCredentials((prev) => ({
+      ...prev,
+      [marketplaceId]: {
+        ...prev[marketplaceId],
+        showPassword: !prev[marketplaceId].showPassword,
+      },
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validation
-    if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    if (!password || password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (selectedMarketplaces.length === 0) {
-      setError('Please select at least one marketplace');
-      return;
-    }
-
     setError('');
     setSuccessMessage('');
+
+    // Filter marketplaces that have both email and password
+    const marketplacesToConnect = Object.entries(credentials)
+      .filter(([_, creds]) => creds.email && creds.password)
+      .map(([marketplaceId, creds]) => ({
+        marketplace: marketplaceId,
+        email: creds.email,
+        password: creds.password,
+      }));
+
+    if (marketplacesToConnect.length === 0) {
+      setError('Please enter credentials for at least one marketplace');
+      return;
+    }
+
+    // Validate emails
+    for (const mp of marketplacesToConnect) {
+      if (!mp.email.includes('@')) {
+        setError(`Invalid email address for ${mp.marketplace}`);
+        return;
+      }
+      if (mp.password.length < 6) {
+        setError(`Password for ${mp.marketplace} must be at least 6 characters`);
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
-      const response = await api.bulkSignupToMarketplaces(email, password, selectedMarketplaces);
+      const response = await api.post('/marketplaces/bulk-connect', {
+        marketplaces: marketplacesToConnect,
+      });
 
       if (response.data.success) {
         setResults(response.data.data.results);
         setShowResults(true);
-        setSuccessMessage(response.data.message);
+        setSuccessMessage(
+          `Successfully connected ${response.data.data.successCount} marketplace(s)`
+        );
 
-        // Clear form on success
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        setSelectedMarketplaces([]);
+        // Clear credentials for successfully connected marketplaces
+        const newCredentials = { ...credentials };
+        response.data.data.results.forEach((result: SignupResult) => {
+          if (result.status === 'success') {
+            newCredentials[result.marketplace] = {
+              email: '',
+              password: '',
+              showPassword: false,
+            };
+          }
+        });
+        setCredentials(newCredentials);
 
         // Reload marketplace list to show updated connection status
         loadMarketplaces();
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to signup to marketplaces';
+      const errorMessage = err.response?.data?.message || 'Failed to connect to marketplaces';
       setError(errorMessage);
-      logger.error('Bulk signup error:', err);
+      logger.error('Bulk connect error:', err);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const getFilledCount = () => {
+    return Object.values(credentials).filter((c) => c.email && c.password).length;
   };
 
   const getResultIcon = (status: string) => {
@@ -182,17 +231,9 @@ export const BulkMarketplaceSignup: React.FC = () => {
         return <CheckCircleIcon sx={{ color: 'success.main' }} />;
       case 'failed':
         return <ErrorIcon sx={{ color: 'error.main' }} />;
-      case 'pending_oauth':
-        return <HourglassEmptyIcon sx={{ color: 'warning.main' }} />;
       default:
         return null;
     }
-  };
-
-  const groupedMarketplaces = {
-    tier1: availableMarketplaces.filter((m) => m.tier === 1),
-    tier2: availableMarketplaces.filter((m) => m.tier === 2),
-    tier3: availableMarketplaces.filter((m) => m.tier === 3),
   };
 
   if (loading) {
@@ -207,253 +248,219 @@ export const BulkMarketplaceSignup: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Grid container spacing={3}>
-        {/* Header */}
-        <Grid item xs={12}>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ConnectWithoutContactIcon /> Connect to Multiple Marketplaces
-            </Typography>
-            <Typography variant="body1" color="textSecondary">
-              Sign up to sell on all major marketplaces with just one email and password. We'll securely store
-              your credentials and automatically connect your account to each marketplace.
-            </Typography>
-          </Box>
-        </Grid>
+      {/* Info Dialog */}
+      <Dialog open={showInfoDialog} onClose={() => setShowInfoDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <InfoIcon color="primary" />
+          How This Works
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" paragraph>
+            <strong>Important:</strong> You need to have existing accounts on the marketplaces you want to connect.
+          </Typography>
+          <Typography variant="body2" paragraph>
+            Enter your login credentials for each marketplace below. We'll securely store them (encrypted) so Quicksell can post listings to those marketplaces on your behalf.
+          </Typography>
+          <Typography variant="body2" paragraph>
+            Don't have an account on a marketplace? Click the "Sign Up" link next to it to create one first.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Your credentials are encrypted with AES-256 encryption and never shared with third parties.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowInfoDialog(false)} variant="contained">
+            Got It
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        {/* Error Alert */}
-        {error && (
-          <Grid item xs={12}>
-            <Alert severity="error" onClose={() => setError('')}>
-              {error}
-            </Alert>
-          </Grid>
-        )}
+      {/* Header */}
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ConnectIcon /> Connect Marketplace Accounts
+        </Typography>
+        <Typography variant="body1" color="textSecondary">
+          Enter your existing marketplace login credentials below. Each marketplace requires its own account.
+          <Button
+            size="small"
+            startIcon={<InfoIcon />}
+            onClick={() => setShowInfoDialog(true)}
+            sx={{ ml: 1 }}
+          >
+            How this works
+          </Button>
+        </Typography>
+      </Box>
 
-        {/* Success Alert */}
-        {successMessage && (
-          <Grid item xs={12}>
-            <Alert severity="success" onClose={() => setSuccessMessage('')}>
-              {successMessage}
-            </Alert>
-          </Grid>
-        )}
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-        {/* Main Form */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Your Account Credentials
-            </Typography>
-            <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>
-              We encrypt and securely store your credentials. They're never shared with marketplaces directly.
-            </Typography>
+      {/* Success Alert */}
+      {successMessage && (
+        <Alert severity="success" onClose={() => setSuccessMessage('')} sx={{ mb: 2 }}>
+          {successMessage}
+        </Alert>
+      )}
 
-            <form onSubmit={handleSubmit}>
-              <TextField
-                fullWidth
-                label="Email Address"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                margin="normal"
-                required
-                disabled={submitting}
-                helperText="This email will be used across all selected marketplaces"
-              />
-
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e) => handlePasswordChange(e.target.value)}
-                margin="normal"
-                required
-                disabled={submitting}
-                helperText="At least 6 characters. Must match confirmation password."
-                error={password.length > 0 && password.length < 6}
-              />
-
-              <TextField
-                fullWidth
-                label="Confirm Password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                margin="normal"
-                required
-                disabled={submitting}
-                error={!passwordsMatch && confirmPassword.length > 0}
-                helperText={!passwordsMatch && confirmPassword.length > 0 ? 'Passwords do not match' : ''}
-              />
-
-              <Box sx={{ mt: 3, mb: 2 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Selected Marketplaces: {selectedMarketplaces.length}
-                </Typography>
-                {selectedMarketplaces.length > 0 && (
-                  <Box sx={{ mb: 2 }}>
-                    {selectedMarketplaces.map((m) => (
-                      <Chip
-                        key={m}
-                        label={m}
-                        onDelete={() => handleMarketplaceToggle(m)}
-                        size="small"
-                        sx={{ mr: 1, mb: 1 }}
-                      />
-                    ))}
-                  </Box>
-                )}
-              </Box>
-
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                size="large"
-                disabled={submitting || selectedMarketplaces.length === 0 || !passwordsMatch}
-                sx={{ mt: 2 }}
-              >
-                {submitting ? (
-                  <>
-                    <CircularProgress size={24} sx={{ mr: 1 }} />
-                    Connecting...
-                  </>
-                ) : (
-                  `Connect to ${selectedMarketplaces.length} Marketplace${selectedMarketplaces.length !== 1 ? 's' : ''}`
-                )}
-              </Button>
-
-              {submitting && (
-                <Box sx={{ mt: 2 }}>
-                  <LinearProgress />
-                  <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
-                    Please wait while we setup your marketplace connections...
-                  </Typography>
-                </Box>
-              )}
-            </form>
-          </Paper>
-        </Grid>
-
-        {/* Marketplace Selection */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">Select Marketplaces</Typography>
-              <Box>
-                <Button size="small" onClick={handleSelectAllTier1}>
-                  Select Tier 1
-                </Button>
-                <Button size="small" onClick={handleSelectAll}>
-                  {selectedMarketplaces.length === availableMarketplaces.length ? 'Deselect All' : 'Select All'}
-                </Button>
-              </Box>
-            </Box>
-
-            {/* Tier 1 Marketplaces */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" color="primary" gutterBottom>
-                🔥 Most Popular (Tier 1)
-              </Typography>
-              <FormGroup>
-                {groupedMarketplaces.tier1.map((marketplace) => (
-                  <FormControlLabel
-                    key={marketplace.id}
-                    control={
-                      <Checkbox
-                        checked={selectedMarketplaces.includes(marketplace.id)}
-                        onChange={() => handleMarketplaceToggle(marketplace.id)}
-                        disabled={submitting}
-                      />
-                    }
-                    label={
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {marketplace.name}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          {marketplace.description}
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                ))}
-              </FormGroup>
-            </Box>
-
-            {/* Tier 2 Marketplaces */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" color="secondary" gutterBottom>
-                Popular (Tier 2)
-              </Typography>
-              <FormGroup>
-                {groupedMarketplaces.tier2.map((marketplace) => (
-                  <FormControlLabel
-                    key={marketplace.id}
-                    control={
-                      <Checkbox
-                        checked={selectedMarketplaces.includes(marketplace.id)}
-                        onChange={() => handleMarketplaceToggle(marketplace.id)}
-                        disabled={submitting}
-                      />
-                    }
-                    label={
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {marketplace.name}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          {marketplace.description}
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                ))}
-              </FormGroup>
-            </Box>
-
-            {/* Tier 3 Marketplaces */}
-            {groupedMarketplaces.tier3.length > 0 && (
-              <Box>
-                <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-                  Niche/International (Tier 3)
-                </Typography>
-                <FormGroup>
-                  {groupedMarketplaces.tier3.map((marketplace) => (
-                    <FormControlLabel
-                      key={marketplace.id}
-                      control={
-                        <Checkbox
-                          checked={selectedMarketplaces.includes(marketplace.id)}
-                          onChange={() => handleMarketplaceToggle(marketplace.id)}
-                          disabled={submitting}
-                        />
-                      }
-                      label={
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {marketplace.name}
-                          </Typography>
-                          <Typography variant="caption" color="textSecondary">
-                            {marketplace.description}
-                          </Typography>
+      {/* Form */}
+      <form onSubmit={handleSubmit}>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: 'primary.main' }}>
+                <TableCell sx={{ color: 'white', fontWeight: 600 }}>Marketplace</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 600 }}>Type</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 600 }}>Email</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 600 }}>Password</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 600 }}>Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {availableMarketplaces.map((marketplace) => (
+                <TableRow
+                  key={marketplace.id}
+                  sx={{
+                    '&:hover': { backgroundColor: 'action.hover' },
+                    backgroundColor: marketplace.connected ? 'success.light' : 'inherit',
+                    opacity: marketplace.connected ? 0.7 : 1,
+                  }}
+                >
+                  {/* Marketplace Name */}
+                  <TableCell>
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        {marketplace.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {marketplace.description}
+                      </Typography>
+                      {MARKETPLACE_SIGNUP_URLS[marketplace.id] && (
+                        <Box sx={{ mt: 0.5 }}>
+                          <Link
+                            href={MARKETPLACE_SIGNUP_URLS[marketplace.id]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 0.5 }}
+                          >
+                            Don't have an account? Sign up
+                            <OpenInNewIcon sx={{ fontSize: 12 }} />
+                          </Link>
                         </Box>
-                      }
+                      )}
+                    </Box>
+                  </TableCell>
+
+                  {/* Type */}
+                  <TableCell>
+                    <Chip
+                      label={marketplace.hasApi ? 'Auto-publish' : 'Copy/Paste'}
+                      size="small"
+                      color={marketplace.hasApi ? 'primary' : 'default'}
+                      variant="outlined"
                     />
-                  ))}
-                </FormGroup>
-              </Box>
+                  </TableCell>
+
+                  {/* Email Field */}
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={credentials[marketplace.id]?.email || ''}
+                      onChange={(e) =>
+                        handleCredentialChange(marketplace.id, 'email', e.target.value)
+                      }
+                      disabled={submitting || marketplace.connected}
+                      fullWidth
+                      sx={{ minWidth: 200 }}
+                    />
+                  </TableCell>
+
+                  {/* Password Field */}
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      type={credentials[marketplace.id]?.showPassword ? 'text' : 'password'}
+                      placeholder="Password"
+                      value={credentials[marketplace.id]?.password || ''}
+                      onChange={(e) =>
+                        handleCredentialChange(marketplace.id, 'password', e.target.value)
+                      }
+                      disabled={submitting || marketplace.connected}
+                      fullWidth
+                      sx={{ minWidth: 180 }}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={() => togglePasswordVisibility(marketplace.id)}
+                              edge="end"
+                            >
+                              {credentials[marketplace.id]?.showPassword ? (
+                                <VisibilityOff fontSize="small" />
+                              ) : (
+                                <Visibility fontSize="small" />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+
+                  {/* Status */}
+                  <TableCell>
+                    {marketplace.connected ? (
+                      <Chip
+                        icon={<CheckCircleIcon />}
+                        label="Connected"
+                        color="success"
+                        size="small"
+                      />
+                    ) : (
+                      <Chip label="Not Connected" size="small" variant="outlined" />
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Submit Button */}
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            {getFilledCount()} marketplace{getFilledCount() !== 1 ? 's' : ''} ready to connect
+          </Typography>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            size="large"
+            disabled={submitting || getFilledCount() === 0}
+            sx={{ minWidth: 200 }}
+          >
+            {submitting ? (
+              <>
+                <CircularProgress size={20} sx={{ mr: 1 }} color="inherit" />
+                Connecting...
+              </>
+            ) : (
+              `Connect ${getFilledCount()} Marketplace${getFilledCount() !== 1 ? 's' : ''}`
             )}
-          </Paper>
-        </Grid>
-      </Grid>
+          </Button>
+        </Box>
+      </form>
 
       {/* Results Dialog */}
       <Dialog open={showResults} onClose={() => setShowResults(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Marketplace Connection Results</DialogTitle>
+        <DialogTitle>Connection Results</DialogTitle>
         <DialogContent>
           {results.map((result) => (
             <Card key={result.marketplace} sx={{ mb: 2 }}>
@@ -471,11 +478,6 @@ export const BulkMarketplaceSignup: React.FC = () => {
                       <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
                         Error: {result.error}
                       </Typography>
-                    )}
-                    {result.status === 'pending_oauth' && (
-                      <Button size="small" color="primary" sx={{ mt: 1 }}>
-                        Complete OAuth Flow
-                      </Button>
                     )}
                   </Box>
                 </Box>

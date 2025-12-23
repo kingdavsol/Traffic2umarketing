@@ -338,8 +338,66 @@ export const checkMarketplaceStatus = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Connect to multiple marketplaces with individual credentials
+ * POST /api/marketplaces/bulk-connect
+ */
+export const bulkConnectMarketplaces = async (req: Request, res: Response) => {
+  try {
+    const { marketplaces } = req.body;
+    const userId = (req as any).userId;
+
+    if (!Array.isArray(marketplaces) || marketplaces.length === 0) {
+      throw new AppError('At least one marketplace with credentials must be provided', 400);
+    }
+
+    // Validate each marketplace entry
+    for (const mp of marketplaces) {
+      if (!mp.marketplace || typeof mp.marketplace !== 'string') {
+        throw new AppError('Each marketplace must have a name', 400);
+      }
+      if (!VALID_MARKETPLACES.includes(mp.marketplace)) {
+        throw new AppError(`Invalid marketplace: ${mp.marketplace}`, 400);
+      }
+      if (!mp.email || typeof mp.email !== 'string' || !mp.email.includes('@')) {
+        throw new AppError(`Invalid email for ${mp.marketplace}`, 400);
+      }
+      if (!mp.password || typeof mp.password !== 'string' || mp.password.length < 6) {
+        throw new AppError(`Invalid password for ${mp.marketplace} (must be at least 6 characters)`, 400);
+      }
+    }
+
+    logger.info(`Bulk connect request for user ${userId} to ${marketplaces.length} marketplaces with individual credentials`);
+
+    const result = await bulkMarketplaceSignupService.bulkConnectWithIndividualCredentials({
+      userId,
+      marketplaces,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully connected ${result.successCount} marketplace(s)`,
+      data: result,
+    });
+  } catch (error) {
+    logger.error('Bulk connect error:', error);
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Failed to connect to marketplaces',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
 export default {
   bulkSignupToMarketplaces,
+  bulkConnectMarketplaces,
   getConnectedMarketplaces,
   disconnectMarketplace,
   getAvailableMarketplaces,

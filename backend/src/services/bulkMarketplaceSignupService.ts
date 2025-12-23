@@ -172,8 +172,83 @@ async function getMarketplaceCredentials(userId: number, marketplace: string): P
   };
 }
 
+/**
+ * Connect to multiple marketplaces with individual credentials
+ */
+async function bulkConnectWithIndividualCredentials(params: {
+  userId: number;
+  marketplaces: Array<{ marketplace: string; email: string; password: string }>;
+}): Promise<SignupResult> {
+  const { userId, marketplaces } = params;
+  const results: SignupResult['results'] = [];
+  let successCount = 0;
+  let failedCount = 0;
+
+  for (const mp of marketplaces) {
+    try {
+      const { marketplace, email, password } = mp;
+
+      if (!VALID_MARKETPLACES.includes(marketplace)) {
+        throw new Error(`Invalid marketplace: ${marketplace}`);
+      }
+
+      const encryptedPassword = encryptPassword(password);
+
+      // Check if already connected
+      const existing = await pool.query(
+        'SELECT id FROM marketplace_accounts WHERE user_id = $1 AND marketplace_name = $2',
+        [userId, marketplace]
+      );
+
+      if (existing.rows.length > 0) {
+        // Update existing
+        await pool.query(
+          `UPDATE marketplace_accounts
+           SET account_name = $1, encrypted_password = $2, is_active = true, updated_at = NOW()
+           WHERE user_id = $3 AND marketplace_name = $4`,
+          [email, encryptedPassword, userId, marketplace]
+        );
+      } else {
+        // Insert new
+        await pool.query(
+          `INSERT INTO marketplace_accounts
+           (user_id, marketplace_name, account_name, encrypted_password, is_active, auto_sync_enabled)
+           VALUES ($1, $2, $3, $4, true, true)`,
+          [userId, marketplace, email, encryptedPassword]
+        );
+      }
+
+      // Award gamification points (25 points per marketplace)
+      await pool.query(
+        'UPDATE users SET points = points + 25 WHERE id = $1',
+        [userId]
+      );
+
+      results.push({
+        marketplace,
+        status: 'success',
+        message: `Connected to ${marketplace} with account ${email}`,
+      });
+      successCount++;
+
+      logger.info(`User ${userId} connected to ${marketplace} with account ${email}`);
+    } catch (error) {
+      logger.error(`Failed to connect to ${mp.marketplace}:`, error);
+      results.push({
+        marketplace: mp.marketplace,
+        status: 'failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+      failedCount++;
+    }
+  }
+
+  return { successCount, failedCount, results };
+}
+
 export default {
   bulkSignupToMarketplaces,
+  bulkConnectWithIndividualCredentials,
   getUserMarketplaces,
   disconnectMarketplace,
   getMarketplaceCredentials,
