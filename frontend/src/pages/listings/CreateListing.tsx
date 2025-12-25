@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   Box,
   Button,
@@ -20,6 +20,10 @@ import {
   Stepper,
   Step,
   StepLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -27,6 +31,8 @@ import {
   Refresh as RefreshIcon,
   Send as SendIcon,
   OpenInNew as OpenInNewIcon,
+  CameraAlt as CameraIcon,
+  PhotoCamera as PhotoCameraIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
@@ -78,6 +84,12 @@ const CreateListingPage: React.FC = () => {
   const [assistedPostingLoading, setAssistedPostingLoading] = useState(false);
   const [createdListingId, setCreatedListingId] = useState<number | null>(null);
 
+  // Camera state
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const steps = ['Upload Photos', 'AI Analysis', 'Review & Edit', 'Publish'];
 
   // Photo upload
@@ -105,6 +117,74 @@ const CreateListingPage: React.FC = () => {
   const removePhoto = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
     setPhotoUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Camera functions
+  const openCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+
+      setStream(mediaStream);
+      setCameraOpen(true);
+
+      // Set video stream once the dialog opens
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+        }
+      }, 100);
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      setError('Could not access camera. Please check permissions and try again.');
+    }
+  };
+
+  const closeCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+    setCameraOpen(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+
+      // Set canvas size to video size
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw video frame to canvas
+      if (context) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Convert canvas to blob then to File
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `camera-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+            // Add to photos
+            setPhotos((prev) => [...prev, file]);
+
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onload = () => {
+              setPhotoUrls((prev) => [...prev, reader.result as string]);
+            };
+            reader.readAsDataURL(file);
+
+            // Close camera after capture
+            closeCamera();
+          }
+        }, 'image/jpeg', 0.95);
+      }
+    }
   };
 
   // AI Analysis
@@ -282,6 +362,27 @@ const CreateListingPage: React.FC = () => {
                 Upload up to 12 photos (JPEG, PNG, WebP)
               </Typography>
             </Paper>
+
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, gap: 2 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'center' }}>
+                OR
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Button
+                variant="outlined"
+                size="large"
+                startIcon={<PhotoCameraIcon />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openCamera();
+                }}
+                disabled={photos.length >= 12}
+              >
+                Take Photo with Camera
+              </Button>
+            </Box>
 
             {photoUrls.length > 0 && (
               <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -639,6 +740,43 @@ const CreateListingPage: React.FC = () => {
       <Card>
         <CardContent>{renderStepContent()}</CardContent>
       </Card>
+
+      {/* Camera Dialog */}
+      <Dialog open={cameraOpen} onClose={closeCamera} maxWidth="md" fullWidth>
+        <DialogTitle>Take a Photo</DialogTitle>
+        <DialogContent>
+          <Box sx={{ position: 'relative', width: '100%', bgcolor: 'black', borderRadius: 1 }}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              style={{
+                width: '100%',
+                maxHeight: '60vh',
+                display: 'block',
+                borderRadius: 4,
+              }}
+            />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+            Position your product in the frame and click "Capture Photo"
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeCamera} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={capturePhoto}
+            variant="contained"
+            color="primary"
+            startIcon={<CameraIcon />}
+          >
+            Capture Photo
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
