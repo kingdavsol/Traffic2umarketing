@@ -90,7 +90,7 @@ const CreateListing: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const steps = ['Upload Photos', 'AI Analysis', 'Review & Edit', 'Publish'];
+  const steps = ['Upload Photos', 'Review & Edit', 'Publish'];
 
   // Photo upload
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -209,7 +209,7 @@ const CreateListing: React.FC = () => {
     try {
       // Analyze the first photo
       const response = await api.analyzePhoto(photos[0]);
-      const result = response.data;
+      const result = response.data.data || response.data; // Handle both response formats
 
       setFormData({
         title: result.title || '',
@@ -223,7 +223,7 @@ const CreateListing: React.FC = () => {
         size: result.size || '',
       });
 
-      setActiveStep(2); // Move to review step
+      setActiveStep(1); // Move to review step
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to analyze photos');
     } finally {
@@ -243,7 +243,7 @@ const CreateListing: React.FC = () => {
 
     try {
       const response = await api.analyzePhoto(photos[0], aiHints || undefined);
-      const result = response.data;
+      const result = response.data.data || response.data; // Handle both response formats
 
       // Update form data with new analysis
       setFormData({
@@ -309,7 +309,7 @@ const CreateListing: React.FC = () => {
       if (selectedMarketplaces.length > 0) {
         const publishResponse = await api.publishListing(listing.id, selectedMarketplaces);
         setPublishResults(publishResponse.data.data);
-        setActiveStep(3); // Move to publish results step
+        setActiveStep(2); // Move to publish results step
       } else {
         // No marketplaces selected, just navigate to listings
         navigate('/listings');
@@ -442,53 +442,16 @@ const CreateListing: React.FC = () => {
               <Button onClick={() => navigate('/listings')}>Cancel</Button>
               <Button
                 variant="contained"
-                onClick={() => {
-                  if (photos.length === 0) {
-                    setError('Please upload at least one photo');
-                    return;
-                  }
-                  setActiveStep(1);
-                }}
-              >
-                Next
-              </Button>
-            </Box>
-          </Box>
-        );
-
-      case 1: // AI Analysis
-        return (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography variant="h5" gutterBottom>
-              Ready to analyze your photos?
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-              Our AI will generate a title, description, category, and suggested price for your listing.
-            </Typography>
-
-            {analyzing ? (
-              <Box>
-                <CircularProgress size={60} sx={{ mb: 2 }} />
-                <Typography variant="body1">Analyzing photos...</Typography>
-              </Box>
-            ) : (
-              <Button
-                variant="contained"
-                size="large"
                 onClick={analyzePhotos}
-                startIcon={<SendIcon />}
+                disabled={analyzing || photos.length === 0}
               >
-                Analyze with AI
+                {analyzing ? 'Analyzing...' : 'Next'}
               </Button>
-            )}
-
-            <Box sx={{ mt: 3 }}>
-              <Button onClick={() => setActiveStep(0)}>Back</Button>
             </Box>
           </Box>
         );
 
-      case 2: // Review & Edit
+      case 1: // Review & Edit
         return (
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -637,7 +600,7 @@ const CreateListing: React.FC = () => {
             </Grid>
 
             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-              <Button onClick={() => setActiveStep(1)}>Back</Button>
+              <Button onClick={() => setActiveStep(0)}>Back</Button>
               <Button
                 variant="contained"
                 onClick={handleSubmit}
@@ -649,7 +612,7 @@ const CreateListing: React.FC = () => {
           </Box>
         );
 
-      case 3: // Publish Results
+      case 2: // Publish Results
         return (
           <Box>
             <Typography variant="h5" gutterBottom>
