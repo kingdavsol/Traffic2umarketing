@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   Box,
   Button,
@@ -20,12 +20,19 @@ import {
   Stepper,
   Step,
   StepLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
   Send as SendIcon,
+  CameraAlt as CameraIcon,
+  PhotoCamera as PhotoCameraIcon,
+  PhotoLibrary as PhotoLibraryIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
@@ -76,6 +83,13 @@ const CreateListing: React.FC = () => {
   const [publishResults, setPublishResults] = useState<any>(null);
   const [aiHints, setAiHints] = useState<string>('');
 
+  // Camera state
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const steps = ['Upload Photos', 'AI Analysis', 'Review & Edit', 'Publish'];
 
   // Photo upload
@@ -103,6 +117,83 @@ const CreateListing: React.FC = () => {
   const removePhoto = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
     setPhotoUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Camera functions
+  const openCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+
+      setStream(mediaStream);
+      setCameraOpen(true);
+
+      // Set video stream once the dialog opens
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+        }
+      }, 100);
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      setError('Could not access camera. Please check permissions or use file selection instead.');
+    }
+  };
+
+  const closeCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+    setCameraOpen(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+
+      // Set canvas size to video size
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw video frame to canvas
+      if (context) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Convert canvas to blob then to File
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `camera-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+            // Add to photos
+            setPhotos((prev) => [...prev, file]);
+
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onload = () => {
+              setPhotoUrls((prev) => [...prev, reader.result as string]);
+            };
+            reader.readAsDataURL(file);
+
+            // Close camera after capture
+            closeCamera();
+          }
+        }, 'image/jpeg', 0.95);
+      }
+    }
+  };
+
+  // Handle file input selection
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      onDrop(fileArray);
+    }
   };
 
   // AI Analysis
@@ -236,26 +327,88 @@ const CreateListing: React.FC = () => {
       case 0: // Upload Photos
         return (
           <Box>
-            <Paper
-              {...getRootProps()}
-              sx={{
-                p: 4,
-                border: '2px dashed',
-                borderColor: isDragActive ? 'primary.main' : 'grey.300',
-                bgcolor: isDragActive ? 'action.hover' : 'background.paper',
-                cursor: 'pointer',
-                textAlign: 'center',
-              }}
-            >
-              <input {...getInputProps()} />
-              <UploadIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                {isDragActive ? 'Drop photos here' : 'Drag & drop photos, or click to select'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Upload up to 12 photos (JPEG, PNG, WebP)
-              </Typography>
-            </Paper>
+            <Typography variant="h6" gutterBottom textAlign="center" sx={{ mb: 3 }}>
+              Add Product Photos
+            </Typography>
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    border: '2px solid',
+                    borderColor: 'primary.main',
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                    },
+                  }}
+                  onClick={openCamera}
+                >
+                  <PhotoCameraIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+                  <Typography variant="h6" gutterBottom>
+                    Take Photo
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Use your camera to capture product photos
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<PhotoCameraIcon />}
+                    sx={{ mt: 2 }}
+                    disabled={photos.length >= 12}
+                  >
+                    Open Camera
+                  </Button>
+                </Paper>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    border: '2px solid',
+                    borderColor: 'secondary.main',
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                    },
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <PhotoLibraryIcon sx={{ fontSize: 60, color: 'secondary.main', mb: 2 }} />
+                  <Typography variant="h6" gutterBottom>
+                    Choose Files
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Select photos from your device
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<PhotoLibraryIcon />}
+                    sx={{ mt: 2 }}
+                    disabled={photos.length >= 12}
+                  >
+                    Select Photos
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={handleFileSelect}
+                  />
+                </Paper>
+              </Grid>
+            </Grid>
+
+            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 2 }}>
+              You can add up to 12 photos (JPEG, PNG, WebP)
+            </Typography>
 
             {photoUrls.length > 0 && (
               <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -607,6 +760,43 @@ const CreateListing: React.FC = () => {
       <Card>
         <CardContent>{renderStepContent()}</CardContent>
       </Card>
+
+      {/* Camera Dialog */}
+      <Dialog open={cameraOpen} onClose={closeCamera} maxWidth="md" fullWidth>
+        <DialogTitle>Take a Photo</DialogTitle>
+        <DialogContent>
+          <Box sx={{ position: 'relative', width: '100%', bgcolor: 'black', borderRadius: 1 }}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              style={{
+                width: '100%',
+                maxHeight: '60vh',
+                display: 'block',
+                borderRadius: 4,
+              }}
+            />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+            Position your product in the frame and click "Capture Photo"
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeCamera} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={capturePhoto}
+            variant="contained"
+            color="primary"
+            startIcon={<CameraIcon />}
+          >
+            Capture Photo
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
