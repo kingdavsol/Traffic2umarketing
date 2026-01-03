@@ -10,6 +10,7 @@ interface User {
   subscriptionTier: 'free' | 'premium' | 'premium_plus';
   points: number;
   level: number;
+  isAdmin?: boolean;
 }
 
 interface AuthState {
