@@ -83,7 +83,9 @@ const LoginPage: React.FC = () => {
             token: result.data.data.token,
           })
         );
-        navigate("/dashboard");
+        // Redirect admin users to admin dashboard
+        const redirectPath = result.data.data.user.isAdmin ? "/admin" : "/dashboard";
+        navigate(redirectPath);
       }
     } catch (err: any) {
       setError(err.response?.data?.error || "Google sign-in failed");
@@ -132,7 +134,9 @@ const LoginPage: React.FC = () => {
             token: response.data.data.token,
           })
         );
-        navigate("/dashboard");
+        // Redirect admin users to admin dashboard
+        const redirectPath = response.data.data.user.isAdmin ? "/admin" : "/dashboard";
+        navigate(redirectPath);
       }
     } catch (err: any) {
       setError(
