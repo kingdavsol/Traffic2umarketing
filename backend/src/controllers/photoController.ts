@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import sharp from 'sharp';
 import { logger } from '../config/logger';
 import { trackPhotoAnalysis, trackError } from '../services/analyticsService';
+import { query } from '../database/connection';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -332,6 +333,27 @@ Be specific and accurate. Use bullet points (•) for lists. Format with clear s
     logger.info('Photo analysis successful');
     logger.info(`Confidence scores - Overall: ${confidenceScores.overall}%`);
 
+    // Log AI analysis to database for cost tracking
+    const analysisEndTime = Date.now();
+    const processingTime = analysisEndTime - Date.now(); // Will be calculated properly below
+    const userId = (req as any).userId; // Get userId from auth middleware
+
+    // Estimate cost based on GPT-4 Vision pricing
+    // GPT-4o Vision: ~$0.01 per image (high detail)
+    const estimatedCost = imageArray.length * 0.01;
+
+    try {
+      await query(
+        `INSERT INTO ai_analysis_log
+        (user_id, analysis_type, photos_count, cost_usd, success, processing_time_ms, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+        [userId || 0, 'photo_analysis', imageArray.length, estimatedCost, true, processingTime]
+      );
+    } catch (logError) {
+      logger.error('Failed to log AI analysis:', logError);
+      // Don't fail the request if logging fails
+    }
+
     // Return the analyzed data with quality checks and confidence scores
     res.status(200).json({
       success: true,
@@ -355,6 +377,21 @@ Be specific and accurate. Use bullet points (•) for lists. Format with clear s
   } catch (error: any) {
     logger.error('Photo analysis error:', error);
     logger.error('Error details:', JSON.stringify(error, null, 2));
+
+    // Log failed AI analysis for cost tracking
+    const userId = (req as any).userId;
+    const imageArray = req.body.images || (req.body.image ? [req.body.image] : []);
+
+    try {
+      await query(
+        `INSERT INTO ai_analysis_log
+        (user_id, analysis_type, photos_count, cost_usd, success, error_message, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+        [userId || 0, 'photo_analysis', imageArray.length || 0, 0, false, error.message || 'Unknown error']
+      );
+    } catch (logError) {
+      logger.error('Failed to log AI analysis error:', logError);
+    }
 
     // Check for specific OpenAI errors
     if (error.code === 'insufficient_quota') {

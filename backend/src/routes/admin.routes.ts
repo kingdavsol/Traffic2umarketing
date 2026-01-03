@@ -6,6 +6,12 @@ import {
   getRecentActivity,
   updateUserTier,
 } from '../controllers/adminController';
+import {
+  getEnhancedAdminStats,
+  getEnhancedUserList,
+  getUserDetails,
+  getAIAnalysisReport,
+} from '../controllers/enhancedAdminController';
 
 const router = Router();
 
@@ -71,5 +77,37 @@ router.get('/activity', authenticate, isAdmin, getRecentActivity);
  * @access  Private (Admin only)
  */
 router.put('/users/:userId/tier', authenticate, isAdmin, updateUserTier);
+
+/**
+ * Enhanced Admin Routes
+ */
+
+/**
+ * @route   GET /api/v1/admin/stats/enhanced
+ * @desc    Get comprehensive admin dashboard statistics
+ * @access  Private (Admin only)
+ */
+router.get('/stats/enhanced', authenticate, isAdmin, getEnhancedAdminStats);
+
+/**
+ * @route   GET /api/v1/admin/users/enhanced
+ * @desc    Get detailed user list with listings and marketplace data
+ * @access  Private (Admin only)
+ */
+router.get('/users/enhanced', authenticate, isAdmin, getEnhancedUserList);
+
+/**
+ * @route   GET /api/v1/admin/users/:userId/details
+ * @desc    Get detailed user information
+ * @access  Private (Admin only)
+ */
+router.get('/users/:userId/details', authenticate, isAdmin, getUserDetails);
+
+/**
+ * @route   GET /api/v1/admin/ai-analysis/report
+ * @desc    Get AI analysis usage report
+ * @access  Private (Admin only)
+ */
+router.get('/ai-analysis/report', authenticate, isAdmin, getAIAnalysisReport);
 
 export default router;

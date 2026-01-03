@@ -23,6 +23,8 @@ import CaseStudies from './pages/CaseStudies';
 import GoogleCallback from './pages/auth/GoogleCallback';
 import { TermsOfService, PrivacyPolicy, CookiePolicy } from './pages/legal';
 import PrivateRoute from './components/PrivateRoute';
+import AdminRoute from './components/AdminRoute';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Redux
 import { RootState } from './store';
@@ -145,6 +147,7 @@ const App: React.FC = () => {
           <Route path="/referrals" element={<PrivateRoute><Referrals /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="/connect-marketplaces" element={<PrivateRoute><BulkMarketplaceSignup /></PrivateRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/case-studies" element={<CaseStudies />} />
