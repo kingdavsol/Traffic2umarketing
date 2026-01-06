@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  TextField,
 } from '@mui/material';
 import {
   Link as LinkIcon,
@@ -53,6 +54,9 @@ const MarketplaceSettings: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [disconnectDialog, setDisconnectDialog] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [connectDialog, setConnectDialog] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
 
   const defaultMarketplaces: Marketplace[] = [
     {
@@ -146,9 +150,43 @@ const MarketplaceSettings: React.FC = () => {
     }
   };
 
-  const handleConnect = (marketplaceId: string) => {
-    // Redirect to OAuth flow
-    window.location.href = `/api/v1/marketplaces/${marketplaceId}/connect`;
+  const handleConnect = (marketplaceId: string, requiresAuth: boolean) => {
+    if (requiresAuth) {
+      // Redirect to OAuth flow for eBay, Etsy
+      window.location.href = `/api/v1/marketplaces/${marketplaceId}/connect`;
+    } else {
+      // Open dialog for manual credentials (Craigslist, Facebook, OfferUp, Mercari)
+      setConnectDialog(marketplaceId);
+      setCredentials({ email: '', password: '' });
+    }
+  };
+
+  const handleManualConnect = async () => {
+    if (!connectDialog) return;
+
+    if (!credentials.email || !credentials.password) {
+      setError('Please enter both email/username and password');
+      return;
+    }
+
+    setConnecting(true);
+    setError(null);
+
+    try {
+      await api.post(`/api/v1/marketplaces/${connectDialog}/connect`, {
+        email: credentials.email,
+        password: credentials.password,
+      });
+
+      // Reload connected marketplaces
+      await loadConnectedMarketplaces();
+      setConnectDialog(null);
+      setCredentials({ email: '', password: '' });
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to connect marketplace');
+    } finally {
+      setConnecting(false);
+    }
   };
 
   const handleDisconnect = async (marketplaceId: string) => {
@@ -255,11 +293,11 @@ const MarketplaceSettings: React.FC = () => {
                 </Box>
 
                 <Box sx={{ mt: 2 }}>
-                  {marketplace.requiresAuth && !marketplace.connected && (
+                  {!marketplace.connected && (
                     <Button
                       variant="contained"
                       startIcon={<LinkIcon />}
-                      onClick={() => handleConnect(marketplace.id)}
+                      onClick={() => handleConnect(marketplace.id, marketplace.requiresAuth)}
                       fullWidth
                     >
                       Connect {marketplace.name}
@@ -276,12 +314,6 @@ const MarketplaceSettings: React.FC = () => {
                     >
                       Disconnect
                     </Button>
-                  )}
-
-                  {!marketplace.requiresAuth && !marketplace.connected && (
-                    <Typography variant="caption" color="text.secondary">
-                      No connection required. Use copy/paste when creating listings.
-                    </Typography>
                   )}
                 </Box>
               </CardContent>
@@ -312,6 +344,60 @@ const MarketplaceSettings: React.FC = () => {
             disabled={disconnecting}
           >
             {disconnecting ? 'Disconnecting...' : 'Disconnect'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Connect Manual Marketplace Dialog */}
+      <Dialog
+        open={connectDialog !== null}
+        onClose={() => !connecting && setConnectDialog(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Connect to {connectDialog && marketplaces.find(m => m.id === connectDialog)?.name}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Enter your {connectDialog} account credentials. Your password will be encrypted and stored securely.
+          </Typography>
+          <TextField
+            label="Email or Username"
+            fullWidth
+            value={credentials.email}
+            onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+            sx={{ mb: 2 }}
+            disabled={connecting}
+            autoComplete="username"
+          />
+          <TextField
+            label="Password"
+            type="password"
+            fullWidth
+            value={credentials.password}
+            onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+            disabled={connecting}
+            autoComplete="current-password"
+          />
+          <Alert severity="info" sx={{ mt: 2 }}>
+            <Typography variant="caption">
+              Your credentials are encrypted using AES-256 encryption and stored securely.
+              They are only used to help you manage your listings.
+            </Typography>
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConnectDialog(null)} disabled={connecting}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleManualConnect}
+            variant="contained"
+            disabled={connecting || !credentials.email || !credentials.password}
+            startIcon={connecting ? <CircularProgress size={20} /> : <LinkIcon />}
+          >
+            {connecting ? 'Connecting...' : 'Connect'}
           </Button>
         </DialogActions>
       </Dialog>

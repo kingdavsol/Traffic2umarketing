@@ -9,6 +9,7 @@ import {
   handleEtsyOAuthCallback,
   disconnectMarketplace,
   getMarketplaceStatus,
+  connectManualMarketplace,
 } from '../controllers/marketplaceController';
 import bulkMarketplaceSignupController from '../controllers/bulkMarketplaceSignupController';
 
@@ -80,28 +81,10 @@ router.post('/bulk-connect', authenticate, bulkMarketplaceSignupController.bulkC
 
 /**
  * @route   POST /api/v1/marketplaces/:marketplace/connect
- * @desc    Connect user account to marketplace
+ * @desc    Connect user account to marketplace (manual credentials)
  * @access  Private
  */
-router.post('/:marketplace/connect', authenticate, async (req: Request, res: Response) => {
-  try {
-    const { marketplace } = req.params;
-
-    // TODO: Implement OAuth connection to marketplace
-    res.status(200).json({
-      success: true,
-      message: `Connected to ${marketplace}`,
-      statusCode: 200
-    });
-  } catch (error) {
-    logger.error('Marketplace connection error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to connect marketplace',
-      statusCode: 500
-    });
-  }
-});
+router.post('/:marketplace/connect', authenticate, connectManualMarketplace);
 
 /**
  * @route   GET /api/v1/marketplaces/:marketplace/accounts

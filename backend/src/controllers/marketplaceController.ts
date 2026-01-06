@@ -2,6 +2,23 @@ import { Request, Response } from 'express';
 import { logger } from '../config/logger';
 import { query } from '../database/connection';
 import { getConnectedMarketplaces } from '../services/marketplaceService';
+import crypto from 'crypto';
+
+// Encryption key for storing credentials
+const ENCRYPTION_KEY = process.env.MARKETPLACE_ENCRYPTION_KEY || 'quicksell-default-encryption-key-32b';
+const ALGORITHM = 'aes-256-cbc';
+
+/**
+ * Encrypt password before storing
+ */
+function encryptPassword(password: string): string {
+  const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+  let encrypted = cipher.update(password, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return iv.toString('hex') + ':' + encrypted;
+}
 
 /**
  * Get user's connected marketplaces
@@ -21,6 +38,71 @@ export const getUserMarketplaces = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch connected marketplaces',
+      statusCode: 500,
+    });
+  }
+};
+
+/**
+ * Connect manual marketplace with credentials
+ */
+export const connectManualMarketplace = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { marketplace } = req.params;
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and password are required',
+        statusCode: 400,
+      });
+    }
+
+    // Encrypt password
+    const encryptedPassword = encryptPassword(password);
+
+    // Capitalize marketplace name to match database convention
+    const marketplaceName = marketplace.charAt(0).toUpperCase() + marketplace.slice(1);
+
+    // Check if already connected
+    const existing = await query(
+      'SELECT id FROM marketplace_accounts WHERE user_id = $1 AND marketplace_name = $2',
+      [userId, marketplaceName]
+    );
+
+    if (existing.rows.length > 0) {
+      // Update existing connection
+      await query(
+        `UPDATE marketplace_accounts
+         SET account_name = $1, encrypted_password = $2, is_active = true, updated_at = CURRENT_TIMESTAMP
+         WHERE user_id = $3 AND marketplace_name = $4`,
+        [email, encryptedPassword, userId, marketplaceName]
+      );
+    } else {
+      // Insert new connection
+      await query(
+        `INSERT INTO marketplace_accounts
+         (user_id, marketplace_name, account_name, encrypted_password, is_active, auto_sync_enabled)
+         VALUES ($1, $2, $3, $4, true, false)`,
+        [userId, marketplaceName, email, encryptedPassword]
+      );
+    }
+
+    logger.info(`User ${userId} connected to ${marketplaceName} manually`);
+
+    res.status(200).json({
+      success: true,
+      message: `Connected to ${marketplaceName}`,
+      data: { marketplace: marketplaceName, accountName: email },
+      statusCode: 200,
+    });
+  } catch (error) {
+    logger.error('Connect manual marketplace error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to connect marketplace',
       statusCode: 500,
     });
   }
