@@ -230,6 +230,11 @@ const MarketplaceSettings: React.FC = () => {
 
   return (
     <Box>
+      {/* VERIFICATION BANNER */}
+      <Alert severity="error" sx={{ mb: 3, fontSize: '1.2rem', fontWeight: 'bold', bgcolor: '#ff1744', color: 'white' }}>
+        🚀 VERSION 2026-01-06-1825 DEPLOYED! If you see this RED banner, new code is loading!
+      </Alert>
+
       <Typography variant="h5" gutterBottom>
         Connected Marketplaces
       </Typography>
