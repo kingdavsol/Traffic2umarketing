@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -40,7 +41,24 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const Settings: React.FC = () => {
+  const location = useLocation();
   const [currentTab, setCurrentTab] = useState(0);
+
+  // Check URL query parameter to set initial tab
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+
+    if (tab === 'marketplaces') {
+      setCurrentTab(1);
+    } else if (tab === 'notifications') {
+      setCurrentTab(2);
+    } else if (tab === 'billing') {
+      setCurrentTab(3);
+    } else if (tab === 'security') {
+      setCurrentTab(4);
+    }
+  }, [location.search]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);

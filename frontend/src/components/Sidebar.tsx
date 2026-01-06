@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Create Listing', icon: <AddIcon />, path: '/create-listing' },
     { text: 'My Listings', icon: <ListIcon />, path: '/listings' },
-    { text: 'Connect Marketplaces', icon: <ConnectIcon />, path: '/settings' },
+    { text: 'Connect Marketplaces', icon: <ConnectIcon />, path: '/settings?tab=marketplaces' },
     { text: 'Sales', icon: <ShippingIcon />, path: '/sales' },
     { text: 'Achievements', icon: <TrophyIcon />, path: '/gamification' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
