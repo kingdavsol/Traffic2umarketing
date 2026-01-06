@@ -230,9 +230,24 @@ const MarketplaceSettings: React.FC = () => {
 
   return (
     <Box>
-      {/* VERIFICATION BANNER */}
-      <Alert severity="error" sx={{ mb: 3, fontSize: '1.2rem', fontWeight: 'bold', bgcolor: '#ff1744', color: 'white' }}>
-        🚀 VERSION 2026-01-06-1825 DEPLOYED! If you see this RED banner, new code is loading!
+      {/* SUPER OBVIOUS DEPLOYMENT BANNER */}
+      <Alert
+        severity="error"
+        sx={{
+          mb: 3,
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          bgcolor: '#ff0000',
+          color: 'white',
+          border: '5px solid #ffff00',
+          animation: 'pulse 1s infinite',
+          '@keyframes pulse': {
+            '0%, 100%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(1.02)' }
+          }
+        }}
+      >
+        ✅ NEW VERSION ACTIVE - JAN 6 2026 6:45PM - ALL ADMIN FEATURES ADDED!
       </Alert>
 
       <Typography variant="h5" gutterBottom>

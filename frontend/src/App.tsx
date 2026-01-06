@@ -131,11 +131,11 @@ const App: React.FC = () => {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={isAuthenticated ? <Navigate to={user?.isAdmin ? "/admin" : "/dashboard"} /> : <LandingPage />} />
+          <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
           <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/auth/login" element={isAuthenticated ? <Navigate to={user?.isAdmin ? "/admin" : "/dashboard"} /> : <LoginPage />} />
+          <Route path="/auth/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />} />
           <Route path="/auth/callback" element={<GoogleCallback />} />
-          <Route path="/auth/register" element={isAuthenticated ? <Navigate to={user?.isAdmin ? "/admin" : "/dashboard"} /> : <RegisterPage />} />
+          <Route path="/auth/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <RegisterPage />} />
           <Route path="/login" element={<Navigate to="/auth/login" />} />
           <Route path="/register" element={<Navigate to="/auth/register" />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

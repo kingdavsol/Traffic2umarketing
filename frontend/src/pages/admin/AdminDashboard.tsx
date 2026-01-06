@@ -22,6 +22,12 @@ import {
   Tabs,
   IconButton,
   Tooltip,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -32,10 +38,16 @@ import {
   Refresh as RefreshIcon,
   TrendingUp as TrendingUpIcon,
   Store as StoreIcon,
+  Logout as LogoutIcon,
+  Delete as DeleteIcon,
+  RestartAlt as ResetIcon,
+  AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../store';
+import { logout } from '../../store/slices/authSlice';
 
 interface AdminStats {
   users: {
@@ -99,8 +111,13 @@ const AdminDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentTab, setCurrentTab] = useState(0);
   const [page, setPage] = useState(1);
+  const [deleteDialog, setDeleteDialog] = useState<number | null>(null);
+  const [resetDialog, setResetDialog] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { token } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://quicksell.monster/api/v1';
 
@@ -151,6 +168,37 @@ const AdminDashboard: React.FC = () => {
     setCurrentTab(newValue);
   };
 
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/auth/login');
+  };
+
+  const handleDeleteAccount = async (userId: number) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/admin/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSuccessMessage('Account deleted successfully');
+      setDeleteDialog(null);
+      await loadData();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to delete account');
+    }
+  };
+
+  const handleResetStatistics = async () => {
+    try {
+      await axios.post(`${API_BASE_URL}/admin/stats/reset`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSuccessMessage('Statistics reset successfully');
+      setResetDialog(false);
+      await loadData();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to reset statistics');
+    }
+  };
+
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'free':
@@ -178,12 +226,36 @@ const AdminDashboard: React.FC = () => {
         <Typography variant="h4" component="h1" gutterBottom>
           Admin Dashboard
         </Typography>
-        <Tooltip title="Refresh Data">
-          <IconButton onClick={loadData} color="primary">
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
+        <Box display="flex" gap={1}>
+          <Button
+            variant="outlined"
+            color="warning"
+            startIcon={<ResetIcon />}
+            onClick={() => setResetDialog(true)}
+          >
+            Reset Stats
+          </Button>
+          <Tooltip title="Refresh Data">
+            <IconButton onClick={loadData} color="primary">
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<LogoutIcon />}
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
+        </Box>
       </Box>
+
+      {successMessage && (
+        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage(null)}>
+          {successMessage}
+        </Alert>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
@@ -276,6 +348,7 @@ const AdminDashboard: React.FC = () => {
           <Tab label="Users" icon={<PeopleIcon />} iconPosition="start" />
           <Tab label="Marketplaces" icon={<StoreIcon />} iconPosition="start" />
           <Tab label="AI Analytics" icon={<TrendingUpIcon />} iconPosition="start" />
+          <Tab label="Admin Settings" icon={<AdminIcon />} iconPosition="start" />
         </Tabs>
       </Paper>
 
@@ -311,6 +384,7 @@ const AdminDashboard: React.FC = () => {
                     <TableCell align="right">AI Runs</TableCell>
                     <TableCell align="right">AI Cost</TableCell>
                     <TableCell>Joined</TableCell>
+                    <TableCell align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -355,6 +429,19 @@ const AdminDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         {new Date(user.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell align="center">
+                        {!user.isAdmin && (
+                          <Tooltip title="Delete Account">
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => setDeleteDialog(user.id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -448,6 +535,76 @@ const AdminDashboard: React.FC = () => {
           </Grid>
         </Grid>
       </TabPanel>
+
+      {/* Admin Settings Tab */}
+      <TabPanel value={currentTab} index={3}>
+        <Paper elevation={3}>
+          <Box p={3}>
+            <Typography variant="h6" gutterBottom>
+              Admin Profile & Settings
+            </Typography>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Manage administrator accounts and system settings.
+            </Typography>
+            <Alert severity="info" sx={{ mt: 2 }}>
+              Multi-admin support coming soon. Contact system administrator to add new admin accounts.
+            </Alert>
+          </Box>
+        </Paper>
+      </TabPanel>
+
+      {/* Delete Account Dialog */}
+      <Dialog
+        open={deleteDialog !== null}
+        onClose={() => setDeleteDialog(null)}
+      >
+        <DialogTitle>Delete User Account?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this user account? This action cannot be undone.
+            All user data, listings, and marketplace connections will be permanently deleted.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog(null)}>Cancel</Button>
+          <Button
+            onClick={() => deleteDialog && handleDeleteAccount(deleteDialog)}
+            color="error"
+            variant="contained"
+          >
+            Delete Account
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reset Statistics Dialog */}
+      <Dialog
+        open={resetDialog}
+        onClose={() => setResetDialog(false)}
+      >
+        <DialogTitle>Reset All Statistics?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to reset all system statistics? This will:
+            <ul>
+              <li>Reset all user points and levels to zero</li>
+              <li>Clear gamification badges and achievements</li>
+              <li>Reset AI usage counters (but preserve cost tracking)</li>
+            </ul>
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetDialog(false)}>Cancel</Button>
+          <Button
+            onClick={handleResetStatistics}
+            color="warning"
+            variant="contained"
+          >
+            Reset Statistics
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
