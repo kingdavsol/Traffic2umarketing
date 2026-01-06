@@ -146,7 +146,7 @@ const App: React.FC = () => {
           <Route path="/gamification" element={<PrivateRoute><Gamification /></PrivateRoute>} />
           <Route path="/referrals" element={<PrivateRoute><Referrals /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-          <Route path="/connect-marketplaces" element={<PrivateRoute><BulkMarketplaceSignup /></PrivateRoute>} />
+          <Route path="/connect-marketplaces" element={<Navigate to="/settings" />} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
