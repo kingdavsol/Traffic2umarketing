@@ -57,6 +57,7 @@ const MarketplaceSettings: React.FC = () => {
   const [connectDialog, setConnectDialog] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const defaultMarketplaces: Marketplace[] = [
     {
@@ -182,8 +183,21 @@ const MarketplaceSettings: React.FC = () => {
       await loadConnectedMarketplaces();
       setConnectDialog(null);
       setCredentials({ email: '', password: '' });
+      setSuccessMessage(`Successfully connected to ${connectDialog}!`);
+      setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to connect marketplace');
+      console.error('Marketplace connection error:', err);
+
+      // Handle different error cases
+      if (err.response?.status === 401) {
+        setError('You must be logged in to connect marketplaces. Please log in and try again.');
+      } else if (err.response?.status === 400) {
+        setError(err.response?.data?.error || 'Invalid credentials. Please check your email and password.');
+      } else if (err.response?.status === 500) {
+        setError('Server error. Please try again later or contact support.');
+      } else {
+        setError(err.response?.data?.error || 'Failed to connect marketplace. Please check your internet connection and try again.');
+      }
     } finally {
       setConnecting(false);
     }
@@ -219,9 +233,23 @@ const MarketplaceSettings: React.FC = () => {
       <Typography variant="h5" gutterBottom>
         Connected Marketplaces
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Connect your marketplace accounts to auto-publish listings or use copy/paste templates.
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Connect your marketplace accounts to save credentials securely and streamline your listing process.
       </Typography>
+
+      <Alert severity="info" sx={{ mb: 3 }}>
+        <Typography variant="body2">
+          <strong>How to connect:</strong> Click the <strong>"Connect"</strong> button on any marketplace card below.
+          For manual marketplaces (Craigslist, Facebook, OfferUp, Mercari), you'll enter your credentials which will be encrypted with AES-256.
+          For OAuth marketplaces (eBay, Etsy), you'll be redirected to authenticate securely.
+        </Typography>
+      </Alert>
+
+      {successMessage && (
+        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMessage(null)}>
+          {successMessage}
+        </Alert>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
@@ -296,9 +324,21 @@ const MarketplaceSettings: React.FC = () => {
                   {!marketplace.connected && (
                     <Button
                       variant="contained"
+                      size="large"
                       startIcon={<LinkIcon />}
                       onClick={() => handleConnect(marketplace.id, marketplace.requiresAuth)}
                       fullWidth
+                      sx={{
+                        py: 1.5,
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        boxShadow: 2,
+                        '&:hover': {
+                          boxShadow: 4,
+                          transform: 'translateY(-2px)',
+                          transition: 'all 0.2s ease-in-out'
+                        }
+                      }}
                     >
                       Connect {marketplace.name}
                     </Button>
@@ -307,10 +347,12 @@ const MarketplaceSettings: React.FC = () => {
                   {marketplace.connected && (
                     <Button
                       variant="outlined"
+                      size="large"
                       color="error"
                       startIcon={<UnlinkIcon />}
                       onClick={() => setDisconnectDialog(marketplace.id)}
                       fullWidth
+                      sx={{ py: 1.5 }}
                     >
                       Disconnect
                     </Button>
