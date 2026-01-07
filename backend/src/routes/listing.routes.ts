@@ -7,7 +7,8 @@ import {
   getListing,
   updateListing,
   deleteListing,
-  getAssistedPostingUrls
+  getAssistedPostingUrls,
+  publishListing
 } from '../controllers/listingController';
 
 const router = Router();
@@ -49,33 +50,10 @@ router.delete('/:id', authenticate, deleteListing);
 
 /**
  * @route   POST /api/v1/listings/:id/publish
- * @desc    Publish listing to marketplaces
+ * @desc    Publish listing to marketplaces with automation and watermarking
  * @access  Private
  */
-router.post('/:id/publish', authenticate, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { marketplaces } = req.body;
-
-    // For now, return success with guided posting URLs
-    res.status(200).json({
-      success: true,
-      message: 'Listing ready to publish',
-      data: {
-        listingId: id,
-        marketplaces: marketplaces,
-        note: 'Use the assisted posting feature to publish to marketplaces'
-      },
-      statusCode: 200
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to prepare listing for publishing',
-      statusCode: 500
-    });
-  }
-});
+router.post('/:id/publish', authenticate, publishListing);
 
 /**
  * @route   POST /api/v1/listings/:id/assisted-posting

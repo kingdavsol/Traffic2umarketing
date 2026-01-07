@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { logger } from '../config/logger';
 import { query } from '../database/connection';
+import marketplaceAutomationService from '../services/marketplaceAutomationService';
 
 export const getListings = async (req: Request, res: Response) => {
   try {
@@ -120,12 +121,24 @@ export const createListing = async (req: Request, res: Response) => {
 export const getListing = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = (req as any).user.id;
 
-    // TODO: Fetch listing by ID from database
+    const result = await query(
+      'SELECT * FROM listings WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL',
+      [id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Listing not found',
+        statusCode: 404,
+      });
+    }
 
     res.status(200).json({
       success: true,
-      data: {},
+      data: result.rows[0],
       statusCode: 200,
     });
   } catch (error) {
@@ -302,7 +315,7 @@ export const publishListing = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = (req as any).user.id;
-    const { marketplaces } = req.body;
+    const { marketplaces, city, zipcode, skipWatermark } = req.body;
 
     if (!marketplaces || !Array.isArray(marketplaces) || marketplaces.length === 0) {
       return res.status(400).json({
@@ -312,29 +325,38 @@ export const publishListing = async (req: Request, res: Response) => {
       });
     }
 
-    // Import marketplace service
-    const { publishListingToMarketplaces } = require('../services/marketplaceService');
+    logger.info(`Publishing listing ${id} to marketplaces: ${marketplaces.join(', ')}`);
 
-    // Publish to selected marketplaces
-    const results = await publishListingToMarketplaces(parseInt(id), userId, marketplaces);
+    // Publish to selected marketplaces with watermarking
+    const { results, overallSuccess } = await marketplaceAutomationService.publishToMarketplaces(
+      parseInt(id),
+      userId,
+      marketplaces,
+      { city, zipcode, skipWatermark }
+    );
 
-    // Separate automatic vs copy/paste results
-    const automaticPosts = results.filter((r: any) => !r.copyPasteData && r.success);
-    const failedPosts = results.filter((r: any) => !r.copyPasteData && !r.success);
-    const copyPastePosts = results.filter((r: any) => r.copyPasteData);
+    // Separate automatic vs manual posting results
+    const automaticPosts = results.filter(r => r.success);
+    const failedPosts = results.filter(r => !r.success && !r.error?.includes('copy buttons'));
+    const manualPosts = results.filter(r => !r.success && r.error?.includes('copy buttons'));
+
+    const responseMessage = overallSuccess
+      ? `Successfully published to ${automaticPosts.length} marketplace(s)`
+      : `Failed to publish to all marketplaces`;
 
     res.status(200).json({
-      success: true,
-      message: 'Listing processing complete',
+      success: overallSuccess,
+      message: responseMessage,
       data: {
+        results,
         automaticPosts,
         failedPosts,
-        copyPastePosts,
+        manualPosts,
         summary: {
           total: marketplaces.length,
           automaticSuccess: automaticPosts.length,
           failed: failedPosts.length,
-          requiresCopyPaste: copyPastePosts.length
+          requiresManual: manualPosts.length
         }
       },
       statusCode: 200,
