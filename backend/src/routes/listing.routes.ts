@@ -1,7 +1,13 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
-import { logger } from '../config/logger';
-import { getAssistedPostingUrls } from '../controllers/listingController';
+import {
+  getListings,
+  createListing,
+  getListing,
+  updateListing,
+  deleteListing,
+  getAssistedPostingUrls
+} from '../controllers/listingController';
 
 const router = Router();
 
@@ -10,144 +16,61 @@ const router = Router();
  * @desc    Get all listings for authenticated user
  * @access  Private
  */
-router.get('/', authenticate, async (req: Request, res: Response) => {
-  try {
-    res.status(200).json({
-      success: true,
-      data: [],
-      statusCode: 200
-    });
-  } catch (error) {
-    logger.error('Get listings error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch listings',
-      statusCode: 500
-    });
-  }
-});
+router.get('/', authenticate, getListings);
 
 /**
  * @route   POST /api/v1/listings
  * @desc    Create a new listing
  * @access  Private
  */
-router.post('/', authenticate, async (req: Request, res: Response) => {
-  try {
-    const { title, description, category, price, condition } = req.body;
-
-    // TODO: Implement listing creation
-    res.status(201).json({
-      success: true,
-      message: 'Listing created successfully',
-      statusCode: 201
-    });
-  } catch (error) {
-    logger.error('Create listing error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create listing',
-      statusCode: 500
-    });
-  }
-});
+router.post('/', authenticate, createListing);
 
 /**
  * @route   GET /api/v1/listings/:id
  * @desc    Get a specific listing
- * @access  Public
+ * @access  Private
  */
-router.get('/:id', async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    // TODO: Implement get listing
-    res.status(200).json({
-      success: true,
-      data: {},
-      statusCode: 200
-    });
-  } catch (error) {
-    logger.error('Get listing error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch listing',
-      statusCode: 500
-    });
-  }
-});
+router.get('/:id', authenticate, getListing);
 
 /**
  * @route   PUT /api/v1/listings/:id
  * @desc    Update a listing
  * @access  Private
  */
-router.put('/:id', authenticate, async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    // TODO: Implement listing update
-    res.status(200).json({
-      success: true,
-      message: 'Listing updated successfully',
-      statusCode: 200
-    });
-  } catch (error) {
-    logger.error('Update listing error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update listing',
-      statusCode: 500
-    });
-  }
-});
+router.put('/:id', authenticate, updateListing);
 
 /**
  * @route   DELETE /api/v1/listings/:id
  * @desc    Delete a listing
  * @access  Private
  */
-router.delete('/:id', authenticate, async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    // TODO: Implement listing deletion
-    res.status(200).json({
-      success: true,
-      message: 'Listing deleted successfully',
-      statusCode: 200
-    });
-  } catch (error) {
-    logger.error('Delete listing error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to delete listing',
-      statusCode: 500
-    });
-  }
-});
+router.delete('/:id', authenticate, deleteListing);
 
 /**
  * @route   POST /api/v1/listings/:id/publish
  * @desc    Publish listing to marketplaces
  * @access  Private
  */
-router.post('/:id/publish', authenticate, async (req: Request, res: Response) => {
+router.post('/:id/publish', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const { marketplaces } = req.body;
 
-    // TODO: Implement listing publishing to marketplaces
+    // For now, return success with guided posting URLs
     res.status(200).json({
       success: true,
-      message: 'Listing published successfully',
+      message: 'Listing ready to publish',
+      data: {
+        listingId: id,
+        marketplaces: marketplaces,
+        note: 'Use the assisted posting feature to publish to marketplaces'
+      },
       statusCode: 200
     });
   } catch (error) {
-    logger.error('Publish listing error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to publish listing',
+      error: 'Failed to prepare listing for publishing',
       statusCode: 500
     });
   }

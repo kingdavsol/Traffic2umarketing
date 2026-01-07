@@ -140,14 +140,111 @@ export const getListing = async (req: Request, res: Response) => {
 
 export const updateListing = async (req: Request, res: Response) => {
   try {
+    const userId = (req as any).user.id;
     const { id } = req.params;
-    const { title, description, price } = req.body;
+    const {
+      title,
+      description,
+      category,
+      price,
+      condition,
+      brand,
+      model,
+      color,
+      size,
+      fulfillment_type,
+      photos,
+      status
+    } = req.body;
 
-    // TODO: Update listing in database
+    // Build dynamic UPDATE query based on provided fields
+    const updates: string[] = [];
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (title !== undefined) {
+      updates.push(`title = $${paramIndex++}`);
+      params.push(title);
+    }
+    if (description !== undefined) {
+      updates.push(`description = $${paramIndex++}`);
+      params.push(description);
+    }
+    if (category !== undefined) {
+      updates.push(`category = $${paramIndex++}`);
+      params.push(category);
+    }
+    if (price !== undefined) {
+      updates.push(`price = $${paramIndex++}`);
+      params.push(price);
+    }
+    if (condition !== undefined) {
+      updates.push(`condition = $${paramIndex++}`);
+      params.push(condition);
+    }
+    if (brand !== undefined) {
+      updates.push(`brand = $${paramIndex++}`);
+      params.push(brand);
+    }
+    if (model !== undefined) {
+      updates.push(`model = $${paramIndex++}`);
+      params.push(model);
+    }
+    if (color !== undefined) {
+      updates.push(`color = $${paramIndex++}`);
+      params.push(color);
+    }
+    if (size !== undefined) {
+      updates.push(`size = $${paramIndex++}`);
+      params.push(size);
+    }
+    if (fulfillment_type !== undefined) {
+      updates.push(`fulfillment_type = $${paramIndex++}`);
+      params.push(fulfillment_type);
+    }
+    if (photos !== undefined) {
+      updates.push(`photos = $${paramIndex++}`);
+      params.push(JSON.stringify(photos));
+    }
+    if (status !== undefined) {
+      updates.push(`status = $${paramIndex++}`);
+      params.push(status);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No fields to update',
+        statusCode: 400,
+      });
+    }
+
+    updates.push(`updated_at = CURRENT_TIMESTAMP`);
+    params.push(id, userId);
+
+    const queryText = `
+      UPDATE listings
+      SET ${updates.join(', ')}
+      WHERE id = $${paramIndex++} AND user_id = $${paramIndex++} AND deleted_at IS NULL
+      RETURNING *
+    `;
+
+    const result = await query(queryText, params);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Listing not found',
+        statusCode: 404,
+      });
+    }
+
+    logger.info(`Listing updated: ${id} by user ${userId}`);
 
     res.status(200).json({
       success: true,
       message: 'Listing updated successfully',
+      data: result.rows[0],
       statusCode: 200,
     });
   } catch (error) {
@@ -162,13 +259,33 @@ export const updateListing = async (req: Request, res: Response) => {
 
 export const deleteListing = async (req: Request, res: Response) => {
   try {
+    const userId = (req as any).user.id;
     const { id } = req.params;
 
-    // TODO: Delete listing from database
+    // Soft delete - set deleted_at timestamp
+    const queryText = `
+      UPDATE listings
+      SET deleted_at = CURRENT_TIMESTAMP
+      WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+      RETURNING id
+    `;
+
+    const result = await query(queryText, [id, userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Listing not found',
+        statusCode: 404,
+      });
+    }
+
+    logger.info(`Listing deleted: ${id} by user ${userId}`);
 
     res.status(200).json({
       success: true,
       message: 'Listing deleted successfully',
+      data: { id: result.rows[0].id },
       statusCode: 200,
     });
   } catch (error) {
