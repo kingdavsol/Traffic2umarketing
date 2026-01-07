@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { logger } from '../config/logger';
 import { query } from '../database/connection';
 import marketplaceAutomationService from '../services/marketplaceAutomationService';
+import { onListingCreated } from './gamificationController';
 
 export const getListings = async (req: Request, res: Response) => {
   try {
@@ -101,6 +102,9 @@ export const createListing = async (req: Request, res: Response) => {
     const result = await query(queryText, params);
 
     logger.info(`Listing created: ${result.rows[0].id} by user ${userId}`);
+
+    // Award gamification points
+    await onListingCreated(userId);
 
     res.status(201).json({
       success: true,

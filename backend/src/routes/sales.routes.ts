@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { authenticate } from '../middleware/auth';
 import { logger } from '../config/logger';
 import { query } from '../database/connection';
+import { markListingAsSold, getSalesDashboard } from '../controllers/salesController';
 
 const router = Router();
 
@@ -396,6 +397,20 @@ router.post('/:id/mark-complete', authenticate, async (req: Request, res: Respon
     });
   }
 });
+
+/**
+ * @route   POST /api/v1/sales/mark-sold
+ * @desc    Mark a listing as sold and create sale record
+ * @access  Private
+ */
+router.post('/mark-sold', authenticate, markListingAsSold);
+
+/**
+ * @route   GET /api/v1/sales/dashboard
+ * @desc    Get sales dashboard summary
+ * @access  Private
+ */
+router.get('/dashboard', authenticate, getSalesDashboard);
 
 /**
  * @route   GET /api/v1/sales/analytics
