@@ -101,8 +101,8 @@ const MyListings: React.FC = () => {
       if (response.data.success) {
         dispatch(
           fetchListingsSuccess({
-            items: response.data.data.listings,
-            total: response.data.data.total,
+            items: response.data.data || [],
+            total: response.data.total || 0,
           })
         );
       } else {
