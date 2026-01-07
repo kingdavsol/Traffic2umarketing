@@ -131,7 +131,8 @@ class APIService {
   }
 
   getConnectedMarketplaces() {
-    return this.api.get('/marketplaces/connected');
+    // Add cache-busting timestamp to prevent stale data
+    return this.api.get(`/marketplaces/connected?_t=${Date.now()}`);
   }
 
   disconnectMarketplace(marketplace: string) {
