@@ -216,7 +216,7 @@ export const getLeaderboard = async (req: Request, res: Response) => {
     const result = await query(queryText, params);
 
     // Add rank to each entry
-    const leaderboard = result.rows.map((row, index) => ({
+    const leaderboard = result.rows.map((row: any, index: number) => ({
       rank: index + 1,
       userId: row.id,
       name: row.full_name || row.email.split('@')[0],
