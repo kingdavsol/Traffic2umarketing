@@ -174,7 +174,7 @@ const MarketplaceSettings: React.FC = () => {
     setError(null);
 
     try {
-      await api.post(`/api/v1/marketplaces/${connectDialog}/connect`, {
+      await api.connectMarketplace(connectDialog, {
         email: credentials.email,
         password: credentials.password,
       });
@@ -208,7 +208,7 @@ const MarketplaceSettings: React.FC = () => {
     setError(null);
 
     try {
-      await api.post(`/api/v1/marketplaces/${marketplaceId}/disconnect`, {});
+      await api.disconnectMarketplace(marketplaceId);
 
       // Reload connected marketplaces
       await loadConnectedMarketplaces();

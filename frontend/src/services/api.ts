@@ -109,8 +109,8 @@ class APIService {
     return this.api.get('/marketplaces');
   }
 
-  connectMarketplace(marketplace: string) {
-    return this.api.post(`/marketplaces/${marketplace}/connect`);
+  connectMarketplace(marketplace: string, credentials?: { email: string; password: string }) {
+    return this.api.post(`/marketplaces/${marketplace}/connect`, credentials);
   }
 
   getMarketplaceAccounts(marketplace: string) {
