@@ -126,7 +126,7 @@ const MarketplaceSettings: React.FC = () => {
 
     try {
       const response = await api.getConnectedMarketplaces();
-      const connectedMarketplaces: ConnectedMarketplace[] = response.data;
+      const connectedMarketplaces: ConnectedMarketplace[] = response.data.data || response.data || [];
 
       // Update marketplace list with connection status
       const updatedMarketplaces = defaultMarketplaces.map((marketplace) => {
