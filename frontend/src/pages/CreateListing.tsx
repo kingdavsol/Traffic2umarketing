@@ -322,10 +322,20 @@ const CreateListing: React.FC = () => {
   const getMarketplaceUrl = (marketplace: string) => {
     const urls: {[key: string]: string} = {
       facebook: 'https://www.facebook.com/marketplace/create/item',
-      offerup: 'https://offerup.com/sell/',
+      offerup: 'https://offerup.com/', // Mobile app required for posting
       mercari: 'https://www.mercari.com/sell/',
     };
     return urls[marketplace.toLowerCase()] || '#';
+  };
+
+  // Get marketplace-specific instructions
+  const getMarketplaceInstructions = (marketplace: string) => {
+    const instructions: {[key: string]: string} = {
+      facebook: 'Click "Open Facebook" → Paste your listing details → Upload photos → Post',
+      offerup: '⚠️ OfferUp requires the mobile app to post. Download the app, open it, tap "Sell" button, then paste your details.',
+      mercari: 'Click "Open Mercari" → Select "Sell" → Paste your listing details → Upload photos → List',
+    };
+    return instructions[marketplace.toLowerCase()] || 'Open marketplace and paste your listing details';
   };
 
   // Submit listing
@@ -713,16 +723,25 @@ const CreateListing: React.FC = () => {
                                 <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
                                   {marketplaceName}
                                 </Typography>
-                                <Button
-                                  variant="contained"
-                                  color="primary"
-                                  startIcon={<OpenInNewIcon />}
-                                  onClick={() => window.open(getMarketplaceUrl(marketplaceName), '_blank')}
-                                  sx={{ minWidth: 180 }}
-                                >
-                                  Open {marketplaceName}
-                                </Button>
-                              </Box>
+                                {marketplaceName.toLowerCase() !== 'offerup' && (
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<OpenInNewIcon />}
+                                    onClick={() => window.open(getMarketplaceUrl(marketplaceName), '_blank')}
+                                    sx={{ minWidth: 180 }}
+                                  >
+                                    Open {marketplaceName}
+                                  </Button>
+                                )}
+                                {marketplaceName.toLowerCase() === 'offerup' && (
+                                  <Chip
+                                    label="Mobile App Required"
+                                    color="warning"
+                                    icon={<PhotoCameraIcon />}
+                                    sx={{ fontWeight: 'bold' }}
+                                  />
+                                )}
 
                               <Grid container spacing={2}>
                                 {/* Title */}
@@ -804,15 +823,13 @@ const CreateListing: React.FC = () => {
                               </Grid>
 
                               {/* Quick Steps */}
-                              <Alert severity="success" sx={{ mt: 2 }}>
+                              <Alert severity={marketplaceName.toLowerCase() === 'offerup' ? 'warning' : 'success'} sx={{ mt: 2 }}>
                                 <Typography variant="subtitle2" gutterBottom>
                                   Quick Steps:
                                 </Typography>
                                 <Typography variant="body2" component="div">
                                   1. Click "Copy All Fields" above<br />
-                                  2. Click "Open {marketplaceName}" button<br />
-                                  3. Paste into the marketplace form<br />
-                                  4. Upload photos and submit!
+                                  2. {getMarketplaceInstructions(marketplaceName)}
                                 </Typography>
                               </Alert>
                             </CardContent>
