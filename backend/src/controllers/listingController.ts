@@ -84,11 +84,35 @@ export const createListing = async (req: Request, res: Response) => {
       });
     }
 
+    // Ensure photos is a valid array for JSONB
+    let photosArray: any[] = [];
+    if (photos) {
+      if (Array.isArray(photos)) {
+        photosArray = photos;
+      } else if (typeof photos === 'string') {
+        try {
+          photosArray = JSON.parse(photos);
+        } catch {
+          photosArray = [];
+        }
+      }
+    }
+
+    logger.info('Creating listing with data:', {
+      userId,
+      title,
+      category,
+      price,
+      photosType: typeof photos,
+      photosIsArray: Array.isArray(photos),
+      photosLength: photosArray.length
+    });
+
     const queryText = `
       INSERT INTO listings (
         user_id, title, description, category, price, condition,
         brand, model, color, size, fulfillment_type, photos, status, ai_generated
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb, $13, $14)
       RETURNING *
     `;
 
@@ -104,7 +128,7 @@ export const createListing = async (req: Request, res: Response) => {
       color || null,
       size || null,
       fulfillment_type || 'both',
-      photos || [],
+      JSON.stringify(photosArray),
       status || 'draft',
       ai_generated || false
     ];
@@ -240,8 +264,18 @@ export const updateListing = async (req: Request, res: Response) => {
       params.push(fulfillment_type);
     }
     if (photos !== undefined) {
-      updates.push(`photos = $${paramIndex++}`);
-      params.push(photos);
+      let photosArray: any[] = [];
+      if (Array.isArray(photos)) {
+        photosArray = photos;
+      } else if (typeof photos === 'string') {
+        try {
+          photosArray = JSON.parse(photos);
+        } catch {
+          photosArray = [];
+        }
+      }
+      updates.push(`photos = $${paramIndex++}::jsonb`);
+      params.push(JSON.stringify(photosArray));
     }
     if (status !== undefined) {
       updates.push(`status = $${paramIndex++}`);
