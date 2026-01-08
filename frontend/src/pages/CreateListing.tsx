@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Snackbar,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -65,6 +66,7 @@ const CreateListing: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [photoCaptured, setPhotoCaptured] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<AnalysisResult>({
@@ -91,6 +93,22 @@ const CreateListing: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const steps = ['Upload Photos', 'Review & Edit', 'Publish'];
+
+  // Auto-analyze when photo is added
+  useEffect(() => {
+    // Automatically trigger AI analysis when first photo is added and we're on step 0
+    if (photos.length > 0 && activeStep === 0 && !analyzing && photoUrls.length === photos.length) {
+      // Show notification
+      setPhotoCaptured(true);
+
+      // Auto-trigger analysis after brief delay to show the captured photo
+      const timer = setTimeout(() => {
+        analyzePhotos();
+      }, 800);
+
+      return () => clearTimeout(timer);
+    }
+  }, [photos.length, photoUrls.length, activeStep]);
 
   // Photo upload
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -438,16 +456,23 @@ const CreateListing: React.FC = () => {
               </Grid>
             )}
 
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-              <Button onClick={() => navigate('/listings')}>Cancel</Button>
-              <Button
-                variant="contained"
-                onClick={analyzePhotos}
-                disabled={analyzing || photos.length === 0}
-              >
-                {analyzing ? 'Analyzing...' : 'Next'}
-              </Button>
-            </Box>
+            {analyzing && (
+              <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                <CircularProgress size={24} />
+                <Typography variant="body1" color="primary" fontWeight="bold">
+                  Analyzing your photo with AI...
+                </Typography>
+              </Box>
+            )}
+
+            {!analyzing && photos.length === 0 && (
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                <Button onClick={() => navigate('/listings')}>Cancel</Button>
+                <Button variant="outlined" disabled>
+                  Add photos to continue
+                </Button>
+              </Box>
+            )}
           </Box>
         );
 
@@ -760,6 +785,21 @@ const CreateListing: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Photo Captured Notification */}
+      <Snackbar
+        open={photoCaptured && analyzing}
+        message="✓ Photo captured! Analyzing with AI..."
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        ContentProps={{
+          sx: {
+            bgcolor: 'success.main',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '1.1rem',
+          },
+        }}
+      />
     </Container>
   );
 };
