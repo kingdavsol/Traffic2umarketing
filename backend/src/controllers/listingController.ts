@@ -24,7 +24,14 @@ export const getListings = async (req: Request, res: Response) => {
     const { page = 1, limit = 10, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    let queryText = 'SELECT * FROM listings WHERE user_id = $1 AND deleted_at IS NULL';
+    // Exclude photos from list view to reduce response size (photos can be 600KB+ base64)
+    let queryText = `SELECT
+      id, user_id, title, description, category, price, condition,
+      brand, model, color, size, fulfillment_type, status, ai_generated,
+      marketplace_listings, created_at, updated_at, deleted_at,
+      created_at as published_at,
+      '[]'::jsonb as photos
+    FROM listings WHERE user_id = $1 AND deleted_at IS NULL`;
     const params: any[] = [userId];
 
     if (status) {

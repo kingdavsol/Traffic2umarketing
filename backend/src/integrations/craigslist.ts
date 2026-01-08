@@ -78,13 +78,16 @@ const CATEGORY_MAP: Record<string, string> = {
  */
 const getBrowser = async (): Promise<Browser> => {
   // Try to connect to remote Chromium first (running on VPS host)
-  const remoteUrl = process.env.CHROME_REMOTE_URL || "http://172.19.0.1:9223";
+  // Port 9222 is exposed to 0.0.0.0, accessible from Docker
+  const remoteUrl = process.env.CHROME_REMOTE_URL || "http://172.19.0.1:9222";
   try {
     const response = await fetch(remoteUrl + "/json/version");
     const data = await response.json() as { webSocketDebuggerUrl: string };
     if (data.webSocketDebuggerUrl) {
-      // Replace localhost with Docker host IP
-      const wsUrl = data.webSocketDebuggerUrl.replace("127.0.0.1", "172.19.0.1");
+      // Replace localhost/127.0.0.1 with Docker host IP
+      const wsUrl = data.webSocketDebuggerUrl
+        .replace("127.0.0.1", "172.19.0.1")
+        .replace("localhost", "172.19.0.1");
       logger.info("Connecting to remote Chromium browser at " + wsUrl);
       return puppeteer.connect({ browserWSEndpoint: wsUrl });
     }
