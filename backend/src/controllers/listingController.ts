@@ -6,15 +6,30 @@ import { onListingCreated } from './gamificationController';
 
 // Helper function to convert snake_case to camelCase
 const toCamelCase = (obj: any): any => {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  // Handle Date objects - convert to ISO string
+  if (obj instanceof Date) {
+    return obj.toISOString();
+  }
+
+  // Handle arrays
   if (Array.isArray(obj)) {
     return obj.map(toCamelCase);
-  } else if (obj !== null && typeof obj === 'object') {
+  }
+
+  // Handle plain objects only (not Date, not Array, not other special types)
+  if (typeof obj === 'object' && obj.constructor === Object) {
     return Object.keys(obj).reduce((result, key) => {
       const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
       result[camelKey] = toCamelCase(obj[key]);
       return result;
     }, {} as any);
   }
+
+  // Return primitive values as-is
   return obj;
 };
 
