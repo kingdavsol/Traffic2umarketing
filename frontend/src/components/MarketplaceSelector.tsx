@@ -46,7 +46,7 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
     {
       id: 'ebay',
       name: 'eBay',
-      description: 'Auto-publish if connected, copy/paste if not',
+      description: '🤖 Automated posting via API (requires connection)',
       icon: <EbayIcon />,
       autoPublish: false,
       connected: false,
@@ -55,7 +55,7 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
     {
       id: 'facebook',
       name: 'Facebook Marketplace',
-      description: 'Copy & paste instructions provided',
+      description: '✋ Manual posting (copy/paste template provided)',
       icon: <FacebookIcon />,
       autoPublish: false,
       connected: false,
@@ -64,16 +64,16 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
     {
       id: 'craigslist',
       name: 'Craigslist',
-      description: 'Copy & paste instructions provided',
+      description: '🤖 Browser automation (posts automatically)',
       icon: <StoreIcon />,
-      autoPublish: false,
+      autoPublish: true, // Always true for Craigslist (browser automation)
       connected: false,
       requiresAuth: false,
     },
     {
       id: 'offerup',
       name: 'OfferUp',
-      description: 'Copy & paste instructions provided',
+      description: '✋ Manual posting (copy/paste template provided)',
       icon: <ShippingIcon />,
       autoPublish: false,
       connected: false,
@@ -82,7 +82,7 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
     {
       id: 'mercari',
       name: 'Mercari',
-      description: 'Copy & paste instructions provided',
+      description: '✋ Manual posting (copy/paste template provided)',
       icon: <StorefrontIcon />,
       autoPublish: false,
       connected: false,
@@ -91,7 +91,7 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
     {
       id: 'etsy',
       name: 'Etsy',
-      description: 'Auto-publish if connected, copy/paste if not',
+      description: '🤖 Automated posting via API (requires connection)',
       icon: <EtsyIcon />,
       autoPublish: false,
       connected: false,
@@ -236,17 +236,17 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                     {marketplace.autoPublish && (
                       <Chip
                         size="small"
-                        label="Auto-publish"
-                        color="primary"
-                        variant="outlined"
+                        label="🤖 Automated"
+                        color="success"
+                        variant="filled"
                       />
                     )}
 
-                    {!marketplace.autoPublish && (
+                    {!marketplace.autoPublish && marketplace.id !== 'craigslist' && (
                       <Chip
                         size="small"
-                        label="Copy/Paste"
-                        color="default"
+                        label="✋ Manual"
+                        color="warning"
                         variant="outlined"
                       />
                     )}
