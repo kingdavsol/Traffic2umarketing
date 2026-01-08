@@ -4,6 +4,20 @@ import { query } from '../database/connection';
 import marketplaceAutomationService from '../services/marketplaceAutomationService';
 import { onListingCreated } from './gamificationController';
 
+// Helper function to convert snake_case to camelCase
+const toCamelCase = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj.map(toCamelCase);
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.keys(obj).reduce((result, key) => {
+      const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      result[camelKey] = toCamelCase(obj[key]);
+      return result;
+    }, {} as any);
+  }
+  return obj;
+};
+
 export const getListings = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
@@ -30,7 +44,7 @@ export const getListings = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      data: result.rows,
+      data: toCamelCase(result.rows),
       total: parseInt(countResult.rows[0].count),
       page: Number(page),
       limit: Number(limit),
@@ -147,7 +161,7 @@ export const createListing = async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       message: 'Listing created successfully',
-      data: result.rows[0],
+      data: toCamelCase(result.rows[0]),
       statusCode: 201,
     });
   } catch (error: any) {
@@ -186,7 +200,7 @@ export const getListing = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      data: result.rows[0],
+      data: toCamelCase(result.rows[0]),
       statusCode: 200,
     });
   } catch (error) {
@@ -315,7 +329,7 @@ export const updateListing = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       message: 'Listing updated successfully',
-      data: result.rows[0],
+      data: toCamelCase(result.rows[0]),
       statusCode: 200,
     });
   } catch (error) {
