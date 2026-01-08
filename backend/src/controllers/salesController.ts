@@ -14,7 +14,7 @@ import { onSaleCompleted } from './gamificationController';
  */
 export const markListingAsSold = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const {
       listing_id,
       marketplace,
@@ -121,7 +121,7 @@ export const markListingAsSold = async (req: Request, res: Response) => {
  */
 export const getSalesDashboard = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
 
     // Get today's sales
     const todayResult = await query(

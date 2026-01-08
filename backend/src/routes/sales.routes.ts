@@ -13,7 +13,7 @@ const router = Router();
  */
 router.get('/', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
 
     const result = await query(
       `SELECT
@@ -57,7 +57,7 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
  */
 router.post('/manual', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const {
       listing_id,
       listing_title,
@@ -153,7 +153,7 @@ router.post('/manual', authenticate, async (req: Request, res: Response) => {
  */
 router.get('/:id', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { id } = req.params;
 
     const result = await query(
@@ -206,7 +206,7 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
  */
 router.put('/:id', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { id } = req.params;
     const {
       listing_title,
@@ -325,7 +325,7 @@ router.put('/:id', authenticate, async (req: Request, res: Response) => {
  */
 router.delete('/:id', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { id } = req.params;
 
     const result = await query(
@@ -363,7 +363,7 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
  */
 router.post('/:id/mark-complete', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { id } = req.params;
 
     const result = await query(
@@ -419,7 +419,7 @@ router.get('/dashboard', authenticate, getSalesDashboard);
  */
 router.get('/analytics', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
 
     // Get total sales stats
     const statsResult = await query(

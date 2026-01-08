@@ -69,7 +69,7 @@ function calculateLevel(points: number): { level: number; name: string; nextLeve
  */
 export const getUserStats = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
 
     // Get or create user stats
     let statsResult = await query(
@@ -123,7 +123,7 @@ export const getUserStats = async (req: Request, res: Response) => {
  */
 export const getUserBadges = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
 
     // Get user's earned badges
     const statsResult = await query(

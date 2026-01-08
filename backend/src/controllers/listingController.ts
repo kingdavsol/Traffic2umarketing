@@ -6,7 +6,7 @@ import { onListingCreated } from './gamificationController';
 
 export const getListings = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { page = 1, limit = 10, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
@@ -48,7 +48,7 @@ export const getListings = async (req: Request, res: Response) => {
 
 export const createListing = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).userId;
 
     // Validate authentication
     if (!userId) {
@@ -131,7 +131,7 @@ export const createListing = async (req: Request, res: Response) => {
       error: error.message,
       stack: error.stack,
       code: error.code,
-      userId: (req as any).user?.id,
+      userId: (req as any).userId,
       body: req.body
     });
     res.status(500).json({
@@ -145,7 +145,7 @@ export const createListing = async (req: Request, res: Response) => {
 export const getListing = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
 
     const result = await query(
       'SELECT * FROM listings WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL',
@@ -177,7 +177,7 @@ export const getListing = async (req: Request, res: Response) => {
 
 export const updateListing = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { id } = req.params;
     const {
       title,
@@ -296,7 +296,7 @@ export const updateListing = async (req: Request, res: Response) => {
 
 export const deleteListing = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { id } = req.params;
 
     // Soft delete - set deleted_at timestamp
@@ -338,7 +338,7 @@ export const deleteListing = async (req: Request, res: Response) => {
 export const publishListing = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { marketplaces, city, zipcode, skipWatermark } = req.body;
 
     if (!marketplaces || !Array.isArray(marketplaces) || marketplaces.length === 0) {
@@ -398,7 +398,7 @@ export const publishListing = async (req: Request, res: Response) => {
 export const getAssistedPostingUrls = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = (req as any).user.id;
+    const userId = (req as any).userId;
     const { marketplaces } = req.body;
 
     if (!marketplaces || !Array.isArray(marketplaces) || marketplaces.length === 0) {
