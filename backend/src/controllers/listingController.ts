@@ -48,7 +48,17 @@ export const getListings = async (req: Request, res: Response) => {
 
 export const createListing = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user?.id;
+
+    // Validate authentication
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated',
+        statusCode: 401,
+      });
+    }
+
     const {
       title,
       description,
@@ -94,7 +104,7 @@ export const createListing = async (req: Request, res: Response) => {
       color || null,
       size || null,
       fulfillment_type || 'both',
-      JSON.stringify(photos || []),
+      photos || [],
       status || 'draft',
       ai_generated || false
     ];
@@ -103,8 +113,12 @@ export const createListing = async (req: Request, res: Response) => {
 
     logger.info(`Listing created: ${result.rows[0].id} by user ${userId}`);
 
-    // Award gamification points
-    await onListingCreated(userId);
+    // Award gamification points (non-blocking)
+    try {
+      await onListingCreated(userId);
+    } catch (gamificationError) {
+      logger.error('Gamification error (non-critical):', gamificationError);
+    }
 
     res.status(201).json({
       success: true,
@@ -112,11 +126,17 @@ export const createListing = async (req: Request, res: Response) => {
       data: result.rows[0],
       statusCode: 201,
     });
-  } catch (error) {
-    logger.error('Create listing error:', error);
+  } catch (error: any) {
+    logger.error('Create listing error:', {
+      error: error.message,
+      stack: error.stack,
+      code: error.code,
+      userId: (req as any).user?.id,
+      body: req.body
+    });
     res.status(500).json({
       success: false,
-      error: 'Failed to create listing',
+      error: error.message || 'Failed to create listing',
       statusCode: 500,
     });
   }
@@ -221,7 +241,7 @@ export const updateListing = async (req: Request, res: Response) => {
     }
     if (photos !== undefined) {
       updates.push(`photos = $${paramIndex++}`);
-      params.push(JSON.stringify(photos));
+      params.push(photos);
     }
     if (status !== undefined) {
       updates.push(`status = $${paramIndex++}`);
