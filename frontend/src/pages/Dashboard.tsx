@@ -3,16 +3,57 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Container, Grid, Paper, Typography, Card, CardContent, Button } from '@mui/material';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
+import OnboardingPreview from '../components/OnboardingPreview';
+import InteractiveOnboarding from '../components/InteractiveOnboarding';
 import { RootState } from '../store';
 
 const Dashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [showOnboardingPreview, setShowOnboardingPreview] = React.useState(false);
+  const [showFullOnboarding, setShowFullOnboarding] = React.useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
   const { points, level, badges } = useSelector((state: RootState) => state.gamification);
+
+  useEffect(() => {
+    // Check if user has seen onboarding
+    const hasSeenOnboarding = localStorage.getItem('quicksell_onboarding_seen');
+    if (!hasSeenOnboarding) {
+      // Show preview after a short delay for better UX
+      setTimeout(() => {
+        setShowOnboardingPreview(true);
+      }, 500);
+    }
+  }, []);
+
+  const handleCloseOnboardingPreview = () => {
+    setShowOnboardingPreview(false);
+    localStorage.setItem('quicksell_onboarding_seen', 'true');
+  };
+
+  const handleStartTour = () => {
+    setShowOnboardingPreview(false);
+    setShowFullOnboarding(true);
+    localStorage.setItem('quicksell_onboarding_seen', 'true');
+  };
+
+  const handleCloseFullOnboarding = () => {
+    setShowFullOnboarding(false);
+  };
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F5F7FF' }}>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Onboarding Modals */}
+      <OnboardingPreview
+        open={showOnboardingPreview}
+        onClose={handleCloseOnboardingPreview}
+        onStartTour={handleStartTour}
+      />
+      <InteractiveOnboarding
+        open={showFullOnboarding}
+        onClose={handleCloseFullOnboarding}
+      />
 
       <Box sx={{ flex: 1 }}>
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
