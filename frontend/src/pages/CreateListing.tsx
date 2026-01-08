@@ -34,6 +34,9 @@ import {
   CameraAlt as CameraIcon,
   PhotoCamera as PhotoCameraIcon,
   PhotoLibrary as PhotoLibraryIcon,
+  ContentCopy as CopyIcon,
+  OpenInNew as OpenInNewIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
@@ -84,6 +87,7 @@ const CreateListing: React.FC = () => {
   const [selectedMarketplaces, setSelectedMarketplaces] = useState<string[]>([]);
   const [publishResults, setPublishResults] = useState<any>(null);
   const [aiHints, setAiHints] = useState<string>('');
+  const [copiedFields, setCopiedFields] = useState<{[key: string]: boolean}>({});
 
   // Camera state
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -299,6 +303,29 @@ const CreateListing: React.FC = () => {
       ...formData,
       [name]: value,
     });
+  };
+
+  // Copy to clipboard helper
+  const copyToClipboard = async (text: string, fieldName: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedFields(prev => ({ ...prev, [fieldName]: true }));
+      setTimeout(() => {
+        setCopiedFields(prev => ({ ...prev, [fieldName]: false }));
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  // Get marketplace posting URL
+  const getMarketplaceUrl = (marketplace: string) => {
+    const urls: {[key: string]: string} = {
+      facebook: 'https://www.facebook.com/marketplace/create/item',
+      offerup: 'https://offerup.com/sell/',
+      mercari: 'https://www.mercari.com/sell/',
+    };
+    return urls[marketplace.toLowerCase()] || '#';
   };
 
   // Submit listing
@@ -664,33 +691,134 @@ const CreateListing: React.FC = () => {
                   </Card>
                 )}
 
-                {publishResults.copyPastePosts?.length > 0 && (
+                {publishResults.manualPosts?.length > 0 && (
                   <Card sx={{ mb: 2 }}>
                     <CardContent>
-                      <Typography variant="h6" color="info.main" gutterBottom>
-                        Copy & Paste Instructions
+                      <Typography variant="h6" color="warning.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        ✋ Manual Posting Required
                       </Typography>
-                      {publishResults.copyPastePosts.map((post: any, index: number) => (
-                        <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
-                          <Typography variant="subtitle2" gutterBottom>
-                            {post.marketplace}
-                          </Typography>
-                          <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Title:</strong> {post.copyPasteData.title}
-                          </Typography>
-                          <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Description:</strong> {post.copyPasteData.description}
-                          </Typography>
-                          <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Price:</strong> ${post.copyPasteData.price}
-                          </Typography>
-                          <Typography variant="caption" component="div" sx={{ mt: 1 }}>
-                            {post.copyPasteData.instructions.map((instruction: string, i: number) => (
-                              <div key={i}>{instruction}</div>
-                            ))}
-                          </Typography>
-                        </Box>
-                      ))}
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        These marketplaces require manual posting. Click the buttons below to copy your listing details and paste them directly.
+                      </Alert>
+
+                      {publishResults.manualPosts.map((post: any, index: number) => {
+                        const marketplaceName = post.marketplace || 'Unknown';
+                        const data = post.copyPasteData || {};
+                        const allText = `Title: ${data.title}\n\nDescription:\n${data.description}\n\nPrice: $${data.price}`;
+
+                        return (
+                          <Card key={index} sx={{ mb: 2, border: '2px solid', borderColor: 'warning.light' }}>
+                            <CardContent>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
+                                  {marketplaceName}
+                                </Typography>
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  startIcon={<OpenInNewIcon />}
+                                  onClick={() => window.open(getMarketplaceUrl(marketplaceName), '_blank')}
+                                  sx={{ minWidth: 180 }}
+                                >
+                                  Open {marketplaceName}
+                                </Button>
+                              </Box>
+
+                              <Grid container spacing={2}>
+                                {/* Title */}
+                                <Grid item xs={12}>
+                                  <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                      <Typography variant="caption" fontWeight="bold" color="text.secondary">
+                                        TITLE
+                                      </Typography>
+                                      <Button
+                                        size="small"
+                                        startIcon={copiedFields[`${marketplaceName}-title`] ? <CheckCircleIcon /> : <CopyIcon />}
+                                        onClick={() => copyToClipboard(data.title || '', `${marketplaceName}-title`)}
+                                        color={copiedFields[`${marketplaceName}-title`] ? 'success' : 'primary'}
+                                      >
+                                        {copiedFields[`${marketplaceName}-title`] ? 'Copied!' : 'Copy'}
+                                      </Button>
+                                    </Box>
+                                    <Typography variant="body1">{data.title}</Typography>
+                                  </Paper>
+                                </Grid>
+
+                                {/* Description */}
+                                <Grid item xs={12}>
+                                  <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                      <Typography variant="caption" fontWeight="bold" color="text.secondary">
+                                        DESCRIPTION
+                                      </Typography>
+                                      <Button
+                                        size="small"
+                                        startIcon={copiedFields[`${marketplaceName}-description`] ? <CheckCircleIcon /> : <CopyIcon />}
+                                        onClick={() => copyToClipboard(data.description || '', `${marketplaceName}-description`)}
+                                        color={copiedFields[`${marketplaceName}-description`] ? 'success' : 'primary'}
+                                      >
+                                        {copiedFields[`${marketplaceName}-description`] ? 'Copied!' : 'Copy'}
+                                      </Button>
+                                    </Box>
+                                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{data.description}</Typography>
+                                  </Paper>
+                                </Grid>
+
+                                {/* Price */}
+                                <Grid item xs={12} sm={6}>
+                                  <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                      <Typography variant="caption" fontWeight="bold" color="text.secondary">
+                                        PRICE
+                                      </Typography>
+                                      <Button
+                                        size="small"
+                                        startIcon={copiedFields[`${marketplaceName}-price`] ? <CheckCircleIcon /> : <CopyIcon />}
+                                        onClick={() => copyToClipboard(String(data.price || ''), `${marketplaceName}-price`)}
+                                        color={copiedFields[`${marketplaceName}-price`] ? 'success' : 'primary'}
+                                      >
+                                        {copiedFields[`${marketplaceName}-price`] ? 'Copied!' : 'Copy'}
+                                      </Button>
+                                    </Box>
+                                    <Typography variant="h6" color="primary">${data.price}</Typography>
+                                  </Paper>
+                                </Grid>
+
+                                {/* Copy All Button */}
+                                <Grid item xs={12} sm={6}>
+                                  <Paper sx={{ p: 2, bgcolor: 'primary.light', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Button
+                                      variant="contained"
+                                      size="large"
+                                      fullWidth
+                                      startIcon={copiedFields[`${marketplaceName}-all`] ? <CheckCircleIcon /> : <CopyIcon />}
+                                      onClick={() => copyToClipboard(allText, `${marketplaceName}-all`)}
+                                      color={copiedFields[`${marketplaceName}-all`] ? 'success' : 'primary'}
+                                      sx={{ py: 2 }}
+                                    >
+                                      {copiedFields[`${marketplaceName}-all`] ? '✓ All Copied!' : 'Copy All Fields'}
+                                    </Button>
+                                  </Paper>
+                                </Grid>
+                              </Grid>
+
+                              {/* Quick Steps */}
+                              <Alert severity="success" sx={{ mt: 2 }}>
+                                <Typography variant="subtitle2" gutterBottom>
+                                  Quick Steps:
+                                </Typography>
+                                <Typography variant="body2" component="div">
+                                  1. Click "Copy All Fields" above<br />
+                                  2. Click "Open {marketplaceName}" button<br />
+                                  3. Paste into the marketplace form<br />
+                                  4. Upload photos and submit!
+                                </Typography>
+                              </Alert>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                     </CardContent>
                   </Card>
                 )}

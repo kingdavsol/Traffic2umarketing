@@ -34,6 +34,13 @@ interface PublishResult {
   url?: string;
   error?: string;
   requiresVerification?: boolean;
+  copyPasteData?: {
+    title: string;
+    description: string;
+    price: string;
+    category?: string;
+    condition?: string;
+  };
 }
 
 interface PublishOptions {
@@ -358,12 +365,18 @@ class MarketplaceAutomationService {
     photos: string[],
     description: string
   ): Promise<PublishResult> {
-    // OfferUp has no public API
+    // OfferUp has no public API - provide copy/paste data
     return {
       marketplace: 'OfferUp',
       success: false,
-      error:
-        'OfferUp does not have a public API. Use the copy buttons to manually post your listing.',
+      error: 'OfferUp does not have a public API. Use the copy buttons to manually post your listing.',
+      copyPasteData: {
+        title: listing.title,
+        description: description,
+        price: listing.price,
+        category: listing.category,
+        condition: listing.condition,
+      },
     };
   }
 
@@ -381,8 +394,14 @@ class MarketplaceAutomationService {
     return {
       marketplace: 'Facebook',
       success: false,
-      error:
-        'Facebook Marketplace automation requires business verification. Use copy buttons to post manually.',
+      error: 'Facebook Marketplace automation requires business verification. Use copy buttons to post manually.',
+      copyPasteData: {
+        title: listing.title,
+        description: description,
+        price: listing.price,
+        category: listing.category,
+        condition: listing.condition,
+      },
     };
   }
 
@@ -396,12 +415,18 @@ class MarketplaceAutomationService {
     photos: string[],
     description: string
   ): Promise<PublishResult> {
-    // Mercari has no public API
+    // Mercari has no public API - provide copy/paste data
     return {
       marketplace: 'Mercari',
       success: false,
-      error:
-        'Mercari does not have a public API. Use the copy buttons to manually post your listing.',
+      error: 'Mercari does not have a public API. Use the copy buttons to manually post your listing.',
+      copyPasteData: {
+        title: listing.title,
+        description: description,
+        price: listing.price,
+        category: listing.category,
+        condition: listing.condition,
+      },
     };
   }
 
