@@ -742,6 +742,7 @@ const CreateListing: React.FC = () => {
                                     sx={{ fontWeight: 'bold' }}
                                   />
                                 )}
+                              </Box>
 
                               <Grid container spacing={2}>
                                 {/* Title */}
