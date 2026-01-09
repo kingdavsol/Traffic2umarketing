@@ -90,6 +90,8 @@ const CreateListing: React.FC = () => {
   const [copiedFields, setCopiedFields] = useState<{[key: string]: boolean}>({});
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [publishingDialogOpen, setPublishingDialogOpen] = useState(false);
+  const [publishingMessage, setPublishingMessage] = useState('');
 
   // Camera state
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -371,6 +373,7 @@ const CreateListing: React.FC = () => {
 
     try {
       // Create listing
+      setPublishingMessage('Creating your listing...');
       const listingResponse = await api.createListing({
         ...formData,
         photos: photoUrls,
@@ -383,14 +386,28 @@ const CreateListing: React.FC = () => {
 
       // If marketplaces selected, publish immediately
       if (selectedMarketplaces.length > 0) {
+        // Open publishing dialog for user feedback
+        setPublishingDialogOpen(true);
+
+        // Check if Craigslist is selected (requires automation)
+        const hasCraigslist = selectedMarketplaces.some(m => m.toLowerCase() === 'craigslist');
+
+        if (hasCraigslist) {
+          setPublishingMessage('Publishing to marketplaces... This may take up to 2 minutes for Craigslist automation (browser automation in progress). Please wait...');
+        } else {
+          setPublishingMessage('Publishing to marketplaces...');
+        }
+
         const publishResponse = await api.publishListing(listing.id, selectedMarketplaces);
         setPublishResults(publishResponse.data.data);
+        setPublishingDialogOpen(false); // Close dialog
         setActiveStep(2); // Move to publish results step
       } else {
         // No marketplaces selected, just navigate to listings
         navigate('/listings');
       }
     } catch (err: any) {
+      setPublishingDialogOpen(false);
       setError(err.response?.data?.error || 'Failed to create listing');
     } finally {
       setSubmitting(false);
@@ -1057,6 +1074,19 @@ const CreateListing: React.FC = () => {
             Capture Photo
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Publishing Progress Dialog */}
+      <Dialog open={publishingDialogOpen} maxWidth="sm" fullWidth disableEscapeKeyDown>
+        <DialogContent sx={{ textAlign: 'center', py: 4 }}>
+          <CircularProgress size={60} sx={{ mb: 3 }} />
+          <Typography variant="h6" gutterBottom>
+            {publishingMessage}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            Do not close this window. This process is running in the background.
+          </Typography>
+        </DialogContent>
       </Dialog>
 
       {/* Photo Captured Notification */}
