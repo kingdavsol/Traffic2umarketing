@@ -90,8 +90,6 @@ const CreateListing: React.FC = () => {
   const [copiedFields, setCopiedFields] = useState<{[key: string]: boolean}>({});
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [publishingDialogOpen, setPublishingDialogOpen] = useState(false);
-  const [publishingMessage, setPublishingMessage] = useState('');
 
   // Camera state
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -373,7 +371,6 @@ const CreateListing: React.FC = () => {
 
     try {
       // Create listing
-      setPublishingMessage('Creating your listing...');
       const listingResponse = await api.createListing({
         ...formData,
         photos: photoUrls,
@@ -384,30 +381,34 @@ const CreateListing: React.FC = () => {
       const listing = listingResponse.data.data;
       dispatch(createListingSuccess(listing));
 
-      // If marketplaces selected, publish immediately
+      // If marketplaces selected, publish in background
       if (selectedMarketplaces.length > 0) {
-        // Open publishing dialog for user feedback
-        setPublishingDialogOpen(true);
-
         // Check if Craigslist is selected (requires automation)
         const hasCraigslist = selectedMarketplaces.some(m => m.toLowerCase() === 'craigslist');
 
+        // Show success message with background publishing notice
         if (hasCraigslist) {
-          setPublishingMessage('Publishing to marketplaces... This may take up to 2 minutes for Craigslist automation (browser automation in progress). Please wait...');
+          setSnackbarMessage('✓ Listing created! Publishing to marketplaces in background (Craigslist may take 1-2 minutes). You can continue creating more listings.');
         } else {
-          setPublishingMessage('Publishing to marketplaces...');
+          setSnackbarMessage('✓ Listing created! Publishing to marketplaces in background. You can continue creating more listings.');
         }
+        setSnackbarOpen(true);
 
-        const publishResponse = await api.publishListing(listing.id, selectedMarketplaces);
-        setPublishResults(publishResponse.data.data);
-        setPublishingDialogOpen(false); // Close dialog
-        setActiveStep(2); // Move to publish results step
+        // Start publishing in background (fire and forget - don't await)
+        api.publishListing(listing.id, selectedMarketplaces).catch((err) => {
+          console.error('Background publish error:', err);
+          // Don't show error to user since they've moved on
+        });
+
+        // Navigate to listings immediately so user can continue
+        setTimeout(() => navigate('/listings'), 2000); // Brief delay to show success message
       } else {
-        // No marketplaces selected, just navigate to listings
-        navigate('/listings');
+        // No marketplaces selected
+        setSnackbarMessage('✓ Listing created successfully!');
+        setSnackbarOpen(true);
+        setTimeout(() => navigate('/listings'), 1500);
       }
     } catch (err: any) {
-      setPublishingDialogOpen(false);
       setError(err.response?.data?.error || 'Failed to create listing');
     } finally {
       setSubmitting(false);
@@ -1076,19 +1077,6 @@ const CreateListing: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Publishing Progress Dialog */}
-      <Dialog open={publishingDialogOpen} maxWidth="sm" fullWidth disableEscapeKeyDown>
-        <DialogContent sx={{ textAlign: 'center', py: 4 }}>
-          <CircularProgress size={60} sx={{ mb: 3 }} />
-          <Typography variant="h6" gutterBottom>
-            {publishingMessage}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            Do not close this window. This process is running in the background.
-          </Typography>
-        </DialogContent>
-      </Dialog>
-
       {/* Photo Captured Notification */}
       <Snackbar
         open={photoCaptured && analyzing}
@@ -1104,10 +1092,10 @@ const CreateListing: React.FC = () => {
         }}
       />
 
-      {/* Copy Success Snackbar */}
+      {/* Success & Background Publishing Snackbar */}
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={4000}
+        autoHideDuration={6000}
         onClose={() => setSnackbarOpen(false)}
         message={snackbarMessage}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
