@@ -70,6 +70,7 @@ const CreateListing: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [photoCaptured, setPhotoCaptured] = useState(false);
+  const [photosApproved, setPhotosApproved] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<AnalysisResult>({
@@ -99,22 +100,6 @@ const CreateListing: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const steps = ['Upload Photos', 'Review & Edit', 'Publish'];
-
-  // Auto-analyze when photo is added
-  useEffect(() => {
-    // Automatically trigger AI analysis when first photo is added and we're on step 0
-    if (photos.length > 0 && activeStep === 0 && !analyzing && photoUrls.length === photos.length) {
-      // Show notification
-      setPhotoCaptured(true);
-
-      // Auto-trigger analysis after brief delay to show the captured photo
-      const timer = setTimeout(() => {
-        analyzePhotos();
-      }, 800);
-
-      return () => clearTimeout(timer);
-    }
-  }, [photos.length, photoUrls.length, activeStep]);
 
   // Photo upload
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -530,6 +515,39 @@ const CreateListing: React.FC = () => {
                   </Grid>
                 ))}
               </Grid>
+            )}
+
+            {/* Approve/Retake buttons - only show when photos exist and not yet approved */}
+            {photoUrls.length > 0 && !analyzing && !photosApproved && (
+              <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="large"
+                  startIcon={<RefreshIcon />}
+                  onClick={() => {
+                    setPhotos([]);
+                    setPhotoUrls([]);
+                    setPhotoCaptured(false);
+                    setPhotosApproved(false);
+                  }}
+                >
+                  Retake Photos
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  startIcon={<CheckCircleIcon />}
+                  onClick={() => {
+                    setPhotosApproved(true);
+                    setPhotoCaptured(true);
+                    analyzePhotos();
+                  }}
+                >
+                  Approve & Analyze
+                </Button>
+              </Box>
             )}
 
             {analyzing && (
