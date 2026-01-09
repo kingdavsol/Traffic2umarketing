@@ -88,6 +88,8 @@ const CreateListing: React.FC = () => {
   const [publishResults, setPublishResults] = useState<any>(null);
   const [aiHints, setAiHints] = useState<string>('');
   const [copiedFields, setCopiedFields] = useState<{[key: string]: boolean}>({});
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   // Camera state
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -305,16 +307,35 @@ const CreateListing: React.FC = () => {
     });
   };
 
-  // Copy to clipboard helper
+  // Copy to clipboard helper with feedback
   const copyToClipboard = async (text: string, fieldName: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedFields(prev => ({ ...prev, [fieldName]: true }));
+
+      // Show success snackbar
+      const isAllFields = fieldName.includes('-all');
+      const marketplace = fieldName.split('-')[0];
+      if (isAllFields) {
+        setSnackbarMessage(`✓ All fields copied! Now open ${marketplace} and paste into the Title field.`);
+      } else if (fieldName.includes('title')) {
+        setSnackbarMessage('✓ Title copied! Paste it into the marketplace Title field.');
+      } else if (fieldName.includes('description')) {
+        setSnackbarMessage('✓ Description copied! Paste it into the Description field.');
+      } else if (fieldName.includes('price')) {
+        setSnackbarMessage('✓ Price copied! Paste it into the Price field.');
+      } else {
+        setSnackbarMessage('✓ Copied to clipboard!');
+      }
+      setSnackbarOpen(true);
+
       setTimeout(() => {
         setCopiedFields(prev => ({ ...prev, [fieldName]: false }));
       }, 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
+      setSnackbarMessage('❌ Failed to copy. Please try again.');
+      setSnackbarOpen(true);
     }
   };
 
@@ -702,44 +723,79 @@ const CreateListing: React.FC = () => {
                 )}
 
                 {publishResults.manualPosts?.length > 0 && (
-                  <Card sx={{ mb: 2 }}>
+                  <Card sx={{ mb: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
                     <CardContent>
-                      <Typography variant="h6" color="warning.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        ✋ Manual Posting Required
-                      </Typography>
-                      <Alert severity="info" sx={{ mb: 2 }}>
-                        These marketplaces require manual posting. Click the buttons below to copy your listing details and paste them directly.
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <Box sx={{ fontSize: '40px' }}>✋</Box>
+                        <Box>
+                          <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', mb: 0 }}>
+                            Quick Copy & Paste
+                          </Typography>
+                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                            Takes ~30 seconds per marketplace
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Alert severity="info" sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+                        <Typography variant="body2" fontWeight="bold" gutterBottom>
+                          🚀 You're almost done! Just paste your listing details.
+                        </Typography>
+                        <Typography variant="body2">
+                          We've prepared everything - you just copy, paste, and upload photos. Way faster than typing it all yourself!
+                        </Typography>
                       </Alert>
 
                       {publishResults.manualPosts.map((post: any, index: number) => {
                         const marketplaceName = post.marketplace || 'Unknown';
                         const data = post.copyPasteData || {};
                         const allText = `Title: ${data.title}\n\nDescription:\n${data.description}\n\nPrice: $${data.price}`;
+                        const isOfferUp = marketplaceName.toLowerCase() === 'offerup';
 
                         return (
-                          <Card key={index} sx={{ mb: 2, border: '2px solid', borderColor: 'warning.light' }}>
+                          <Card key={index} sx={{ mb: 2, border: '3px solid #fff', boxShadow: 3 }}>
                             <CardContent>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
-                                  {marketplaceName}
-                                </Typography>
-                                {marketplaceName.toLowerCase() !== 'offerup' && (
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  <Box sx={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: '50%',
+                                    bgcolor: 'primary.main',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '24px',
+                                    fontWeight: 'bold'
+                                  }}>
+                                    {index + 1}
+                                  </Box>
+                                  <Box>
+                                    <Typography variant="h6" sx={{ textTransform: 'capitalize', fontWeight: 'bold' }}>
+                                      {marketplaceName}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      Est. Time: {isOfferUp ? '60 seconds' : '30 seconds'}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                                {!isOfferUp && (
                                   <Button
                                     variant="contained"
                                     color="primary"
+                                    size="large"
                                     startIcon={<OpenInNewIcon />}
                                     onClick={() => window.open(getMarketplaceUrl(marketplaceName), '_blank')}
-                                    sx={{ minWidth: 180 }}
+                                    sx={{ minWidth: 200 }}
                                   >
                                     Open {marketplaceName}
                                   </Button>
                                 )}
-                                {marketplaceName.toLowerCase() === 'offerup' && (
+                                {isOfferUp && (
                                   <Chip
-                                    label="Mobile App Required"
+                                    label="📱 Mobile App Required"
                                     color="warning"
-                                    icon={<PhotoCameraIcon />}
-                                    sx={{ fontWeight: 'bold' }}
+                                    sx={{ fontWeight: 'bold', fontSize: '14px', py: 2.5, px: 1 }}
                                   />
                                 )}
                               </Box>
@@ -825,23 +881,83 @@ const CreateListing: React.FC = () => {
                                 )}
                               </Grid>
 
-                              {/* Quick Steps */}
-                              <Alert severity={marketplaceName.toLowerCase() === 'offerup' ? 'warning' : 'success'} sx={{ mt: 2 }}>
-                                <Typography variant="subtitle2" gutterBottom>
-                                  Quick Steps:
+                              {/* Step-by-Step Visual Guide */}
+                              <Paper sx={{ mt: 3, p: 2, bgcolor: 'success.50', border: '2px solid', borderColor: 'success.main' }}>
+                                <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{ fontSize: '20px' }}>✓</Box>
+                                  Step-by-Step Guide
                                 </Typography>
-                                <Typography variant="body2" component="div">
-                                  {marketplaceName.toLowerCase() === 'offerup' ? (
+                                <Box component="ol" sx={{ pl: 2, m: 0 }}>
+                                  {isOfferUp ? (
                                     <>
-                                      1. Copy each field above individually (click "Copy" button for Title, Description, Price)<br />
-                                      2. {getMarketplaceInstructions(marketplaceName)}
+                                      <li>
+                                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                          <strong>Copy Title</strong> (click Copy button above) → Open OfferUp app on your phone
+                                        </Typography>
+                                      </li>
+                                      <li>
+                                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                          Tap <strong>"Sell"</strong> button → Paste Title into Title field
+                                        </Typography>
+                                      </li>
+                                      <li>
+                                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                          Return here → <strong>Copy Description</strong> → Paste into Description field
+                                        </Typography>
+                                      </li>
+                                      <li>
+                                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                          Return here → <strong>Copy Price</strong> → Paste into Price field
+                                        </Typography>
+                                      </li>
+                                      <li>
+                                        <Typography variant="body2">
+                                          Upload photos → Select category → Post! 🎉
+                                        </Typography>
+                                      </li>
                                     </>
                                   ) : (
                                     <>
-                                      1. Click "Copy All Fields" above<br />
-                                      2. {getMarketplaceInstructions(marketplaceName)}
+                                      <li>
+                                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                          Click <strong>"Copy All Fields"</strong> button above (✓ You'll see "All Copied!")
+                                        </Typography>
+                                      </li>
+                                      <li>
+                                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                          Click <strong>"Open {marketplaceName}"</strong> button → New tab opens
+                                        </Typography>
+                                      </li>
+                                      <li>
+                                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                          Click in the <strong>Title field</strong> → Press <kbd>Ctrl+V</kbd> (or <kbd>Cmd+V</kbd>) to paste
+                                        </Typography>
+                                      </li>
+                                      <li>
+                                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                          Your title, description, and price are ready! Just upload photos 📸
+                                        </Typography>
+                                      </li>
+                                      <li>
+                                        <Typography variant="body2">
+                                          Click <strong>Post/Publish</strong> → Done! 🎉
+                                        </Typography>
+                                      </li>
                                     </>
                                   )}
+                                </Box>
+                              </Paper>
+
+                              {/* Pro Tips */}
+                              <Alert severity="info" sx={{ mt: 2 }}>
+                                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                                  💡 Pro Tips for Faster Posting
+                                </Typography>
+                                <Typography variant="body2" component="div">
+                                  • Keep this tab open while posting to other marketplaces<br />
+                                  • {isOfferUp ? 'Take photos with your phone first to save time' : 'Have your product photos ready before clicking "Open"'}<br />
+                                  • {marketplaceName} posts typically go live in seconds<br />
+                                  • Come back to QuickSell to track all your listings in one place!
                                 </Typography>
                               </Alert>
                             </CardContent>
@@ -955,6 +1071,24 @@ const CreateListing: React.FC = () => {
             fontWeight: 'bold',
             fontSize: '1.1rem',
           },
+        }}
+      />
+
+      {/* Copy Success Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        ContentProps={{
+          sx: {
+            bgcolor: 'success.main',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '1rem',
+            boxShadow: 3,
+          }
         }}
       />
     </Container>
