@@ -332,7 +332,7 @@ const CreateListing: React.FC = () => {
   const getMarketplaceInstructions = (marketplace: string) => {
     const instructions: {[key: string]: string} = {
       facebook: 'Click "Open Facebook" → Paste your listing details → Upload photos → Post',
-      offerup: '⚠️ OfferUp requires the mobile app to post. Download the app, open it, tap "Sell" button, then paste your details.',
+      offerup: '⚠️ OfferUp requires the mobile app. Copy EACH field individually (Title, Description, Price) and paste into the app.',
       mercari: 'Click "Open Mercari" → Select "Sell" → Paste your listing details → Upload photos → List',
     };
     return instructions[marketplace.toLowerCase()] || 'Open marketplace and paste your listing details';
@@ -805,22 +805,24 @@ const CreateListing: React.FC = () => {
                                   </Paper>
                                 </Grid>
 
-                                {/* Copy All Button */}
-                                <Grid item xs={12} sm={6}>
-                                  <Paper sx={{ p: 2, bgcolor: 'primary.light', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Button
-                                      variant="contained"
-                                      size="large"
-                                      fullWidth
-                                      startIcon={copiedFields[`${marketplaceName}-all`] ? <CheckCircleIcon /> : <CopyIcon />}
-                                      onClick={() => copyToClipboard(allText, `${marketplaceName}-all`)}
-                                      color={copiedFields[`${marketplaceName}-all`] ? 'success' : 'primary'}
-                                      sx={{ py: 2 }}
-                                    >
-                                      {copiedFields[`${marketplaceName}-all`] ? '✓ All Copied!' : 'Copy All Fields'}
-                                    </Button>
-                                  </Paper>
-                                </Grid>
+                                {/* Copy All Button - Only for web-based marketplaces */}
+                                {marketplaceName.toLowerCase() !== 'offerup' && (
+                                  <Grid item xs={12} sm={6}>
+                                    <Paper sx={{ p: 2, bgcolor: 'primary.light', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <Button
+                                        variant="contained"
+                                        size="large"
+                                        fullWidth
+                                        startIcon={copiedFields[`${marketplaceName}-all`] ? <CheckCircleIcon /> : <CopyIcon />}
+                                        onClick={() => copyToClipboard(allText, `${marketplaceName}-all`)}
+                                        color={copiedFields[`${marketplaceName}-all`] ? 'success' : 'primary'}
+                                        sx={{ py: 2 }}
+                                      >
+                                        {copiedFields[`${marketplaceName}-all`] ? '✓ All Copied!' : 'Copy All Fields'}
+                                      </Button>
+                                    </Paper>
+                                  </Grid>
+                                )}
                               </Grid>
 
                               {/* Quick Steps */}
@@ -829,8 +831,17 @@ const CreateListing: React.FC = () => {
                                   Quick Steps:
                                 </Typography>
                                 <Typography variant="body2" component="div">
-                                  1. Click "Copy All Fields" above<br />
-                                  2. {getMarketplaceInstructions(marketplaceName)}
+                                  {marketplaceName.toLowerCase() === 'offerup' ? (
+                                    <>
+                                      1. Copy each field above individually (click "Copy" button for Title, Description, Price)<br />
+                                      2. {getMarketplaceInstructions(marketplaceName)}
+                                    </>
+                                  ) : (
+                                    <>
+                                      1. Click "Copy All Fields" above<br />
+                                      2. {getMarketplaceInstructions(marketplaceName)}
+                                    </>
+                                  )}
                                 </Typography>
                               </Alert>
                             </CardContent>

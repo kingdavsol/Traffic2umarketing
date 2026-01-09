@@ -104,8 +104,15 @@ const getBrowser = async (): Promise<Browser> => {
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
+      "--disable-dev-shm-usage", // Use /tmp instead of /dev/shm
       "--disable-gpu",
+      "--disable-software-rasterizer",
+      "--disable-extensions",
+      "--disable-web-security",
+      "--no-first-run",
+      "--no-zygote",
+      "--single-process", // Critical: Run in single process to avoid crashes
+      "--disable-features=VizDisplayCompositor",
     ],
   });
 };
