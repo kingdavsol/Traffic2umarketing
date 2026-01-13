@@ -14,7 +14,8 @@ interface LayoutProps {
 function Layout({ children }: LayoutProps) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Start closed on mobile/tablet, open on desktop
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
 
   const handleLogout = () => {

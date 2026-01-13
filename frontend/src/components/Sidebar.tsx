@@ -50,6 +50,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       anchor="left"
       open={open}
       onClose={onClose}
+      variant="temporary"
+      ModalProps={{
+        keepMounted: true, // Better mobile performance
+      }}
       sx={{
         '& .MuiDrawer-paper': {
           width: 280,
