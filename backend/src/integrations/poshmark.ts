@@ -214,7 +214,7 @@ export const postToPoshmark = async (
       const categoryDropdown = await page.$('select[name="department"], .category-selector');
       if (categoryDropdown) {
         await categoryDropdown.click();
-        await page.waitForTimeout(500);
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Try to select the category
         const categoryOption = await page.$(`option[value*="${categoryInfo.main}"]`);
