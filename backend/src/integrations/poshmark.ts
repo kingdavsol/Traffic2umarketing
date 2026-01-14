@@ -230,7 +230,7 @@ export const postToPoshmark = async (
       const brandInput = await page.$('input[name="brand"]');
       if (brandInput) {
         await brandInput.type(listingData.brand);
-        await page.waitForTimeout(500);
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
 
