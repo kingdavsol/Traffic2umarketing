@@ -138,6 +138,44 @@ class MarketplaceAutomationService {
               );
               break;
 
+            case 'nextdoor':
+              result = await this.publishToNextdoor(
+                userId,
+                listing,
+                watermarkedPhotos,
+                watermarkedDescription
+              );
+              break;
+
+            case 'tiktok':
+            case 'tiktokshop':
+              result = await this.publishToTikTokShop(
+                userId,
+                listing,
+                watermarkedPhotos,
+                watermarkedDescription
+              );
+              break;
+
+            case 'poshmark':
+              result = await this.publishToPoshmark(
+                userId,
+                listing,
+                watermarkedPhotos,
+                watermarkedDescription
+              );
+              break;
+
+            case 'instagram':
+            case 'instagramshopping':
+              result = await this.publishToInstagram(
+                userId,
+                listing,
+                watermarkedPhotos,
+                watermarkedDescription
+              );
+              break;
+
             default:
               result = {
                 marketplace,
@@ -420,6 +458,106 @@ class MarketplaceAutomationService {
       marketplace: 'Mercari',
       success: false,
       error: 'Mercari does not have a public API. Use the copy buttons to manually post your listing.',
+      copyPasteData: {
+        title: listing.title,
+        description: description,
+        price: listing.price,
+        category: listing.category,
+        condition: listing.condition,
+      },
+    };
+  }
+
+  /**
+   * Publish to Nextdoor
+   * Note: Nextdoor has no public API
+   */
+  private async publishToNextdoor(
+    userId: number,
+    listing: Listing,
+    photos: string[],
+    description: string
+  ): Promise<PublishResult> {
+    // Nextdoor has no public API - provide copy/paste data
+    return {
+      marketplace: 'Nextdoor',
+      success: false,
+      error: 'Nextdoor does not have a public API. Use the copy buttons to manually post your listing.',
+      copyPasteData: {
+        title: listing.title,
+        description: description,
+        price: listing.price,
+        category: listing.category,
+        condition: listing.condition,
+      },
+    };
+  }
+
+  /**
+   * Publish to TikTok Shop
+   * Note: TikTok Shop API requires seller approval
+   */
+  private async publishToTikTokShop(
+    userId: number,
+    listing: Listing,
+    photos: string[],
+    description: string
+  ): Promise<PublishResult> {
+    // TikTok Shop API requires seller onboarding - provide copy/paste data for now
+    return {
+      marketplace: 'TikTok Shop',
+      success: false,
+      error: 'TikTok Shop API requires seller approval. Use the copy buttons to manually post your listing.',
+      copyPasteData: {
+        title: listing.title,
+        description: description,
+        price: listing.price,
+        category: listing.category,
+        condition: listing.condition,
+      },
+    };
+  }
+
+  /**
+   * Publish to Poshmark
+   * Note: Poshmark API integration pending
+   */
+  private async publishToPoshmark(
+    userId: number,
+    listing: Listing,
+    photos: string[],
+    description: string
+  ): Promise<PublishResult> {
+    // Poshmark API integration pending - provide copy/paste data for now
+    return {
+      marketplace: 'Poshmark',
+      success: false,
+      error: 'Poshmark API integration coming soon. Use the copy buttons to manually post your listing.',
+      copyPasteData: {
+        title: listing.title,
+        description: description,
+        price: listing.price,
+        category: listing.category,
+        condition: listing.condition,
+      },
+    };
+  }
+
+  /**
+   * Publish to Instagram Shopping
+   * Note: Instagram Shopping API requires business account
+   */
+  private async publishToInstagram(
+    userId: number,
+    listing: Listing,
+    photos: string[],
+    description: string
+  ): Promise<PublishResult> {
+    // Instagram Shopping API requires business account - provide copy/paste data for now
+    return {
+      marketplace: 'Instagram Shopping',
+      success: false,
+      error: 'Instagram Shopping requires business account setup. Use the copy buttons to manually post your listing.',
       copyPasteData: {
         title: listing.title,
         description: description,
