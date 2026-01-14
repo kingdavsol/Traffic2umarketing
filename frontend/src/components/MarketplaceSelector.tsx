@@ -113,11 +113,11 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
     {
       id: 'poshmark',
       name: 'Poshmark',
-      description: '✋ Fashion marketplace (copy/paste template - API coming soon)',
+      description: '🤖 Browser automation (posts automatically when connected)',
       icon: <PoshmarkIcon />,
-      autoPublish: false,
+      autoPublish: false, // Will be set to true when credentials are connected
       connected: false,
-      requiresAuth: false,
+      requiresAuth: true, // Requires credentials for automation
     },
     {
       id: 'instagram',

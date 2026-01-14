@@ -7,6 +7,7 @@ import { logger } from '../config/logger';
 import { pool } from '../database/connection';
 import watermarkService from './watermarkService';
 import craigslistIntegration from '../integrations/craigslist';
+import poshmarkIntegration from '../integrations/poshmark';
 import ebayIntegration from '../integrations/ebay';
 import bulkMarketplaceSignupService from './bulkMarketplaceSignupService';
 
@@ -520,7 +521,7 @@ class MarketplaceAutomationService {
 
   /**
    * Publish to Poshmark
-   * Note: Poshmark API integration pending
+   * Uses browser automation (similar to Craigslist)
    */
   private async publishToPoshmark(
     userId: number,
@@ -528,19 +529,102 @@ class MarketplaceAutomationService {
     photos: string[],
     description: string
   ): Promise<PublishResult> {
-    // Poshmark API integration pending - provide copy/paste data for now
-    return {
-      marketplace: 'Poshmark',
-      success: false,
-      error: 'Poshmark API integration coming soon. Use the copy buttons to manually post your listing.',
-      copyPasteData: {
-        title: listing.title,
-        description: description,
-        price: listing.price,
-        category: listing.category,
-        condition: listing.condition,
-      },
-    };
+    try {
+      // Get Poshmark credentials
+      const credentials = await bulkMarketplaceSignupService.getMarketplaceCredentials(
+        userId,
+        'Poshmark'
+      );
+
+      if (!credentials) {
+        // No credentials - provide copy/paste data as fallback
+        return {
+          marketplace: 'Poshmark',
+          success: false,
+          error: 'Poshmark account not connected. Use the copy buttons to manually post, or connect your account for automated posting.',
+          copyPasteData: {
+            title: listing.title,
+            description: description,
+            price: listing.price,
+            category: listing.category,
+            condition: listing.condition,
+          },
+        };
+      }
+
+      // Check if automation is available
+      const available = await poshmarkIntegration.isAvailable();
+      if (!available) {
+        return {
+          marketplace: 'Poshmark',
+          success: false,
+          error: 'Poshmark automation currently unavailable. Use manual posting.',
+          copyPasteData: {
+            title: listing.title,
+            description: description,
+            price: listing.price,
+            category: listing.category,
+            condition: listing.condition,
+          },
+        };
+      }
+
+      // Post to Poshmark using browser automation
+      const result = await poshmarkIntegration.postToPoshmark(
+        {
+          email: credentials.email,
+          password: credentials.password,
+        },
+        {
+          title: listing.title,
+          description: description,
+          price: parseFloat(listing.price),
+          category: listing.category,
+          brand: listing.brand,
+          size: listing.size,
+          condition: listing.condition,
+          color: listing.color,
+          photos: photos,
+        }
+      );
+
+      if (result.success) {
+        return {
+          marketplace: 'Poshmark',
+          success: true,
+          listingId: result.postingId,
+          url: result.url,
+        };
+      } else {
+        // If automation fails, provide copy/paste data as fallback
+        return {
+          marketplace: 'Poshmark',
+          success: false,
+          error: result.error || 'Failed to post to Poshmark automatically. Use manual posting.',
+          copyPasteData: {
+            title: listing.title,
+            description: description,
+            price: listing.price,
+            category: listing.category,
+            condition: listing.condition,
+          },
+        };
+      }
+    } catch (error: any) {
+      logger.error('Poshmark publish error:', error);
+      return {
+        marketplace: 'Poshmark',
+        success: false,
+        error: error.message || 'Poshmark posting failed',
+        copyPasteData: {
+          title: listing.title,
+          description: description,
+          price: listing.price,
+          category: listing.category,
+          condition: listing.condition,
+        },
+      };
+    }
   }
 
   /**
