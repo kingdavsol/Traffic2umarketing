@@ -39,10 +39,10 @@ import {
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import api from '../services/api';
-import { createListingSuccess } from '../store/slices/listingsSlice';
+import { createListingSuccess, updateListingSuccess } from '../store/slices/listingsSlice';
 import MarketplaceSelector from '../components/MarketplaceSelector';
 
 interface AnalysisResult {
@@ -60,6 +60,11 @@ interface AnalysisResult {
 const CreateListing: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+
+  // Check if we're in edit mode
+  const editListingId = searchParams.get('edit');
+  const isEditMode = !!editListingId;
 
   // State
   const [activeStep, setActiveStep] = useState(0);
@@ -71,6 +76,7 @@ const CreateListing: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [photoCaptured, setPhotoCaptured] = useState(false);
   const [photosApproved, setPhotosApproved] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<AnalysisResult>({
@@ -100,6 +106,47 @@ const CreateListing: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const steps = ['Upload Photos', 'Review & Edit', 'Publish'];
+
+  // Load listing data if in edit mode
+  React.useEffect(() => {
+    if (isEditMode && editListingId) {
+      const loadListing = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await api.getListing(parseInt(editListingId));
+          const listing = response.data.data || response.data;
+
+          // Populate form data
+          setFormData({
+            title: listing.title || '',
+            description: listing.description || '',
+            category: listing.category || '',
+            price: listing.price || 0,
+            condition: listing.condition || 'good',
+            brand: listing.brand || '',
+            model: listing.model || '',
+            color: listing.color || '',
+            size: listing.size || '',
+          });
+
+          // Load photos if available
+          if (listing.photos && Array.isArray(listing.photos)) {
+            setPhotoUrls(listing.photos);
+            // Skip to review step since photos are already loaded
+            setActiveStep(1);
+          }
+        } catch (err: any) {
+          setError(err.response?.data?.error || 'Failed to load listing');
+          console.error('Failed to load listing:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      loadListing();
+    }
+  }, [isEditMode, editListingId]);
 
   // Photo upload
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -355,16 +402,29 @@ const CreateListing: React.FC = () => {
     setError(null);
 
     try {
-      // Create listing
-      const listingResponse = await api.createListing({
-        ...formData,
-        photos: photoUrls,
-        status: 'draft',
-        ai_generated: true,
-      });
+      let listing;
 
-      const listing = listingResponse.data.data;
-      dispatch(createListingSuccess(listing));
+      if (isEditMode && editListingId) {
+        // Update existing listing
+        const listingResponse = await api.updateListing(parseInt(editListingId), {
+          ...formData,
+          photos: photoUrls,
+        });
+
+        listing = listingResponse.data.data;
+        dispatch(updateListingSuccess(listing));
+      } else {
+        // Create new listing
+        const listingResponse = await api.createListing({
+          ...formData,
+          photos: photoUrls,
+          status: 'draft',
+          ai_generated: true,
+        });
+
+        listing = listingResponse.data.data;
+        dispatch(createListingSuccess(listing));
+      }
 
       // If marketplaces selected, publish in background
       if (selectedMarketplaces.length > 0) {
@@ -373,9 +433,17 @@ const CreateListing: React.FC = () => {
 
         // Show success message with background publishing notice
         if (hasCraigslist) {
-          setSnackbarMessage('✓ Listing created! Publishing to marketplaces in background (Craigslist may take 1-2 minutes). You can continue creating more listings.');
+          setSnackbarMessage(
+            isEditMode
+              ? '✓ Listing updated! Publishing to marketplaces in background (Craigslist may take 1-2 minutes).'
+              : '✓ Listing created! Publishing to marketplaces in background (Craigslist may take 1-2 minutes). You can continue creating more listings.'
+          );
         } else {
-          setSnackbarMessage('✓ Listing created! Publishing to marketplaces in background. You can continue creating more listings.');
+          setSnackbarMessage(
+            isEditMode
+              ? '✓ Listing updated! Publishing to marketplaces in background.'
+              : '✓ Listing created! Publishing to marketplaces in background. You can continue creating more listings.'
+          );
         }
         setSnackbarOpen(true);
 
@@ -389,12 +457,12 @@ const CreateListing: React.FC = () => {
         setTimeout(() => navigate('/listings'), 2000); // Brief delay to show success message
       } else {
         // No marketplaces selected
-        setSnackbarMessage('✓ Listing created successfully!');
+        setSnackbarMessage(isEditMode ? '✓ Listing updated successfully!' : '✓ Listing created successfully!');
         setSnackbarOpen(true);
         setTimeout(() => navigate('/listings'), 1500);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create listing');
+      setError(err.response?.data?.error || (isEditMode ? 'Failed to update listing' : 'Failed to create listing'));
     } finally {
       setSubmitting(false);
     }
@@ -725,7 +793,9 @@ const CreateListing: React.FC = () => {
                 onClick={handleSubmit}
                 disabled={submitting}
               >
-                {submitting ? 'Creating...' : 'Create Listing'}
+                {submitting
+                  ? (isEditMode ? 'Updating...' : 'Creating...')
+                  : (isEditMode ? 'Update Listing' : 'Create Listing')}
               </Button>
             </Box>
           </Box>
@@ -1034,10 +1104,24 @@ const CreateListing: React.FC = () => {
     }
   };
 
+  // Show loading indicator when loading listing in edit mode
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
+          <CircularProgress size={60} />
+          <Typography variant="h6" sx={{ mt: 3 }}>
+            Loading listing...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Create New Listing
+        {isEditMode ? 'Edit Listing' : 'Create New Listing'}
       </Typography>
 
       <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
