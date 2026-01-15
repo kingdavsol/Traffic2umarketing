@@ -88,9 +88,17 @@ const limiter = rateLimit({
 // Stricter rate limit for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5, // Only 5 login attempts per 15 minutes
+  max: NODE_ENV === 'production' ? 10 : 50, // More lenient in development
   message: 'Too many login attempts, please try again later.',
-  skipSuccessfulRequests: true
+  skipSuccessfulRequests: true,
+  skip: (req) => {
+    // Skip rate limiting for localhost in development
+    if (NODE_ENV !== 'production') {
+      const ip = req.ip || '';
+      return ip === '127.0.0.1' || ip === '::1' || ip.includes('localhost');
+    }
+    return false;
+  }
 });
 
 // Apply rate limiting
