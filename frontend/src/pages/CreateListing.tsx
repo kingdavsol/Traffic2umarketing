@@ -447,11 +447,23 @@ const CreateListing: React.FC = () => {
         }
         setSnackbarOpen(true);
 
-        // Start publishing in background (fire and forget - don't await)
-        api.publishListing(listing.id, selectedMarketplaces).catch((err) => {
-          console.error('Background publish error:', err);
-          // Don't show error to user since they've moved on
-        });
+        // Start publishing in background with error notification
+        api.publishListing(listing.id, selectedMarketplaces)
+          .then((response) => {
+            console.log('Publish response:', response.data);
+            // Check if any marketplaces failed
+            if (response.data?.data?.failedPosts?.length > 0) {
+              const failed = response.data.data.failedPosts;
+              console.error('Some marketplaces failed:', failed);
+              setSnackbarMessage(`⚠️ Published with errors: ${failed.map((f: any) => f.marketplace).join(', ')} failed`);
+              setSnackbarOpen(true);
+            }
+          })
+          .catch((err) => {
+            console.error('Background publish error:', err);
+            setSnackbarMessage('❌ Publishing failed - check browser console for details');
+            setSnackbarOpen(true);
+          });
 
         // Navigate to listings immediately so user can continue
         setTimeout(() => navigate('/listings'), 2000); // Brief delay to show success message

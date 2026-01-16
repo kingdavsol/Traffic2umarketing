@@ -239,6 +239,8 @@ class MarketplaceAutomationService {
     options: PublishOptions
   ): Promise<PublishResult> {
     try {
+      logger.info(`[Craigslist] Starting publish for user ${userId}, listing ${listing.id}`);
+
       // Get Craigslist credentials
       const credentials = await bulkMarketplaceSignupService.getMarketplaceCredentials(
         userId,
@@ -246,6 +248,7 @@ class MarketplaceAutomationService {
       );
 
       if (!credentials) {
+        logger.warn(`[Craigslist] No credentials found for user ${userId}`);
         return {
           marketplace: 'Craigslist',
           success: false,
@@ -253,15 +256,20 @@ class MarketplaceAutomationService {
         };
       }
 
+      logger.info(`[Craigslist] Found credentials for ${credentials.email}`);
+
       // Check if automation is available
       const available = await craigslistIntegration.isAvailable();
       if (!available) {
+        logger.error(`[Craigslist] Browser automation not available`);
         return {
           marketplace: 'Craigslist',
           success: false,
           error: 'Craigslist automation currently unavailable. Use manual posting.',
         };
       }
+
+      logger.info(`[Craigslist] Browser automation available, starting post...`);
 
       // Post to Craigslist
       const result = await craigslistIntegration.postToCraigslist(
@@ -283,6 +291,7 @@ class MarketplaceAutomationService {
       );
 
       if (result.success) {
+        logger.info(`[Craigslist] Successfully posted listing ${listing.id}. Requires verification: ${result.requiresVerification}`);
         return {
           marketplace: 'Craigslist',
           success: true,
@@ -293,6 +302,7 @@ class MarketplaceAutomationService {
           requiresVerification: result.requiresVerification,
         };
       } else {
+        logger.error(`[Craigslist] Failed to post listing ${listing.id}: ${result.error}`);
         return {
           marketplace: 'Craigslist',
           success: false,
@@ -300,7 +310,7 @@ class MarketplaceAutomationService {
         };
       }
     } catch (error: any) {
-      logger.error('Craigslist publish error:', error);
+      logger.error(`[Craigslist] Exception during publish for listing ${listing.id}:`, error);
       return {
         marketplace: 'Craigslist',
         success: false,
