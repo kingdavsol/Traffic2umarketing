@@ -40,6 +40,8 @@ interface Marketplace {
   autoPublish: boolean;
   connected: boolean;
   requiresAuth: boolean;
+  url?: string; // URL to open marketplace app/site
+  urlLabel?: string; // Label for the link button
 }
 
 const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
@@ -48,6 +50,28 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
 }) => {
   const [marketplaces, setMarketplaces] = useState<Marketplace[]>([
     {
+      id: 'tiktok',
+      name: 'TikTok Shop',
+      description: '🤖 Automated posting via API (requires connection)',
+      icon: <TikTokIcon />,
+      autoPublish: false,
+      connected: false,
+      requiresAuth: true,
+      url: 'https://seller-us.tiktok.com',
+      urlLabel: 'Open TikTok Seller Center',
+    },
+    {
+      id: 'instagram',
+      name: 'Instagram Shopping',
+      description: '✋ Manual posting - Click to open Instagram app/site',
+      icon: <InstagramIcon />,
+      autoPublish: false,
+      connected: false,
+      requiresAuth: false,
+      url: 'https://www.instagram.com',
+      urlLabel: 'Open Instagram',
+    },
+    {
       id: 'ebay',
       name: 'eBay',
       description: '🤖 Automated posting via API (requires connection)',
@@ -55,78 +79,74 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
       autoPublish: false,
       connected: false,
       requiresAuth: true,
+      url: 'https://www.ebay.com/sh/lst/active',
+      urlLabel: 'Open eBay Listings',
     },
     {
       id: 'facebook',
       name: 'Facebook Marketplace',
-      description: '✋ Manual posting (copy/paste template provided)',
+      description: '✋ Manual posting - Click to open Facebook Marketplace',
       icon: <FacebookIcon />,
       autoPublish: false,
       connected: false,
       requiresAuth: false,
+      url: 'https://www.facebook.com/marketplace/create/item',
+      urlLabel: 'Open Facebook Marketplace',
     },
     {
       id: 'craigslist',
       name: 'Craigslist',
-      description: '🤖 Browser automation (posts automatically)',
+      description: '🤖 Browser automation - Check email for verification link',
       icon: <StoreIcon />,
-      autoPublish: true, // Always true for Craigslist (browser automation)
+      autoPublish: true,
       connected: false,
       requiresAuth: false,
+      url: 'https://accounts.craigslist.org/login',
+      urlLabel: 'Open Craigslist',
     },
     {
       id: 'offerup',
       name: 'OfferUp',
-      description: '✋ Manual posting (copy/paste template provided)',
+      description: '✋ Manual posting - Click to open OfferUp app/site',
       icon: <ShippingIcon />,
       autoPublish: false,
       connected: false,
       requiresAuth: false,
-    },
-    {
-      id: 'mercari',
-      name: 'Mercari',
-      description: '✋ Manual posting (copy/paste template provided)',
-      icon: <StorefrontIcon />,
-      autoPublish: false,
-      connected: false,
-      requiresAuth: false,
-    },
-    {
-      id: 'nextdoor',
-      name: 'Nextdoor',
-      description: '✋ Local neighborhood marketplace (copy/paste template provided)',
-      icon: <NextdoorIcon />,
-      autoPublish: false,
-      connected: false,
-      requiresAuth: false,
-    },
-    {
-      id: 'tiktok',
-      name: 'TikTok Shop',
-      description: '✋ Social commerce (copy/paste template - API coming soon)',
-      icon: <TikTokIcon />,
-      autoPublish: false,
-      connected: false,
-      requiresAuth: false,
+      url: 'https://offerup.com/sell/',
+      urlLabel: 'Open OfferUp',
     },
     {
       id: 'poshmark',
       name: 'Poshmark',
       description: '🤖 Browser automation (posts automatically when connected)',
       icon: <PoshmarkIcon />,
-      autoPublish: false, // Will be set to true when credentials are connected
+      autoPublish: false,
       connected: false,
-      requiresAuth: true, // Requires credentials for automation
+      requiresAuth: true,
+      url: 'https://poshmark.com/create-listing',
+      urlLabel: 'Open Poshmark',
     },
     {
-      id: 'instagram',
-      name: 'Instagram Shopping',
-      description: '✋ Social shopping (copy/paste template - API coming soon)',
-      icon: <InstagramIcon />,
+      id: 'mercari',
+      name: 'Mercari',
+      description: '✋ Manual posting - Click to open Mercari app/site',
+      icon: <StorefrontIcon />,
       autoPublish: false,
       connected: false,
       requiresAuth: false,
+      url: 'https://www.mercari.com/sell/',
+      urlLabel: 'Open Mercari',
+    },
+    {
+      id: 'nextdoor',
+      name: 'Nextdoor',
+      description: '✋ Local neighborhood - Click to open Nextdoor',
+      icon: <NextdoorIcon />,
+      autoPublish: false,
+      connected: false,
+      requiresAuth: false,
+      url: 'https://nextdoor.com/sell/',
+      urlLabel: 'Open Nextdoor',
     },
     {
       id: 'etsy',
@@ -136,6 +156,8 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
       autoPublish: false,
       connected: false,
       requiresAuth: true,
+      url: 'https://www.etsy.com/your/shops/me/tools/listings',
+      urlLabel: 'Open Etsy Shop',
     },
   ]);
 
@@ -302,6 +324,20 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                         sx={{ ml: 'auto' }}
                       >
                         Connect
+                      </Button>
+                    )}
+
+                    {marketplace.url && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(marketplace.url, '_blank');
+                        }}
+                        sx={{ ml: marketplace.requiresAuth && !marketplace.connected ? 1 : 'auto' }}
+                      >
+                        {marketplace.urlLabel || 'Open Site'}
                       </Button>
                     )}
                   </Box>

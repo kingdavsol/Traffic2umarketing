@@ -618,14 +618,7 @@ const CreateListing: React.FC = () => {
               </Box>
             )}
 
-            {analyzing && (
-              <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                <CircularProgress size={24} />
-                <Typography variant="body1" color="primary" fontWeight="bold">
-                  Analyzing your photo with AI...
-                </Typography>
-              </Box>
-            )}
+            {/* Analyzing message moved to floating snackbar at top */}
 
             {!analyzing && photos.length === 0 && (
               <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
@@ -1192,6 +1185,29 @@ const CreateListing: React.FC = () => {
             fontSize: '1.1rem',
           },
         }}
+      />
+
+      {/* AI Analyzing Status - Floating at Top */}
+      <Snackbar
+        open={analyzing}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        message={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <CircularProgress size={20} sx={{ color: 'white' }} />
+            <Typography>Analyzing your photo with AI...</Typography>
+          </Box>
+        }
+        ContentProps={{
+          sx: {
+            bgcolor: 'primary.main',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '1.1rem',
+            boxShadow: 6,
+            minWidth: '300px',
+          }
+        }}
+        sx={{ mt: 8 }} // Position below app bar
       />
 
       {/* Success & Background Publishing Snackbar */}
