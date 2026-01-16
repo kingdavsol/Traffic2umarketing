@@ -447,21 +447,36 @@ const CreateListing: React.FC = () => {
         }
         setSnackbarOpen(true);
 
+        // Show publishing status
+        setTimeout(() => {
+          setSnackbarMessage(`📤 Publishing to ${selectedMarketplaces.join(', ')}...`);
+          setSnackbarOpen(true);
+        }, 2000);
+
         // Start publishing in background with error notification
         api.publishListing(listing.id, selectedMarketplaces)
           .then((response) => {
             console.log('Publish response:', response.data);
-            // Check if any marketplaces failed
-            if (response.data?.data?.failedPosts?.length > 0) {
-              const failed = response.data.data.failedPosts;
-              console.error('Some marketplaces failed:', failed);
-              setSnackbarMessage(`⚠️ Published with errors: ${failed.map((f: any) => f.marketplace).join(', ')} failed`);
+            const results = response.data?.data?.results || [];
+            const successful = results.filter((r: any) => r.success);
+            const failed = response.data?.data?.failedPosts || [];
+
+            // Show detailed results
+            if (failed.length > 0 && successful.length > 0) {
+              setSnackbarMessage(`⚠️ Partially published: ${successful.length} succeeded, ${failed.length} failed (${failed.map((f: any) => f.marketplace).join(', ')})`);
+              setSnackbarOpen(true);
+            } else if (failed.length > 0) {
+              console.error('All marketplaces failed:', failed);
+              setSnackbarMessage(`❌ Publishing failed: ${failed.map((f: any) => f.marketplace).join(', ')} - ${failed[0]?.error || 'Unknown error'}`);
+              setSnackbarOpen(true);
+            } else if (successful.length > 0) {
+              setSnackbarMessage(`✅ Successfully published to ${successful.length} marketplace(s)!`);
               setSnackbarOpen(true);
             }
           })
           .catch((err) => {
             console.error('Background publish error:', err);
-            setSnackbarMessage('❌ Publishing failed - check browser console for details');
+            setSnackbarMessage(`❌ Publishing failed: ${err.response?.data?.error || err.message || 'Unknown error'}`);
             setSnackbarOpen(true);
           });
 
@@ -1199,14 +1214,14 @@ const CreateListing: React.FC = () => {
         }}
       />
 
-      {/* AI Analyzing Status - Floating at Top */}
+      {/* AI Analyzing Status - Fixed position at top, always visible */}
       <Snackbar
         open={analyzing}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         message={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <CircularProgress size={20} sx={{ color: 'white' }} />
-            <Typography>Analyzing your photo with AI...</Typography>
+            <Typography sx={{ fontSize: '1rem' }}>🤖 AI Analyzing your photo...</Typography>
           </Box>
         }
         ContentProps={{
@@ -1216,27 +1231,37 @@ const CreateListing: React.FC = () => {
             fontWeight: 'bold',
             fontSize: '1.1rem',
             boxShadow: 6,
-            minWidth: '300px',
+            minWidth: '350px',
           }
         }}
-        sx={{ mt: 8 }} // Position below app bar
+        sx={{
+          position: 'fixed',
+          top: '80px !important',
+          zIndex: 9999,
+        }}
       />
 
-      {/* Success & Background Publishing Snackbar */}
+      {/* Success & Status Messages - Fixed position at top, always visible */}
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={6000}
+        autoHideDuration={snackbarMessage.includes('❌') ? 10000 : 6000}
         onClose={() => setSnackbarOpen(false)}
         message={snackbarMessage}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         ContentProps={{
           sx: {
-            bgcolor: 'success.main',
+            bgcolor: snackbarMessage.includes('❌') ? 'error.main' : snackbarMessage.includes('⚠️') ? 'warning.main' : 'success.main',
             color: 'white',
             fontWeight: 'bold',
             fontSize: '1rem',
-            boxShadow: 3,
+            boxShadow: 6,
+            minWidth: '350px',
           }
+        }}
+        sx={{
+          position: 'fixed',
+          top: analyzing ? '140px !important' : '80px !important',
+          zIndex: 9999,
         }}
       />
     </Container>

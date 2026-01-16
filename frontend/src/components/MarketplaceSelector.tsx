@@ -273,11 +273,44 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                 />
 
                 <Box sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  {/* Clickable marketplace name and icon */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 1,
+                      cursor: marketplace.url ? 'pointer' : 'default',
+                      '&:hover': marketplace.url ? {
+                        '& .marketplace-name': {
+                          textDecoration: 'underline',
+                          color: 'primary.main',
+                        }
+                      } : {}
+                    }}
+                    onClick={(e) => {
+                      if (marketplace.url) {
+                        e.stopPropagation();
+                        window.open(marketplace.url, '_blank');
+                      }
+                    }}
+                  >
                     <Box sx={{ mr: 1, color: 'primary.main' }}>{marketplace.icon}</Box>
-                    <Typography variant="subtitle1" fontWeight="medium">
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="medium"
+                      className="marketplace-name"
+                      sx={{ transition: 'all 0.2s' }}
+                    >
                       {marketplace.name}
                     </Typography>
+                    {marketplace.url && (
+                      <Typography
+                        variant="caption"
+                        sx={{ ml: 1, color: 'primary.main', fontSize: '0.7rem' }}
+                      >
+                        ↗
+                      </Typography>
+                    )}
                   </Box>
 
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -324,20 +357,6 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                         sx={{ ml: 'auto' }}
                       >
                         Connect
-                      </Button>
-                    )}
-
-                    {marketplace.url && (
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(marketplace.url, '_blank');
-                        }}
-                        sx={{ ml: marketplace.requiresAuth && !marketplace.connected ? 1 : 'auto' }}
-                      >
-                        {marketplace.urlLabel || 'Open Site'}
                       </Button>
                     )}
                   </Box>
