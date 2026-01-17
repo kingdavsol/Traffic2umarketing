@@ -9,6 +9,8 @@ import watermarkService from './watermarkService';
 import craigslistIntegration from '../integrations/craigslist';
 import poshmarkIntegration from '../integrations/poshmark';
 import ebayIntegration from '../integrations/ebay';
+import offerupIntegration from '../integrations/offerup';
+import nextdoorIntegration from '../integrations/nextdoor';
 import bulkMarketplaceSignupService from './bulkMarketplaceSignupService';
 
 interface Listing {
@@ -406,7 +408,7 @@ class MarketplaceAutomationService {
 
   /**
    * Publish to OfferUp
-   * Note: OfferUp has no public API, this returns manual posting instructions
+   * Uses browser automation (similar to Craigslist)
    */
   private async publishToOfferUp(
     userId: number,
@@ -414,19 +416,111 @@ class MarketplaceAutomationService {
     photos: string[],
     description: string
   ): Promise<PublishResult> {
-    // OfferUp has no public API - provide copy/paste data
-    return {
-      marketplace: 'OfferUp',
-      success: false,
-      error: 'OfferUp does not have a public API. Use the copy buttons to manually post your listing.',
-      copyPasteData: {
-        title: listing.title,
-        description: description,
-        price: listing.price,
-        category: listing.category,
-        condition: listing.condition,
-      },
-    };
+    try {
+      logger.info(`[OfferUp] Starting publish for user ${userId}, listing ${listing.id}`);
+
+      // Get OfferUp credentials
+      const credentials = await bulkMarketplaceSignupService.getMarketplaceCredentials(
+        userId,
+        'OfferUp'
+      );
+
+      if (!credentials) {
+        logger.warn(`[OfferUp] No credentials found for user ${userId}`);
+        return {
+          marketplace: 'OfferUp',
+          success: false,
+          error: 'OfferUp account not connected. Please connect your account first.',
+          copyPasteData: {
+            title: listing.title,
+            description: description,
+            price: listing.price,
+            category: listing.category,
+            condition: listing.condition,
+          },
+        };
+      }
+
+      logger.info(`[OfferUp] Found credentials for ${credentials.email}`);
+
+      // Check if automation is available
+      const available = await offerupIntegration.isAvailable();
+      if (!available) {
+        logger.error(`[OfferUp] Browser automation not available`);
+        return {
+          marketplace: 'OfferUp',
+          success: false,
+          error: 'OfferUp automation currently unavailable. Use manual posting.',
+          copyPasteData: {
+            title: listing.title,
+            description: description,
+            price: listing.price,
+            category: listing.category,
+            condition: listing.condition,
+          },
+        };
+      }
+
+      logger.info(`[OfferUp] Browser automation available, starting post...`);
+
+      // Post to OfferUp
+      const result = await offerupIntegration.postToOfferUp(
+        {
+          email: credentials.email,
+          password: credentials.password,
+        },
+        {
+          title: listing.title,
+          description: description,
+          price: parseFloat(listing.price),
+          category: listing.category,
+          condition: listing.condition,
+          photos: photos,
+          location: {
+            city: 'San Francisco', // Default, could be made configurable
+            zipcode: credentials.zipcode,
+          },
+        }
+      );
+
+      if (result.success) {
+        logger.info(`[OfferUp] Successfully posted listing ${listing.id}`);
+        return {
+          marketplace: 'OfferUp',
+          success: true,
+          listingId: result.postingId,
+          url: result.postingUrl,
+        };
+      } else {
+        logger.error(`[OfferUp] Failed to post listing ${listing.id}: ${result.error}`);
+        return {
+          marketplace: 'OfferUp',
+          success: false,
+          error: result.error || 'Failed to post to OfferUp',
+          copyPasteData: {
+            title: listing.title,
+            description: description,
+            price: listing.price,
+            category: listing.category,
+            condition: listing.condition,
+          },
+        };
+      }
+    } catch (error: any) {
+      logger.error(`[OfferUp] Exception during publish for listing ${listing.id}:`, error);
+      return {
+        marketplace: 'OfferUp',
+        success: false,
+        error: error.message || 'OfferUp posting failed',
+        copyPasteData: {
+          title: listing.title,
+          description: description,
+          price: listing.price,
+          category: listing.category,
+          condition: listing.condition,
+        },
+      };
+    }
   }
 
   /**
@@ -481,7 +575,7 @@ class MarketplaceAutomationService {
 
   /**
    * Publish to Nextdoor
-   * Note: Nextdoor has no public API
+   * Uses browser automation (similar to Craigslist)
    */
   private async publishToNextdoor(
     userId: number,
@@ -489,19 +583,107 @@ class MarketplaceAutomationService {
     photos: string[],
     description: string
   ): Promise<PublishResult> {
-    // Nextdoor has no public API - provide copy/paste data
-    return {
-      marketplace: 'Nextdoor',
-      success: false,
-      error: 'Nextdoor does not have a public API. Use the copy buttons to manually post your listing.',
-      copyPasteData: {
-        title: listing.title,
-        description: description,
-        price: listing.price,
-        category: listing.category,
-        condition: listing.condition,
-      },
-    };
+    try {
+      logger.info(`[Nextdoor] Starting publish for user ${userId}, listing ${listing.id}`);
+
+      // Get Nextdoor credentials
+      const credentials = await bulkMarketplaceSignupService.getMarketplaceCredentials(
+        userId,
+        'Nextdoor'
+      );
+
+      if (!credentials) {
+        logger.warn(`[Nextdoor] No credentials found for user ${userId}`);
+        return {
+          marketplace: 'Nextdoor',
+          success: false,
+          error: 'Nextdoor account not connected. Please connect your account first.',
+          copyPasteData: {
+            title: listing.title,
+            description: description,
+            price: listing.price,
+            category: listing.category,
+            condition: listing.condition,
+          },
+        };
+      }
+
+      logger.info(`[Nextdoor] Found credentials for ${credentials.email}`);
+
+      // Check if automation is available
+      const available = await nextdoorIntegration.isAvailable();
+      if (!available) {
+        logger.error(`[Nextdoor] Browser automation not available`);
+        return {
+          marketplace: 'Nextdoor',
+          success: false,
+          error: 'Nextdoor automation currently unavailable. Use manual posting.',
+          copyPasteData: {
+            title: listing.title,
+            description: description,
+            price: listing.price,
+            category: listing.category,
+            condition: listing.condition,
+          },
+        };
+      }
+
+      logger.info(`[Nextdoor] Browser automation available, starting post...`);
+
+      // Post to Nextdoor
+      const result = await nextdoorIntegration.postToNextdoor(
+        {
+          email: credentials.email,
+          password: credentials.password,
+        },
+        {
+          title: listing.title,
+          description: description,
+          price: parseFloat(listing.price),
+          category: listing.category,
+          condition: listing.condition,
+          photos: photos,
+        }
+      );
+
+      if (result.success) {
+        logger.info(`[Nextdoor] Successfully posted listing ${listing.id}`);
+        return {
+          marketplace: 'Nextdoor',
+          success: true,
+          listingId: result.postingId,
+          url: result.postingUrl,
+        };
+      } else {
+        logger.error(`[Nextdoor] Failed to post listing ${listing.id}: ${result.error}`);
+        return {
+          marketplace: 'Nextdoor',
+          success: false,
+          error: result.error || 'Failed to post to Nextdoor',
+          copyPasteData: {
+            title: listing.title,
+            description: description,
+            price: listing.price,
+            category: listing.category,
+            condition: listing.condition,
+          },
+        };
+      }
+    } catch (error: any) {
+      logger.error(`[Nextdoor] Exception during publish for listing ${listing.id}:`, error);
+      return {
+        marketplace: 'Nextdoor',
+        success: false,
+        error: error.message || 'Nextdoor posting failed',
+        copyPasteData: {
+          title: listing.title,
+          description: description,
+          price: listing.price,
+          category: listing.category,
+          condition: listing.condition,
+        },
+      };
+    }
   }
 
   /**
