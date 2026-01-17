@@ -192,7 +192,7 @@ export const postToNextdoor = async (
       const postButton = await page.$('button:contains("Sell"), button:contains("Post"), a[href*="/sell"]');
       if (postButton) {
         await postButton.click();
-        await page.waitForTimeout(2000);
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } else {
         // Try alternative - might be direct URL
         await page.goto('https://nextdoor.com/sell/new/', {
@@ -226,10 +226,10 @@ export const postToNextdoor = async (
     logger.info(`[Nextdoor] Selecting category: ${category}`);
     try {
       await page.click('select[name="category"], button[aria-label*="Category"]');
-      await page.waitForTimeout(1000);
-      await page.evaluate((cat) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await page.evaluate((cat: string) => {
         const options = Array.from(document.querySelectorAll('option, button, div[role="option"]'));
-        const option = options.find(el => el.textContent?.includes(cat));
+        const option = options.find((el: Element) => el.textContent?.includes(cat));
         if (option) (option as HTMLElement).click();
       }, category);
     } catch (e) {
@@ -241,10 +241,10 @@ export const postToNextdoor = async (
       try {
         const condition = listingData.condition.charAt(0).toUpperCase() + listingData.condition.slice(1);
         await page.click('select[name="condition"], button[aria-label*="Condition"]');
-        await page.waitForTimeout(1000);
-        await page.evaluate((cond) => {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await page.evaluate((cond: string) => {
           const options = Array.from(document.querySelectorAll('option, button, div[role="option"]'));
-          const option = options.find(el => el.textContent?.includes(cond));
+          const option = options.find((el: Element) => el.textContent?.includes(cond));
           if (option) (option as HTMLElement).click();
         }, condition);
       } catch (e) {
@@ -269,7 +269,7 @@ export const postToNextdoor = async (
     }
 
     // Wait a bit for any client-side routing
-    await page.waitForTimeout(3000);
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     // Try to extract posting URL
     const finalUrl = page.url();
@@ -297,7 +297,7 @@ export const postToNextdoor = async (
       if (errorElements.length > 0) {
         const errorText = await page.evaluate(() => {
           const errors = Array.from(document.querySelectorAll('.error, [role="alert"], .alert-danger'));
-          return errors.map(el => el.textContent).join(', ');
+          return errors.map((el: Element) => el.textContent).join(', ');
         });
         return {
           success: false,

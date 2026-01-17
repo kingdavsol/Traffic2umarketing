@@ -219,12 +219,11 @@ export const postToOfferUp = async (
     logger.info(`[OfferUp] Selecting category: ${category}`);
     try {
       await page.click('button[aria-label*="Category"], select[name="category"]');
-      await page.waitForTimeout(1000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       // Try to click the category option
-      const categorySelector = `button:contains("${category}"), option:contains("${category}")`;
-      await page.evaluate((cat) => {
+      await page.evaluate((cat: string) => {
         const buttons = Array.from(document.querySelectorAll('button, option'));
-        const button = buttons.find(el => el.textContent?.includes(cat));
+        const button = buttons.find((el: Element) => el.textContent?.includes(cat));
         if (button) (button as HTMLElement).click();
       }, category);
     } catch (e) {
@@ -237,10 +236,10 @@ export const postToOfferUp = async (
       logger.info(`[OfferUp] Selecting condition: ${condition}`);
       try {
         await page.click('button[aria-label*="Condition"], select[name="condition"]');
-        await page.waitForTimeout(1000);
-        await page.evaluate((cond) => {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await page.evaluate((cond: string) => {
           const buttons = Array.from(document.querySelectorAll('button, option'));
-          const button = buttons.find(el => el.textContent?.includes(cond));
+          const button = buttons.find((el: Element) => el.textContent?.includes(cond));
           if (button) (button as HTMLElement).click();
         }, condition);
       } catch (e) {

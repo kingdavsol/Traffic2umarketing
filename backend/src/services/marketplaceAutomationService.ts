@@ -478,7 +478,7 @@ class MarketplaceAutomationService {
           photos: photos,
           location: {
             city: 'San Francisco', // Default, could be made configurable
-            zipcode: credentials.zipcode,
+            zipcode: undefined, // Could be made configurable
           },
         }
       );
