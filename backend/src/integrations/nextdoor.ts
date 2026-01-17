@@ -91,6 +91,7 @@ const getBrowser = async (): Promise<Browser> => {
       puppeteer.launch({
         executablePath,
         headless: true,
+        protocolTimeout: 60000, // 60 second timeout for Puppeteer protocol operations
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
