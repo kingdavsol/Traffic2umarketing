@@ -52,6 +52,18 @@ interface PublishOptions {
   skipWatermark?: boolean;
 }
 
+/**
+ * Timeout wrapper for promises - prevents indefinite hanging
+ */
+const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
+    )
+  ]);
+};
+
 class MarketplaceAutomationService {
   /**
    * Publish a listing to multiple marketplaces
@@ -273,23 +285,27 @@ class MarketplaceAutomationService {
 
       logger.info(`[Craigslist] Browser automation available, starting post...`);
 
-      // Post to Craigslist
-      const result = await craigslistIntegration.postToCraigslist(
-        {
-          email: credentials.email,
-          password: credentials.password,
-        },
-        {
-          title: listing.title,
-          description: description,
-          price: parseFloat(listing.price),
-          category: listing.category,
-          photos: photos,
-          location: {
-            city: options.city || 'san francisco',
-            zipcode: options.zipcode,
+      // Post to Craigslist with 60-second timeout for entire operation
+      const result = await withTimeout(
+        craigslistIntegration.postToCraigslist(
+          {
+            email: credentials.email,
+            password: credentials.password,
           },
-        }
+          {
+            title: listing.title,
+            description: description,
+            price: parseFloat(listing.price),
+            category: listing.category,
+            photos: photos,
+            location: {
+              city: options.city || 'san francisco',
+              zipcode: options.zipcode,
+            },
+          }
+        ),
+        60000,
+        'Craigslist posting timeout - operation took longer than 60 seconds'
       );
 
       if (result.success) {
@@ -463,24 +479,28 @@ class MarketplaceAutomationService {
 
       logger.info(`[OfferUp] Browser automation available, starting post...`);
 
-      // Post to OfferUp
-      const result = await offerupIntegration.postToOfferUp(
-        {
-          email: credentials.email,
-          password: credentials.password,
-        },
-        {
-          title: listing.title,
-          description: description,
-          price: parseFloat(listing.price),
-          category: listing.category,
-          condition: listing.condition,
-          photos: photos,
-          location: {
-            city: 'San Francisco', // Default, could be made configurable
-            zipcode: undefined, // Could be made configurable
+      // Post to OfferUp with 60-second timeout for entire operation
+      const result = await withTimeout(
+        offerupIntegration.postToOfferUp(
+          {
+            email: credentials.email,
+            password: credentials.password,
           },
-        }
+          {
+            title: listing.title,
+            description: description,
+            price: parseFloat(listing.price),
+            category: listing.category,
+            condition: listing.condition,
+            photos: photos,
+            location: {
+              city: 'San Francisco', // Default, could be made configurable
+              zipcode: undefined, // Could be made configurable
+            },
+          }
+        ),
+        60000,
+        'OfferUp posting timeout - operation took longer than 60 seconds'
       );
 
       if (result.success) {
@@ -630,20 +650,24 @@ class MarketplaceAutomationService {
 
       logger.info(`[Nextdoor] Browser automation available, starting post...`);
 
-      // Post to Nextdoor
-      const result = await nextdoorIntegration.postToNextdoor(
-        {
-          email: credentials.email,
-          password: credentials.password,
-        },
-        {
-          title: listing.title,
-          description: description,
-          price: parseFloat(listing.price),
-          category: listing.category,
-          condition: listing.condition,
-          photos: photos,
-        }
+      // Post to Nextdoor with 60-second timeout for entire operation
+      const result = await withTimeout(
+        nextdoorIntegration.postToNextdoor(
+          {
+            email: credentials.email,
+            password: credentials.password,
+          },
+          {
+            title: listing.title,
+            description: description,
+            price: parseFloat(listing.price),
+            category: listing.category,
+            condition: listing.condition,
+            photos: photos,
+          }
+        ),
+        60000,
+        'Nextdoor posting timeout - operation took longer than 60 seconds'
       );
 
       if (result.success) {
@@ -761,23 +785,27 @@ class MarketplaceAutomationService {
         };
       }
 
-      // Post to Poshmark using browser automation
-      const result = await poshmarkIntegration.postToPoshmark(
-        {
-          email: credentials.email,
-          password: credentials.password,
-        },
-        {
-          title: listing.title,
-          description: description,
-          price: parseFloat(listing.price),
-          category: listing.category,
-          brand: listing.brand,
-          size: listing.size,
-          condition: listing.condition,
-          color: listing.color,
-          photos: photos,
-        }
+      // Post to Poshmark using browser automation with 60-second timeout
+      const result = await withTimeout(
+        poshmarkIntegration.postToPoshmark(
+          {
+            email: credentials.email,
+            password: credentials.password,
+          },
+          {
+            title: listing.title,
+            description: description,
+            price: parseFloat(listing.price),
+            category: listing.category,
+            brand: listing.brand,
+            size: listing.size,
+            condition: listing.condition,
+            color: listing.color,
+            photos: photos,
+          }
+        ),
+        60000,
+        'Poshmark posting timeout - operation took longer than 60 seconds'
       );
 
       if (result.success) {
