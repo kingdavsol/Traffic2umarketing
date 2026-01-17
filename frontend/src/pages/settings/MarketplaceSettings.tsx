@@ -63,6 +63,7 @@ const MarketplaceSettings: React.FC = () => {
   const [connecting, setConnecting] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const defaultMarketplaces: Marketplace[] = [
     {
@@ -396,7 +397,10 @@ const MarketplaceSettings: React.FC = () => {
                       variant="contained"
                       size="large"
                       startIcon={<LinkIcon />}
-                      onClick={() => handleConnect(marketplace.id, marketplace.requiresAuth)}
+                      onClick={() => {
+                        setIsUpdating(false);
+                        handleConnect(marketplace.id, marketplace.requiresAuth);
+                      }}
                       fullWidth
                       sx={{
                         py: 1.5,
@@ -415,17 +419,35 @@ const MarketplaceSettings: React.FC = () => {
                   )}
 
                   {marketplace.connected && (
-                    <Button
-                      variant="outlined"
-                      size="large"
-                      color="error"
-                      startIcon={<UnlinkIcon />}
-                      onClick={() => setDisconnectDialog(marketplace.id)}
-                      fullWidth
-                      sx={{ py: 1.5 }}
-                    >
-                      Disconnect
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                      {marketplace.requiresAuth && (
+                        <Button
+                          variant="contained"
+                          size="large"
+                          startIcon={<LinkIcon />}
+                          onClick={() => {
+                            setIsUpdating(true);
+                            setConnectDialog(marketplace.id);
+                            setCredentials({ email: marketplace.accountName || '', password: '' });
+                          }}
+                          fullWidth
+                          sx={{ py: 1.5 }}
+                        >
+                          Update Credentials
+                        </Button>
+                      )}
+                      <Button
+                        variant="outlined"
+                        size="large"
+                        color="error"
+                        startIcon={<UnlinkIcon />}
+                        onClick={() => setDisconnectDialog(marketplace.id)}
+                        fullWidth
+                        sx={{ py: 1.5 }}
+                      >
+                        Disconnect
+                      </Button>
+                    </Box>
                   )}
                 </Box>
               </CardContent>
@@ -468,11 +490,11 @@ const MarketplaceSettings: React.FC = () => {
         fullWidth
       >
         <DialogTitle>
-          Connect to {connectDialog && marketplaces.find(m => m.id === connectDialog)?.name}
+          {isUpdating ? 'Update Credentials' : 'Connect to'} {connectDialog && marketplaces.find(m => m.id === connectDialog)?.name}
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Enter your {connectDialog} account credentials. Your password will be encrypted and stored securely.
+            {isUpdating ? 'Update' : 'Enter'} your {connectDialog} account credentials. Your password will be encrypted and stored securely.
           </Typography>
           <TextField
             label="Email or Username"
@@ -509,7 +531,7 @@ const MarketplaceSettings: React.FC = () => {
             disabled={connecting || !credentials.email || !credentials.password}
             startIcon={connecting ? <CircularProgress size={20} /> : <LinkIcon />}
           >
-            {connecting ? 'Connecting...' : 'Connect'}
+            {connecting ? (isUpdating ? 'Updating...' : 'Connecting...') : (isUpdating ? 'Update' : 'Connect')}
           </Button>
         </DialogActions>
       </Dialog>
