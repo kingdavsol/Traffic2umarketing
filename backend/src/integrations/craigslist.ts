@@ -73,6 +73,18 @@ const CATEGORY_MAP: Record<string, string> = {
 
 /**
 /**
+ * Timeout wrapper for promises
+ */
+const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
+    )
+  ]);
+};
+
+/**
  * Get Puppeteer browser instance
  * First tries to connect to remote Chromium on host, falls back to local
  */
@@ -89,32 +101,50 @@ const getBrowser = async (): Promise<Browser> => {
         .replace("127.0.0.1", "172.19.0.1")
         .replace("localhost", "172.19.0.1");
       logger.info("Connecting to remote Chromium browser at " + wsUrl);
-      return puppeteer.connect({ browserWSEndpoint: wsUrl });
+      return await withTimeout(
+        puppeteer.connect({ browserWSEndpoint: wsUrl }),
+        10000,
+        'Timeout connecting to remote Chromium'
+      );
     }
   } catch (e) {
     logger.warn("Remote Chromium not available, falling back to local: " + e);
   }
-  
+
   // Fallback to local launch (requires Chromium in container)
   const executablePath = process.env.CHROME_PATH || "/usr/bin/chromium-browser";
-  
-  return puppeteer.launch({
-    executablePath,
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage", // Use /tmp instead of /dev/shm
-      "--disable-gpu",
-      "--disable-software-rasterizer",
-      "--disable-extensions",
-      "--disable-web-security",
-      "--no-first-run",
-      "--no-zygote",
-      "--single-process", // Critical: Run in single process to avoid crashes
-      "--disable-features=VizDisplayCompositor",
-    ],
-  });
+
+  logger.info("[Craigslist] Attempting to launch local Chromium at " + executablePath);
+
+  try {
+    const browser = await withTimeout(
+      puppeteer.launch({
+        executablePath,
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage", // Use /tmp instead of /dev/shm
+          "--disable-gpu",
+          "--disable-software-rasterizer",
+          "--disable-extensions",
+          "--disable-web-security",
+          "--no-first-run",
+          "--no-zygote",
+          "--single-process", // Critical: Run in single process to avoid crashes
+          "--disable-features=VizDisplayCompositor",
+        ],
+      }),
+      15000, // 15 second timeout for browser launch
+      'Timeout launching local Chromium browser'
+    );
+
+    logger.info("[Craigslist] Local Chromium launched successfully");
+    return browser;
+  } catch (launchError) {
+    logger.error("[Craigslist] Failed to launch Chromium: " + launchError);
+    throw new Error("Chromium browser not available. Please ensure Chromium is installed in the container.");
+  }
 };
 /**
  * Login to Craigslist account
