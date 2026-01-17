@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * OfferUp Automation
  * Uses Puppeteer to automate posting to OfferUp

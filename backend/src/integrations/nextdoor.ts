@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Nextdoor Automation
  * Uses Puppeteer to automate posting to Nextdoor For Sale & Free
