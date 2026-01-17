@@ -435,10 +435,10 @@ class MarketplaceAutomationService {
     try {
       logger.info(`[OfferUp] Starting publish for user ${userId}, listing ${listing.id}`);
 
-      // Get OfferUp credentials
+      // Get OfferUp credentials (match database casing)
       const credentials = await bulkMarketplaceSignupService.getMarketplaceCredentials(
         userId,
-        'OfferUp'
+        'Offerup'
       );
 
       if (!credentials) {
