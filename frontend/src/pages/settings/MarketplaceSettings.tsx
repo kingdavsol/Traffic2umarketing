@@ -26,6 +26,10 @@ import {
   Store as StoreIcon,
   Storefront as StorefrontIcon,
   LocalShipping as ShippingIcon,
+  VideoLibrary as TikTokIcon,
+  Instagram as InstagramIcon,
+  Checkroom as PoshmarkIcon,
+  LocationOn as NextdoorIcon,
 } from '@mui/icons-material';
 import api from '../../services/api';
 
@@ -46,6 +50,7 @@ interface Marketplace {
   hasAPI: boolean;
   connected: boolean;
   accountName?: string;
+  url?: string;
 }
 
 const MarketplaceSettings: React.FC = () => {
@@ -61,6 +66,26 @@ const MarketplaceSettings: React.FC = () => {
 
   const defaultMarketplaces: Marketplace[] = [
     {
+      id: 'tiktok',
+      name: 'TikTok Shop',
+      description: 'Auto-publish via API (requires connection)',
+      icon: <TikTokIcon />,
+      requiresAuth: true,
+      hasAPI: true,
+      connected: false,
+      url: 'https://seller-us.tiktok.com',
+    },
+    {
+      id: 'instagram',
+      name: 'Instagram Shopping',
+      description: 'Manual posting - Copy & paste listings',
+      icon: <InstagramIcon />,
+      requiresAuth: false,
+      hasAPI: false,
+      connected: false,
+      url: 'https://www.instagram.com',
+    },
+    {
       id: 'ebay',
       name: 'eBay',
       description: 'Auto-publish listings to eBay',
@@ -68,6 +93,67 @@ const MarketplaceSettings: React.FC = () => {
       requiresAuth: true,
       hasAPI: true,
       connected: false,
+      url: 'https://www.ebay.com/sh/lst/active',
+    },
+    {
+      id: 'facebook',
+      name: 'Facebook Marketplace',
+      description: 'Manual posting - Copy & paste listings',
+      icon: <FacebookIcon />,
+      requiresAuth: false,
+      hasAPI: false,
+      connected: false,
+      url: 'https://www.facebook.com/marketplace/create/item',
+    },
+    {
+      id: 'craigslist',
+      name: 'Craigslist',
+      description: 'Browser automation (check email for verification)',
+      icon: <StoreIcon />,
+      requiresAuth: true,
+      hasAPI: false,
+      connected: false,
+      url: 'https://accounts.craigslist.org/login',
+    },
+    {
+      id: 'offerup',
+      name: 'OfferUp',
+      description: 'Manual posting - Copy & paste listings',
+      icon: <ShippingIcon />,
+      requiresAuth: false,
+      hasAPI: false,
+      connected: false,
+      url: 'https://offerup.com/sell/',
+    },
+    {
+      id: 'poshmark',
+      name: 'Poshmark',
+      description: 'Browser automation when connected',
+      icon: <PoshmarkIcon />,
+      requiresAuth: true,
+      hasAPI: false,
+      connected: false,
+      url: 'https://poshmark.com/create-listing',
+    },
+    {
+      id: 'mercari',
+      name: 'Mercari',
+      description: 'Manual posting - Copy & paste listings',
+      icon: <StorefrontIcon />,
+      requiresAuth: false,
+      hasAPI: false,
+      connected: false,
+      url: 'https://www.mercari.com/sell/',
+    },
+    {
+      id: 'nextdoor',
+      name: 'Nextdoor',
+      description: 'Manual posting - Copy & paste listings',
+      icon: <NextdoorIcon />,
+      requiresAuth: false,
+      hasAPI: false,
+      connected: false,
+      url: 'https://nextdoor.com/sell/',
     },
     {
       id: 'etsy',
@@ -77,42 +163,7 @@ const MarketplaceSettings: React.FC = () => {
       requiresAuth: true,
       hasAPI: true,
       connected: false,
-    },
-    {
-      id: 'facebook',
-      name: 'Facebook Marketplace',
-      description: 'Copy & paste listings manually',
-      icon: <FacebookIcon />,
-      requiresAuth: false,
-      hasAPI: false,
-      connected: false,
-    },
-    {
-      id: 'craigslist',
-      name: 'Craigslist',
-      description: 'Copy & paste listings manually',
-      icon: <StoreIcon />,
-      requiresAuth: false,
-      hasAPI: false,
-      connected: false,
-    },
-    {
-      id: 'offerup',
-      name: 'OfferUp',
-      description: 'Copy & paste listings manually',
-      icon: <ShippingIcon />,
-      requiresAuth: false,
-      hasAPI: false,
-      connected: false,
-    },
-    {
-      id: 'mercari',
-      name: 'Mercari',
-      description: 'Copy & paste listings manually',
-      icon: <StorefrontIcon />,
-      requiresAuth: false,
-      hasAPI: false,
-      connected: false,
+      url: 'https://www.etsy.com/your/shops/me/tools/listings',
     },
   ];
 
@@ -268,15 +319,34 @@ const MarketplaceSettings: React.FC = () => {
             >
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      cursor: marketplace.url ? 'pointer' : 'default',
+                      '&:hover .marketplace-name': marketplace.url ? {
+                        textDecoration: 'underline',
+                        color: 'primary.main',
+                      } : {}
+                    }}
+                    onClick={() => marketplace.url && window.open(marketplace.url, '_blank')}
+                  >
                     <Box sx={{ color: 'primary.main', fontSize: 40 }}>
                       {marketplace.icon}
                     </Box>
                     <Box>
-                      <Typography variant="h6" gutterBottom>
-                        {marketplace.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography variant="h6" gutterBottom className="marketplace-name" sx={{ mb: 0, transition: 'all 0.2s' }}>
+                          {marketplace.name}
+                        </Typography>
+                        {marketplace.url && (
+                          <Typography variant="caption" sx={{ color: 'primary.main', fontSize: '0.8rem' }}>
+                            ↗
+                          </Typography>
+                        )}
+                      </Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1, mt: 1 }}>
                         {marketplace.description}
                       </Typography>
                       {marketplace.connected && marketplace.accountName && (
