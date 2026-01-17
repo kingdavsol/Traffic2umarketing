@@ -17,6 +17,10 @@ import {
 } from '@mui/icons-material';
 import Layout from '../components/Layout';
 import MarketplaceSettings from './settings/MarketplaceSettings';
+import ProfileSettings from './settings/ProfileSettings';
+import NotificationSettings from './settings/NotificationSettings';
+import BillingSettings from './settings/BillingSettings';
+import SecuritySettings from './settings/SecuritySettings';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -87,20 +91,7 @@ const Settings: React.FC = () => {
           </Tabs>
 
           <TabPanel value={currentTab} index={0}>
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Profile Settings
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Manage your profile information, email, and password.
-              </Typography>
-              {/* TODO: Add profile settings form */}
-              <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Profile settings coming soon...
-                </Typography>
-              </Box>
-            </Box>
+            <ProfileSettings />
           </TabPanel>
 
           <TabPanel value={currentTab} index={1}>
@@ -108,54 +99,15 @@ const Settings: React.FC = () => {
           </TabPanel>
 
           <TabPanel value={currentTab} index={2}>
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Notification Preferences
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Choose what notifications you want to receive.
-              </Typography>
-              {/* TODO: Add notification settings */}
-              <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Notification preferences coming soon...
-                </Typography>
-              </Box>
-            </Box>
+            <NotificationSettings />
           </TabPanel>
 
           <TabPanel value={currentTab} index={3}>
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Billing & Subscription
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Manage your subscription plan and payment methods.
-              </Typography>
-              {/* TODO: Add billing settings */}
-              <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Billing settings coming soon...
-                </Typography>
-              </Box>
-            </Box>
+            <BillingSettings />
           </TabPanel>
 
           <TabPanel value={currentTab} index={4}>
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Security Settings
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Manage your account security and privacy settings.
-              </Typography>
-              {/* TODO: Add security settings */}
-              <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Security settings coming soon...
-                </Typography>
-              </Box>
-            </Box>
+            <SecuritySettings />
           </TabPanel>
         </Paper>
       </Container>

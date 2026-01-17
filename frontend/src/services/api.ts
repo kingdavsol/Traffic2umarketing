@@ -266,6 +266,98 @@ class APIService {
   validateReferralCode(code: string) {
     return this.api.get(`/referrals/validate/${code}`);
   }
+
+  // Profile Settings
+  getProfile() {
+    return this.api.get('/user/profile');
+  }
+
+  updateProfile(data: any) {
+    return this.api.put('/user/profile', data);
+  }
+
+  changePassword(currentPassword: string, newPassword: string) {
+    return this.api.post('/user/change-password', { currentPassword, newPassword });
+  }
+
+  uploadAvatar(formData: FormData) {
+    return this.api.post('/user/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  }
+
+  deleteAccount() {
+    return this.api.delete('/user/account');
+  }
+
+  // Notification Preferences
+  getNotificationPreferences() {
+    return this.api.get('/user/notification-preferences');
+  }
+
+  updateNotificationPreferences(preferences: any) {
+    return this.api.put('/user/notification-preferences', preferences);
+  }
+
+  sendTestNotification() {
+    return this.api.post('/user/test-notification');
+  }
+
+  // Billing
+  getSubscription() {
+    return this.api.get('/billing/subscription');
+  }
+
+  getInvoices() {
+    return this.api.get('/billing/invoices');
+  }
+
+  getPaymentMethods() {
+    return this.api.get('/billing/payment-methods');
+  }
+
+  downloadInvoice(invoiceId: number) {
+    return this.api.get(`/billing/invoices/${invoiceId}/download`, {
+      responseType: 'blob',
+    });
+  }
+
+  // Security
+  getSecuritySettings() {
+    return this.api.get('/user/security');
+  }
+
+  getActiveSessions() {
+    return this.api.get('/user/sessions');
+  }
+
+  getLoginHistory() {
+    return this.api.get('/user/login-history');
+  }
+
+  enable2FA() {
+    return this.api.post('/user/2fa/enable');
+  }
+
+  verify2FA(code: string) {
+    return this.api.post('/user/2fa/verify', { code });
+  }
+
+  disable2FA() {
+    return this.api.post('/user/2fa/disable');
+  }
+
+  logoutSession(sessionId: number) {
+    return this.api.delete(`/user/sessions/${sessionId}`);
+  }
+
+  logoutAllSessions() {
+    return this.api.delete('/user/sessions/all');
+  }
+
+  exportUserData() {
+    return this.api.post('/user/export-data');
+  }
 }
 
 export default new APIService();
