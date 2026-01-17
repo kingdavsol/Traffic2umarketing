@@ -221,10 +221,10 @@ export const postToOfferUp = async (
       await page.click('button[aria-label*="Category"], select[name="category"]');
       await new Promise(resolve => setTimeout(resolve, 1000));
       // Try to click the category option
-      await page.evaluate((cat: string) => {
+      await page.evaluate((cat) => {
         const buttons = Array.from(document.querySelectorAll('button, option'));
-        const button = buttons.find((el: Element) => el.textContent?.includes(cat));
-        if (button) (button as HTMLElement).click();
+        const button = buttons.find(el => el.textContent?.includes(cat));
+        if (button) button.click();
       }, category);
     } catch (e) {
       logger.warn(`[OfferUp] Could not select category: ${e}`);
@@ -237,10 +237,10 @@ export const postToOfferUp = async (
       try {
         await page.click('button[aria-label*="Condition"], select[name="condition"]');
         await new Promise(resolve => setTimeout(resolve, 1000));
-        await page.evaluate((cond: string) => {
+        await page.evaluate((cond) => {
           const buttons = Array.from(document.querySelectorAll('button, option'));
-          const button = buttons.find((el: Element) => el.textContent?.includes(cond));
-          if (button) (button as HTMLElement).click();
+          const button = buttons.find(el => el.textContent?.includes(cond));
+          if (button) button.click();
         }, condition);
       } catch (e) {
         logger.warn(`[OfferUp] Could not select condition: ${e}`);

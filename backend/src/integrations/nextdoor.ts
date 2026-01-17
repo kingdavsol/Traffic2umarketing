@@ -227,10 +227,10 @@ export const postToNextdoor = async (
     try {
       await page.click('select[name="category"], button[aria-label*="Category"]');
       await new Promise(resolve => setTimeout(resolve, 1000));
-      await page.evaluate((cat: string) => {
+      await page.evaluate((cat) => {
         const options = Array.from(document.querySelectorAll('option, button, div[role="option"]'));
-        const option = options.find((el: Element) => el.textContent?.includes(cat));
-        if (option) (option as HTMLElement).click();
+        const option = options.find(el => el.textContent?.includes(cat));
+        if (option) option.click();
       }, category);
     } catch (e) {
       logger.warn(`[Nextdoor] Could not select category: ${e}`);
@@ -242,10 +242,10 @@ export const postToNextdoor = async (
         const condition = listingData.condition.charAt(0).toUpperCase() + listingData.condition.slice(1);
         await page.click('select[name="condition"], button[aria-label*="Condition"]');
         await new Promise(resolve => setTimeout(resolve, 1000));
-        await page.evaluate((cond: string) => {
+        await page.evaluate((cond) => {
           const options = Array.from(document.querySelectorAll('option, button, div[role="option"]'));
-          const option = options.find((el: Element) => el.textContent?.includes(cond));
-          if (option) (option as HTMLElement).click();
+          const option = options.find(el => el.textContent?.includes(cond));
+          if (option) option.click();
         }, condition);
       } catch (e) {
         logger.warn(`[Nextdoor] Could not select condition: ${e}`);
@@ -297,7 +297,7 @@ export const postToNextdoor = async (
       if (errorElements.length > 0) {
         const errorText = await page.evaluate(() => {
           const errors = Array.from(document.querySelectorAll('.error, [role="alert"], .alert-danger'));
-          return errors.map((el: Element) => el.textContent).join(', ');
+          return errors.map(el => el.textContent).join(', ');
         });
         return {
           success: false,
