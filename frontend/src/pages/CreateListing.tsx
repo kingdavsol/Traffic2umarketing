@@ -232,6 +232,11 @@ const CreateListing: React.FC = () => {
             const reader = new FileReader();
             reader.onload = () => {
               setPhotoUrls((prev) => [...prev, reader.result as string]);
+
+              // Scroll to photo preview after a brief delay to ensure render
+              setTimeout(() => {
+                window.scrollTo({ top: 200, behavior: 'smooth' });
+              }, 300);
             };
             reader.readAsDataURL(file);
 
@@ -584,6 +589,55 @@ const CreateListing: React.FC = () => {
               You can add up to 12 photos (JPEG, PNG, WebP)
             </Typography>
 
+            {/* Approve/Retake buttons - prominently displayed at top when photos captured */}
+            {photoUrls.length > 0 && !analyzing && !photosApproved && (
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 3,
+                  '& .MuiAlert-message': { width: '100%' }
+                }}
+              >
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    📸 Photo{photoUrls.length > 1 ? 's' : ''} Captured!
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    Review your photo{photoUrls.length > 1 ? 's' : ''} below. Click "OK - Analyze with AI" to continue, or "Retake" to start over.
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="large"
+                      startIcon={<RefreshIcon />}
+                      onClick={() => {
+                        setPhotos([]);
+                        setPhotoUrls([]);
+                        setPhotoCaptured(false);
+                        setPhotosApproved(false);
+                      }}
+                    >
+                      Retake
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      startIcon={<CheckCircleIcon />}
+                      onClick={() => {
+                        setPhotosApproved(true);
+                        setPhotoCaptured(true);
+                        analyzePhotos();
+                      }}
+                    >
+                      OK - Analyze with AI
+                    </Button>
+                  </Box>
+                </Box>
+              </Alert>
+            )}
+
             {photoUrls.length > 0 && (
               <Grid container spacing={2} sx={{ mt: 2 }}>
                 {photoUrls.map((url, index) => (
@@ -610,39 +664,6 @@ const CreateListing: React.FC = () => {
                   </Grid>
                 ))}
               </Grid>
-            )}
-
-            {/* Approve/Retake buttons - only show when photos exist and not yet approved */}
-            {photoUrls.length > 0 && !analyzing && !photosApproved && (
-              <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  size="large"
-                  startIcon={<RefreshIcon />}
-                  onClick={() => {
-                    setPhotos([]);
-                    setPhotoUrls([]);
-                    setPhotoCaptured(false);
-                    setPhotosApproved(false);
-                  }}
-                >
-                  Retake Photos
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  startIcon={<CheckCircleIcon />}
-                  onClick={() => {
-                    setPhotosApproved(true);
-                    setPhotoCaptured(true);
-                    analyzePhotos();
-                  }}
-                >
-                  Approve & Analyze
-                </Button>
-              </Box>
             )}
 
             {/* Analyzing message moved to floating snackbar at top */}
