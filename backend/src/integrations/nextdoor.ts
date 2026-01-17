@@ -227,6 +227,7 @@ export const postToNextdoor = async (
     try {
       await page.click('select[name="category"], button[aria-label*="Category"]');
       await new Promise(resolve => setTimeout(resolve, 1000));
+      // @ts-ignore - Browser context has document global
       await page.evaluate((cat) => {
         const options = Array.from(document.querySelectorAll('option, button, div[role="option"]'));
         const option = options.find(el => el.textContent?.includes(cat));
@@ -242,6 +243,7 @@ export const postToNextdoor = async (
         const condition = listingData.condition.charAt(0).toUpperCase() + listingData.condition.slice(1);
         await page.click('select[name="condition"], button[aria-label*="Condition"]');
         await new Promise(resolve => setTimeout(resolve, 1000));
+        // @ts-ignore - Browser context has document global
         await page.evaluate((cond) => {
           const options = Array.from(document.querySelectorAll('option, button, div[role="option"]'));
           const option = options.find(el => el.textContent?.includes(cond));
@@ -295,6 +297,7 @@ export const postToNextdoor = async (
       // Check for error messages
       const errorElements = await page.$$('.error, [role="alert"], .alert-danger');
       if (errorElements.length > 0) {
+        // @ts-ignore - Browser context has document global
         const errorText = await page.evaluate(() => {
           const errors = Array.from(document.querySelectorAll('.error, [role="alert"], .alert-danger'));
           return errors.map(el => el.textContent).join(', ');

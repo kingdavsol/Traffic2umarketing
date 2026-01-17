@@ -221,6 +221,7 @@ export const postToOfferUp = async (
       await page.click('button[aria-label*="Category"], select[name="category"]');
       await new Promise(resolve => setTimeout(resolve, 1000));
       // Try to click the category option
+      // @ts-ignore - Browser context has document global
       await page.evaluate((cat) => {
         const buttons = Array.from(document.querySelectorAll('button, option'));
         const button = buttons.find(el => el.textContent?.includes(cat));
@@ -237,6 +238,7 @@ export const postToOfferUp = async (
       try {
         await page.click('button[aria-label*="Condition"], select[name="condition"]');
         await new Promise(resolve => setTimeout(resolve, 1000));
+        // @ts-ignore - Browser context has document global
         await page.evaluate((cond) => {
           const buttons = Array.from(document.querySelectorAll('button, option'));
           const button = buttons.find(el => el.textContent?.includes(cond));
