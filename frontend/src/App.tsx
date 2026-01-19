@@ -21,6 +21,7 @@ import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import CaseStudies from './pages/CaseStudies';
 import GoogleCallback from './pages/auth/GoogleCallback';
+import ForgotPassword from './pages/auth/ForgotPassword';
 import { TermsOfService, PrivacyPolicy, CookiePolicy } from './pages/legal';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
@@ -136,6 +137,7 @@ const App: React.FC = () => {
           <Route path="/auth/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />} />
           <Route path="/auth/callback" element={<GoogleCallback />} />
           <Route path="/auth/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <RegisterPage />} />
+          <Route path="/auth/forgot-password" element={isAuthenticated ? <Navigate to="/dashboard" /> : <ForgotPassword />} />
           <Route path="/login" element={<Navigate to="/auth/login" />} />
           <Route path="/register" element={<Navigate to="/auth/register" />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

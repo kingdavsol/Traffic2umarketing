@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -33,6 +33,12 @@ import {
 import Layout from '../components/Layout';
 import api from '../services/api';
 
+interface DashboardStats {
+  activeListings: number;
+  totalEarnings: number;
+  itemsSold: number;
+}
+
 const DashboardPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -42,6 +48,31 @@ const DashboardPage: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [copySnackbar, setCopySnackbar] = useState('');
   const [fulfillmentType, setFulfillmentType] = useState<string>('both');
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
+    activeListings: 0,
+    totalEarnings: 0,
+    itemsSold: 0,
+  });
+
+  // Load dashboard stats on mount
+  useEffect(() => {
+    const loadDashboardStats = async () => {
+      try {
+        const response = await api.getDashboardStats();
+        if (response.data?.data) {
+          setDashboardStats({
+            activeListings: response.data.data.activeListings || 0,
+            totalEarnings: response.data.data.totalEarnings || 0,
+            itemsSold: response.data.data.itemsSold || 0,
+          });
+        }
+      } catch (err) {
+        // If endpoint doesn't exist yet, silently fail and show 0s
+        console.log('Dashboard stats not available');
+      }
+    };
+    loadDashboardStats();
+  }, []);
 
   // Marketplace definitions with fulfillment types
   const LOCAL_MARKETPLACES = ['Craigslist', 'Facebook', 'OfferUp'];
@@ -451,7 +482,7 @@ Listed with QuickSell`;
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <Typography variant="h4" color="primary" fontWeight={700}>
-                      0
+                      {dashboardStats.activeListings}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Active Listings
@@ -463,7 +494,7 @@ Listed with QuickSell`;
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <Typography variant="h4" color="primary" fontWeight={700}>
-                      $0
+                      ${dashboardStats.totalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Total Earnings
@@ -475,7 +506,7 @@ Listed with QuickSell`;
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <Typography variant="h4" color="primary" fontWeight={700}>
-                      0
+                      {dashboardStats.itemsSold}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Items Sold

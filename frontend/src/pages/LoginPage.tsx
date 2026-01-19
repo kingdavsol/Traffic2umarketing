@@ -298,6 +298,19 @@ const LoginPage: React.FC = () => {
             </Button>
 
             <Box sx={{ textAlign: "center", mt: 2 }}>
+              <Link
+                to="/auth/forgot-password"
+                style={{
+                  color: "#667eea",
+                  textDecoration: "none",
+                  fontSize: "0.875rem",
+                }}
+              >
+                Forgot your password?
+              </Link>
+            </Box>
+
+            <Box sx={{ textAlign: "center", mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
                 Don&apos;t have an account?{" "}
                 <Link

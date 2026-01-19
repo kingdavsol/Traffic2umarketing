@@ -32,6 +32,7 @@ import {
   Email,
 } from '@mui/icons-material';
 import api from '../services/api';
+import Layout from '../components/Layout';
 
 interface ReferralStats {
   total_referrals: number;
@@ -137,14 +138,17 @@ const Referrals: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Typography>Loading...</Typography>
-      </Container>
+      <Layout>
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <Typography>Loading...</Typography>
+        </Container>
+      </Layout>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Layout>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom fontWeight="bold">
@@ -343,7 +347,8 @@ const Referrals: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Container>
+      </Container>
+    </Layout>
   );
 };
 

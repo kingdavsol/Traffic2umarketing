@@ -17,6 +17,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import api from '../services/api';
 import { registerSuccess } from '../store/slices/authSlice';
+import { OnboardingWizard } from '../components/OnboardingWizard';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const RegisterPage: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Extract referral code from URL on mount
   useEffect(() => {
@@ -90,12 +92,12 @@ const RegisterPage: React.FC = () => {
           token: response.data.data.token
         }));
 
-        setSuccess('Registration successful! Redirecting to dashboard...');
+        setSuccess('Registration successful! Let\'s get you started...');
 
-        // Redirect to dashboard after brief delay
+        // Show onboarding wizard for new users
         setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
+          setShowOnboarding(true);
+        }, 1000);
       }
     } catch (err: any) {
       setError(err.response?.data?.error || err.response?.data?.message || 'Registration failed. Please try again.');
@@ -304,6 +306,19 @@ const RegisterPage: React.FC = () => {
           </form>
         </Paper>
       </Container>
+
+      {/* Onboarding Wizard for new users */}
+      <OnboardingWizard
+        open={showOnboarding}
+        onClose={() => {
+          setShowOnboarding(false);
+          navigate('/dashboard');
+        }}
+        onComplete={() => {
+          setShowOnboarding(false);
+          navigate('/dashboard');
+        }}
+      />
     </Box>
   );
 };

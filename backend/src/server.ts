@@ -29,6 +29,7 @@ import subscriptionRoutes from './routes/subscription.routes';
 import publishRoutes from './routes/publish.routes';
 import referralRoutes from './routes/referral.routes';
 import adminRoutes from './routes/admin.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -133,6 +134,7 @@ app.use('/api/v1/subscription', subscriptionRoutes);
 app.use('/api/v1/publish', publishRoutes);
 app.use('/api/v1/referrals', referralRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // ============================================
 // 404 HANDLER

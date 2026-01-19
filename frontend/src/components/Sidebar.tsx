@@ -19,6 +19,7 @@ import {
   EmojiEvents as TrophyIcon,
   Settings as SettingsIcon,
   ConnectWithoutContact as ConnectIcon,
+  PersonAdd as ReferralsIcon,
 } from '@mui/icons-material';
 
 interface SidebarProps {
@@ -37,8 +38,22 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     { text: 'Connect Marketplaces', icon: <ConnectIcon />, path: '/settings?tab=marketplaces' },
     { text: 'Sales', icon: <ShippingIcon />, path: '/sales' },
     { text: 'Achievements', icon: <TrophyIcon />, path: '/gamification' },
+    { text: 'Referrals', icon: <ReferralsIcon />, path: '/referrals' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
+
+  // Helper to check if menu item is selected (handles query params)
+  const isSelected = (itemPath: string) => {
+    if (itemPath.includes('?')) {
+      // For paths with query params, check both pathname and search
+      return location.pathname + location.search === itemPath;
+    }
+    // For Settings, don't highlight if on marketplaces tab
+    if (itemPath === '/settings' && location.search.includes('tab=')) {
+      return false;
+    }
+    return location.pathname === itemPath;
+  };
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -82,7 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             <ListItem key={item.path} disablePadding sx={{ mb: 1 }}>
               <ListItemButton
                 onClick={() => handleNavigate(item.path)}
-                selected={location.pathname === item.path}
+                selected={isSelected(item.path)}
                 sx={{
                   borderRadius: 1,
                   '&.Mui-selected': {

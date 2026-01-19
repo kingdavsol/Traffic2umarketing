@@ -28,7 +28,8 @@ class APIService {
       (error) => {
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
-          window.location.href = '/login';
+          localStorage.removeItem('user');
+          window.location.href = '/auth/login';
         }
         return Promise.reject(error);
       }
@@ -46,6 +47,19 @@ class APIService {
 
   logout() {
     return this.api.post('/auth/logout');
+  }
+
+  requestPasswordReset(email: string) {
+    return this.api.post('/auth/forgot-password', { email });
+  }
+
+  resetPassword(token: string, newPassword: string) {
+    return this.api.post('/auth/reset-password', { token, newPassword });
+  }
+
+  // Dashboard
+  getDashboardStats() {
+    return this.api.get('/dashboard/stats');
   }
 
   // Listings
