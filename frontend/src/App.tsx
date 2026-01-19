@@ -3,6 +3,23 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useDispatch, useSelector } from 'react-redux';
 import { CssBaseline, ThemeProvider, createTheme, CircularProgress, Box } from '@mui/material';
 
+// Non-lazy imports (needed immediately)
+import { TermsOfService, PrivacyPolicy, CookiePolicy } from './pages/legal';
+import PrivateRoute from './components/PrivateRoute';
+import AdminRoute from './components/AdminRoute';
+import ErrorBoundary from './components/ErrorBoundary';
+import ToastContainer from './components/ToastContainer';
+
+// Redux
+import { RootState } from './store';
+import { initializeAuth } from './store/slices/authSlice';
+
+// Analytics
+import { initializePostHog, identifyUser } from './lib/posthog';
+
+// Styles
+import './styles/App.css';
+
 // Lazy-loaded Pages (code splitting for better performance)
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -23,23 +40,6 @@ const CaseStudies = lazy(() => import('./pages/CaseStudies'));
 const GoogleCallback = lazy(() => import('./pages/auth/GoogleCallback'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
-
-// Non-lazy imports (needed immediately)
-import { TermsOfService, PrivacyPolicy, CookiePolicy } from './pages/legal';
-import PrivateRoute from './components/PrivateRoute';
-import AdminRoute from './components/AdminRoute';
-import ErrorBoundary from './components/ErrorBoundary';
-import ToastContainer from './components/ToastContainer';
-
-// Redux
-import { RootState } from './store';
-import { initializeAuth } from './store/slices/authSlice';
-
-// Analytics
-import { initializePostHog, identifyUser } from './lib/posthog';
-
-// Styles
-import './styles/App.css';
 
 // Create theme function with QuickSell branding (supports dark mode)
 const createAppTheme = (darkMode: boolean) => createTheme({
