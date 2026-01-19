@@ -44,6 +44,7 @@ import { useDispatch } from 'react-redux';
 import api from '../services/api';
 import { createListingSuccess, updateListingSuccess } from '../store/slices/listingsSlice';
 import MarketplaceSelector from '../components/MarketplaceSelector';
+import Layout from '../components/Layout';
 
 interface AnalysisResult {
   title: string;
@@ -1148,18 +1149,21 @@ const CreateListing: React.FC = () => {
   // Show loading indicator when loading listing in edit mode
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ mt: 3 }}>
-            Loading listing...
-          </Typography>
-        </Box>
-      </Container>
+      <Layout>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ mt: 3 }}>
+              Loading listing...
+            </Typography>
+          </Box>
+        </Container>
+      </Layout>
     );
   }
 
   return (
+    <Layout>
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
         {isEditMode ? 'Edit Listing' : 'Create New Listing'}
@@ -1286,6 +1290,7 @@ const CreateListing: React.FC = () => {
         }}
       />
     </Container>
+    </Layout>
   );
 };
 

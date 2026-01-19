@@ -43,6 +43,8 @@ import {
   LocalOffer as TagIcon,
 } from '@mui/icons-material';
 import api from '../services/api';
+import Layout from '../components/Layout';
+import EmptyState from '../components/EmptyState';
 
 interface Sale {
   id: number;
@@ -270,6 +272,7 @@ const Sales: React.FC = () => {
   };
 
   return (
+    <Layout>
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -460,33 +463,11 @@ const Sales: React.FC = () => {
               </Typography>
 
               {sales.length === 0 ? (
-                <Paper
-                  elevation={0}
-                  sx={{
-                    textAlign: 'center',
-                    py: 8,
-                    bgcolor: '#f9fafb',
-                    border: '2px dashed #e0e0e0',
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography variant="h6" color="textSecondary" gutterBottom>
-                    No sales yet
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                    Add your first sale using the button above
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => setOpenDialog(true)}
-                    sx={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    }}
-                  >
-                    Add First Sale
-                  </Button>
-                </Paper>
+                <EmptyState
+                  type="sales"
+                  actionLabel="Add First Sale"
+                  onAction={() => setOpenDialog(true)}
+                />
               ) : (
                 <TableContainer>
                   <Table>
@@ -622,6 +603,7 @@ const Sales: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Container>
+    </Layout>
   );
 };
 

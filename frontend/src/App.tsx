@@ -1,31 +1,33 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { CssBaseline, ThemeProvider, createTheme, CircularProgress, Box } from '@mui/material';
 
-// Pages
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import PricingPage from './pages/PricingPage';
-import Dashboard from './pages/DashboardPage';
-import CreateListing from './pages/CreateListing';
-import ListingDetails from './pages/ListingDetails';
-import MyListings from './pages/MyListings';
-import Sales from './pages/Sales';
-import Gamification from './pages/Gamification';
-import Settings from './pages/Settings';
-import BulkMarketplaceSignup from './pages/BulkMarketplaceSignup';
-import Referrals from './pages/Referrals';
-import Blog from './pages/Blog';
-import BlogPost from './pages/BlogPost';
-import CaseStudies from './pages/CaseStudies';
-import GoogleCallback from './pages/auth/GoogleCallback';
-import ForgotPassword from './pages/auth/ForgotPassword';
+// Lazy-loaded Pages (code splitting for better performance)
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const PricingPage = lazy(() => import('./pages/PricingPage'));
+const Dashboard = lazy(() => import('./pages/DashboardPage'));
+const CreateListing = lazy(() => import('./pages/CreateListing'));
+const ListingDetails = lazy(() => import('./pages/ListingDetails'));
+const MyListings = lazy(() => import('./pages/MyListings'));
+const Sales = lazy(() => import('./pages/Sales'));
+const Gamification = lazy(() => import('./pages/Gamification'));
+const Settings = lazy(() => import('./pages/Settings'));
+const BulkMarketplaceSignup = lazy(() => import('./pages/BulkMarketplaceSignup'));
+const Referrals = lazy(() => import('./pages/Referrals'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+const CaseStudies = lazy(() => import('./pages/CaseStudies'));
+const GoogleCallback = lazy(() => import('./pages/auth/GoogleCallback'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+
+// Non-lazy imports (needed immediately)
 import { TermsOfService, PrivacyPolicy, CookiePolicy } from './pages/legal';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
-import AdminDashboard from './pages/admin/AdminDashboard';
 import ErrorBoundary from './components/ErrorBoundary';
 import ToastContainer from './components/ToastContainer';
 
@@ -39,9 +41,10 @@ import { initializePostHog, identifyUser } from './lib/posthog';
 // Styles
 import './styles/App.css';
 
-// Create theme with QuickSell branding
-const theme = createTheme({
+// Create theme function with QuickSell branding (supports dark mode)
+const createAppTheme = (darkMode: boolean) => createTheme({
   palette: {
+    mode: darkMode ? 'dark' : 'light',
     primary: {
       main: '#007AFF', // QuickSell Blue
       light: '#4DA3FF',
@@ -53,11 +56,11 @@ const theme = createTheme({
       dark: '#E41A1A',
     },
     success: {
-      main: '#FFD700', // Gold
+      main: darkMode ? '#4CAF50' : '#FFD700', // Use green in dark mode for better visibility
     },
     background: {
-      default: '#F5F7FF',
-      paper: '#FFFFFF',
+      default: darkMode ? '#121212' : '#F5F7FF',
+      paper: darkMode ? '#1E1E1E' : '#FFFFFF',
     },
   },
   typography: {
@@ -90,6 +93,10 @@ const App: React.FC = () => {
   const { isAuthenticated, loading, user } = useSelector(
     (state: RootState) => state.auth
   );
+  const darkMode = useSelector((state: RootState) => state.ui.darkMode);
+
+  // Memoize theme to prevent unnecessary re-renders
+  const theme = useMemo(() => createAppTheme(darkMode), [darkMode]);
 
   useEffect(() => {
     // Initialize PostHog analytics
@@ -129,11 +136,19 @@ const App: React.FC = () => {
     );
   }
 
+  // Loading fallback for lazy-loaded components
+  const LoadingFallback = () => (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <CircularProgress />
+    </Box>
+  );
+
   return (
     <ErrorBoundary>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
+          <Suspense fallback={<LoadingFallback />}>
           <Routes>
             <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
             <Route path="/pricing" element={<PricingPage />} />
@@ -161,6 +176,7 @@ const App: React.FC = () => {
             <Route path="/legal/cookie-policy" element={<CookiePolicy />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
+          </Suspense>
           <ToastContainer />
         </Router>
       </ThemeProvider>

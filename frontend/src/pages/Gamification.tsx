@@ -9,10 +9,6 @@ import {
   LinearProgress,
   Chip,
   Avatar,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
   Paper,
   Tabs,
   Tab,
@@ -26,18 +22,16 @@ import {
   ToggleButton,
   CircularProgress,
   Alert,
-  Divider,
 } from '@mui/material';
 import {
   EmojiEvents as TrophyIcon,
   Star as StarIcon,
-  TrendingUp as TrendingIcon,
   CheckCircle as CheckIcon,
   Lock as LockIcon,
-  LocalOffer as TagIcon,
   Whatshot as FireIcon,
 } from '@mui/icons-material';
 import api from '../services/api';
+import Layout from '../components/Layout';
 
 interface Badge {
   id: number;
@@ -111,39 +105,44 @@ const Gamification: React.FC = () => {
       // Handle stats
       if (statsRes.status === 'fulfilled' && statsRes.value.data?.success) {
         setStats(statsRes.value.data.data);
+        setError(null);
       } else {
-        // Fallback mock data
+        // Show empty initial state instead of mock data
         setStats({
-          total_points: 1250,
-          level: 5,
-          points_to_next_level: 250,
-          badges_earned: 8,
+          total_points: 0,
+          level: 1,
+          points_to_next_level: 500,
+          badges_earned: 0,
           total_badges: 20,
-          sales_count: 23,
-          listings_count: 45,
-          streak_days: 7,
+          sales_count: 0,
+          listings_count: 0,
+          streak_days: 0,
         });
+        setError('Start selling to earn points and unlock badges!');
       }
 
       // Handle badges
       if (badgesRes.status === 'fulfilled' && badgesRes.value.data?.success) {
         setBadges(badgesRes.value.data.data);
       } else {
-        setBadges(getMockBadges());
+        // Show available badges as locked
+        setBadges(getAvailableBadges());
       }
 
       // Handle challenges
       if (challengesRes.status === 'fulfilled' && challengesRes.value.data?.success) {
         setChallenges(challengesRes.value.data.data);
       } else {
-        setChallenges(getMockChallenges());
+        // Show sample challenges
+        setChallenges(getSampleChallenges());
       }
 
       // Handle leaderboard
       if (leaderboardRes.status === 'fulfilled' && leaderboardRes.value.data?.success) {
         setLeaderboard(leaderboardRes.value.data.data);
       } else {
-        setLeaderboard(getMockLeaderboard());
+        // Empty leaderboard - will show empty state
+        setLeaderboard([]);
       }
     } catch (err) {
       console.error('Failed to load gamification data:', err);
@@ -153,15 +152,16 @@ const Gamification: React.FC = () => {
     }
   };
 
-  const getMockBadges = (): Badge[] => [
+  const getAvailableBadges = (): Badge[] => [
     {
       id: 1,
       name: 'First Sale',
       description: 'Make your first sale',
       icon: '🎉',
       tier: 'bronze',
-      earned: true,
-      earned_at: new Date().toISOString(),
+      earned: false,
+      progress: 0,
+      requirement: 1,
     },
     {
       id: 2,
@@ -169,9 +169,8 @@ const Gamification: React.FC = () => {
       description: 'Create 10 listings',
       icon: '📝',
       tier: 'bronze',
-      earned: true,
-      earned_at: new Date().toISOString(),
-      progress: 10,
+      earned: false,
+      progress: 0,
       requirement: 10,
     },
     {
@@ -181,7 +180,7 @@ const Gamification: React.FC = () => {
       icon: '⚡',
       tier: 'silver',
       earned: false,
-      progress: 23,
+      progress: 0,
       requirement: 50,
     },
     {
@@ -191,7 +190,7 @@ const Gamification: React.FC = () => {
       icon: '🌐',
       tier: 'silver',
       earned: false,
-      progress: 3,
+      progress: 0,
       requirement: 5,
     },
     {
@@ -201,7 +200,7 @@ const Gamification: React.FC = () => {
       icon: '📸',
       tier: 'gold',
       earned: false,
-      progress: 67,
+      progress: 0,
       requirement: 100,
     },
     {
@@ -211,12 +210,12 @@ const Gamification: React.FC = () => {
       icon: '💎',
       tier: 'platinum',
       earned: false,
-      progress: 3420,
+      progress: 0,
       requirement: 10000,
     },
   ];
 
-  const getMockChallenges = (): Challenge[] => [
+  const getSampleChallenges = (): Challenge[] => [
     {
       id: 1,
       title: 'Weekend Warrior',
@@ -248,13 +247,7 @@ const Gamification: React.FC = () => {
     },
   ];
 
-  const getMockLeaderboard = (): LeaderboardEntry[] => [
-    { rank: 1, user_id: 1, username: 'SuperSeller', points: 5420, sales_count: 128, level: 12 },
-    { rank: 2, user_id: 2, username: 'QuickFlip', points: 4890, sales_count: 115, level: 11 },
-    { rank: 3, user_id: 3, username: 'MarketPro', points: 4320, sales_count: 98, level: 10 },
-    { rank: 4, user_id: 4, username: 'You', points: 1250, sales_count: 23, level: 5 },
-    { rank: 5, user_id: 5, username: 'FastSales', points: 980, sales_count: 19, level: 4 },
-  ];
+  // Leaderboard will show empty state when no data available
 
   const getTierColor = (tier: string) => {
     switch (tier) {
@@ -279,15 +272,18 @@ const Gamification: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
-        </Box>
-      </Container>
+      <Layout>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress />
+          </Box>
+        </Container>
+      </Layout>
     );
   }
 
   return (
+    <Layout>
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
@@ -633,6 +629,7 @@ const Gamification: React.FC = () => {
         </Box>
       )}
     </Container>
+    </Layout>
   );
 };
 

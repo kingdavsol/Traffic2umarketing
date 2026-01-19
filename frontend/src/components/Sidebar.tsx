@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import api from '../services/api';
 import {
   Drawer,
   List,
@@ -30,6 +31,27 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [currentPlan, setCurrentPlan] = useState('Free Tier');
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const response = await api.getSubscription();
+        if (response.data?.success && response.data.data?.plan) {
+          const planNames: Record<string, string> = {
+            free: 'Free Tier',
+            basic: 'Basic Plan',
+            pro: 'Pro Plan',
+            enterprise: 'Enterprise',
+          };
+          setCurrentPlan(planNames[response.data.data.plan] || response.data.data.plan);
+        }
+      } catch {
+        // Keep default Free Tier if API fails
+      }
+    };
+    fetchSubscription();
+  }, []);
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
@@ -126,15 +148,27 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
 
         <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1, textAlign: 'center' }}>
           <Box sx={{ fontSize: '12px', color: '#999', mb: 1 }}>Your Plan</Box>
-          <Box sx={{ fontWeight: 'bold', color: '#007AFF', mb: 1 }}>Free Tier</Box>
-          <Button
-            variant="contained"
-            size="small"
-            fullWidth
-            onClick={() => navigate('/settings')}
-          >
-            Upgrade
-          </Button>
+          <Box sx={{ fontWeight: 'bold', color: '#007AFF', mb: 1 }}>{currentPlan}</Box>
+          {currentPlan === 'Free Tier' && (
+            <Button
+              variant="contained"
+              size="small"
+              fullWidth
+              onClick={() => navigate('/pricing')}
+            >
+              Upgrade
+            </Button>
+          )}
+          {currentPlan !== 'Free Tier' && (
+            <Button
+              variant="outlined"
+              size="small"
+              fullWidth
+              onClick={() => navigate('/settings?tab=billing')}
+            >
+              Manage Plan
+            </Button>
+          )}
         </Box>
       </Box>
     </Drawer>

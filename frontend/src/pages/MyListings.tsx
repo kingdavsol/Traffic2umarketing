@@ -60,6 +60,8 @@ import {
 } from '../store/slices/listingsSlice';
 import { RootState } from '../store';
 import api from '../services/api';
+import Layout from '../components/Layout';
+import EmptyState from '../components/EmptyState';
 
 interface Listing {
   id: number;
@@ -259,6 +261,7 @@ const MyListings: React.FC = () => {
     });
 
   return (
+    <Layout>
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -379,39 +382,18 @@ const MyListings: React.FC = () => {
 
       {/* Empty State */}
       {!loading && filteredListings.length === 0 && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 8,
-            textAlign: 'center',
-            bgcolor: '#f9fafb',
-            border: '2px dashed #e0e0e0',
-            borderRadius: 2,
-          }}
-        >
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="h6" color="textSecondary">
-              {searchQuery || statusFilter !== 'all' ? 'No listings found' : 'No listings yet'}
-            </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-              {searchQuery || statusFilter !== 'all'
-                ? 'Try adjusting your filters or search query'
-                : 'Create your first listing to start selling'}
-            </Typography>
-          </Box>
-          {!searchQuery && statusFilter === 'all' && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => navigate('/create-listing')}
-              sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              }}
-            >
-              Create Your First Listing
-            </Button>
-          )}
-        </Paper>
+        searchQuery || statusFilter !== 'all' ? (
+          <EmptyState
+            type="search"
+            title="No listings found"
+            description="Try adjusting your filters or search query"
+          />
+        ) : (
+          <EmptyState
+            type="listings"
+            onAction={() => navigate('/create-listing')}
+          />
+        )
       )}
 
       {/* Listings Grid */}
@@ -653,6 +635,7 @@ const MyListings: React.FC = () => {
         </Alert>
       </Snackbar>
     </Container>
+    </Layout>
   );
 };
 

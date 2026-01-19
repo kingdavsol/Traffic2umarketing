@@ -8,6 +8,7 @@ function LandingPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [demoError, setDemoError] = useState<string | null>(null);
+  const [demoUsed, setDemoUsed] = useState(false); // Rate limit: one demo per session
 
   const features = [
     {
@@ -128,6 +129,12 @@ function LandingPage() {
       return;
     }
 
+    // Rate limit: one free demo per session
+    if (demoUsed) {
+      setDemoError('Demo limit reached! Sign up for free to analyze unlimited items.');
+      return;
+    }
+
     setAnalyzing(true);
     setDemoError(null);
 
@@ -141,6 +148,7 @@ function LandingPage() {
 
       if (response.data.success) {
         setAnalysisResult(response.data.data);
+        setDemoUsed(true); // Mark demo as used
       } else {
         setDemoError(response.data.error || 'Analysis failed');
       }
