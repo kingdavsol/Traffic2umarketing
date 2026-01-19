@@ -68,12 +68,18 @@ interface Listing {
   category: string;
   price: number;
   estimatedPrice?: number;
-  status: 'draft' | 'published' | 'sold' | 'delisted';
+  status: 'draft' | 'published' | 'sold' | 'delisted' | 'publishing';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   photos: string[];
   createdAt: string;
   publishedAt?: string;
   marketplaces?: string[];
+  marketplaceListings?: Record<string, {
+    status: 'pending' | 'posted' | 'failed';
+    postedAt: string | null;
+    externalId: string | null;
+    error?: string;
+  }>;
 }
 
 const MyListings: React.FC = () => {
@@ -201,6 +207,8 @@ const MyListings: React.FC = () => {
         return 'default';
       case 'published':
         return 'primary';
+      case 'publishing':
+        return 'info';
       case 'sold':
         return 'success';
       case 'delisted':
@@ -316,6 +324,7 @@ const MyListings: React.FC = () => {
               >
                 <MenuItem value="all">All</MenuItem>
                 <MenuItem value="draft">Draft</MenuItem>
+                <MenuItem value="publishing">Publishing</MenuItem>
                 <MenuItem value="published">Published</MenuItem>
                 <MenuItem value="sold">Sold</MenuItem>
                 <MenuItem value="delisted">Delisted</MenuItem>
@@ -450,13 +459,39 @@ const MyListings: React.FC = () => {
                   <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }} noWrap>
                     {listing.title}
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 0.5, mb: 1 }}>
+                  <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap' }}>
                     <Chip label={listing.category} size="small" variant="outlined" />
                     <Chip label={getConditionLabel(listing.condition)} size="small" variant="outlined" />
                   </Box>
                   <Typography variant="h6" color="primary" sx={{ mb: 1 }}>
                     ${listing.price.toFixed(2)}
                   </Typography>
+
+                  {/* Marketplace Status */}
+                  {listing.marketplaceListings && Object.keys(listing.marketplaceListings).length > 0 && (
+                    <Box sx={{ mb: 1 }}>
+                      <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
+                        Marketplaces:
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                        {Object.entries(listing.marketplaceListings).map(([marketplace, details]) => (
+                          <Chip
+                            key={marketplace}
+                            label={marketplace}
+                            size="small"
+                            color={
+                              details.status === 'posted' ? 'success' :
+                              details.status === 'failed' ? 'error' :
+                              'default'
+                            }
+                            variant={details.status === 'posted' ? 'filled' : 'outlined'}
+                            sx={{ fontSize: '0.7rem' }}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+
                   <Typography variant="caption" color="textSecondary">
                     Created {new Date(listing.createdAt).toLocaleDateString()}
                   </Typography>
@@ -508,16 +543,25 @@ const MyListings: React.FC = () => {
                   <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }} noWrap>
                     {listing.description}
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                  <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
                     <Chip label={listing.category} size="small" variant="outlined" />
                     <Chip label={getConditionLabel(listing.condition)} size="small" variant="outlined" />
-                    {listing.marketplaces && listing.marketplaces.length > 0 && (
-                      <Chip
-                        label={`${listing.marketplaces.length} marketplaces`}
-                        size="small"
-                        variant="outlined"
-                        color="primary"
-                      />
+                    {listing.marketplaceListings && Object.keys(listing.marketplaceListings).length > 0 && (
+                      <>
+                        {Object.entries(listing.marketplaceListings).map(([marketplace, details]) => (
+                          <Chip
+                            key={marketplace}
+                            label={marketplace}
+                            size="small"
+                            color={
+                              details.status === 'posted' ? 'success' :
+                              details.status === 'failed' ? 'error' :
+                              'default'
+                            }
+                            variant={details.status === 'posted' ? 'filled' : 'outlined'}
+                          />
+                        ))}
+                      </>
                     )}
                   </Box>
                   <Typography variant="caption" color="textSecondary">

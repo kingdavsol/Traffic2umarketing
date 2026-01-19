@@ -39,13 +39,17 @@ export const getListings = async (req: Request, res: Response) => {
     const { page = 1, limit = 10, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    // Exclude photos from list view to reduce response size (photos can be 600KB+ base64)
+    // Return first photo only for list view to reduce response size
     let queryText = `SELECT
       id, user_id, title, description, category, price, condition,
       brand, model, color, size, fulfillment_type, status, ai_generated,
       marketplace_listings, created_at, updated_at, deleted_at,
       created_at as published_at,
-      '[]'::jsonb as photos
+      CASE
+        WHEN jsonb_array_length(photos) > 0
+        THEN jsonb_build_array(photos->0)
+        ELSE '[]'::jsonb
+      END as photos
     FROM listings WHERE user_id = $1 AND deleted_at IS NULL`;
     const params: any[] = [userId];
 
