@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import { logger } from '../config/logger';
 import { trackPhotoAnalysis, trackError } from '../services/analyticsService';
 import { query } from '../database/connection';
+import { uploadFromBase64, uploadFromBuffer, deleteFile } from '../services/storageService';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -442,48 +443,177 @@ Be specific and accurate. Use bullet points (•) for lists. Format with clear s
 };
 
 /**
- * Upload photo (stub - can be implemented with multer/cloudinary later)
+ * Upload photo to configured storage backend (local, S3, or Cloudinary)
  */
 export const uploadPhoto = async (req: Request, res: Response) => {
   try {
-    // TODO: Implement actual file upload to cloud storage (Cloudinary, S3, etc.)
+    const userId = (req as any).userId;
+    const { listingId } = req.query;
+    const { image, images } = req.body;
+
+    // Support both single image and multiple images
+    let imageArray: string[] = [];
+    if (images && Array.isArray(images)) {
+      imageArray = images;
+    } else if (image) {
+      imageArray = [image];
+    }
+
+    // Also support multipart form data (files from multer)
+    if (req.files && Array.isArray(req.files)) {
+      for (const file of req.files as Express.Multer.File[]) {
+        const base64 = file.buffer.toString('base64');
+        imageArray.push(`data:${file.mimetype};base64,${base64}`);
+      }
+    } else if (req.file) {
+      const file = req.file as Express.Multer.File;
+      const base64 = file.buffer.toString('base64');
+      imageArray.push(`data:${file.mimetype};base64,${base64}`);
+    }
+
+    if (imageArray.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No images provided',
+        statusCode: 400,
+      });
+    }
+
+    // Upload all images
+    const uploadResults = await Promise.all(
+      imageArray.map(async (img, index) => {
+        try {
+          const result = await uploadFromBase64(img);
+          return {
+            index,
+            success: true,
+            url: result.url,
+            publicId: result.publicId,
+            format: result.format,
+            size: result.size,
+          };
+        } catch (error: any) {
+          logger.error(`Failed to upload image ${index}:`, error);
+          return {
+            index,
+            success: false,
+            error: error.message,
+          };
+        }
+      })
+    );
+
+    const successfulUploads = uploadResults.filter(r => r.success);
+    const failedUploads = uploadResults.filter(r => !r.success);
+
+    // If associated with a listing, store photo references
+    if (listingId && successfulUploads.length > 0) {
+      try {
+        // Get current photos
+        const listingResult = await query(
+          'SELECT photos FROM listings WHERE id = $1 AND user_id = $2',
+          [listingId, userId]
+        );
+
+        if (listingResult.rows[0]) {
+          const currentPhotos = listingResult.rows[0].photos || [];
+          const newPhotos = successfulUploads.map(u => ({
+            url: u.url,
+            publicId: u.publicId,
+            uploadedAt: new Date().toISOString(),
+          }));
+
+          await query(
+            'UPDATE listings SET photos = $1::jsonb WHERE id = $2',
+            [JSON.stringify([...currentPhotos, ...newPhotos]), listingId]
+          );
+        }
+      } catch (dbError) {
+        logger.error('Failed to update listing photos:', dbError);
+      }
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Photo uploaded successfully',
+      message: `${successfulUploads.length} photo(s) uploaded successfully`,
       data: {
-        url: 'https://placeholder.com/photo.jpg'
+        uploaded: successfulUploads,
+        failed: failedUploads,
+        urls: successfulUploads.map(u => u.url),
       },
-      statusCode: 201
+      statusCode: 201,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Photo upload error:', error);
     res.status(500).json({
       success: false,
-      error: 'Photo upload failed',
-      statusCode: 500
+      error: error.message || 'Photo upload failed',
+      statusCode: 500,
     });
   }
 };
 
 /**
- * Delete photo (stub)
+ * Delete photo from storage
  */
 export const deletePhoto = async (req: Request, res: Response) => {
   try {
+    const userId = (req as any).userId;
     const { id } = req.params;
+    const { publicId, listingId } = req.body;
 
-    // TODO: Implement photo deletion from storage
+    const photoId = publicId || id;
+
+    if (!photoId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Photo ID or public ID is required',
+        statusCode: 400,
+      });
+    }
+
+    // Delete from storage
+    const deleted = await deleteFile(photoId);
+
+    if (!deleted) {
+      logger.warn(`Could not delete file from storage: ${photoId}`);
+    }
+
+    // If associated with a listing, remove from listing photos
+    if (listingId) {
+      try {
+        const listingResult = await query(
+          'SELECT photos FROM listings WHERE id = $1 AND user_id = $2',
+          [listingId, userId]
+        );
+
+        if (listingResult.rows[0]) {
+          const currentPhotos = listingResult.rows[0].photos || [];
+          const updatedPhotos = currentPhotos.filter(
+            (p: any) => p.publicId !== photoId && p.url !== photoId
+          );
+
+          await query(
+            'UPDATE listings SET photos = $1::jsonb WHERE id = $2',
+            [JSON.stringify(updatedPhotos), listingId]
+          );
+        }
+      } catch (dbError) {
+        logger.error('Failed to update listing photos:', dbError);
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: 'Photo deleted successfully',
-      statusCode: 200
+      statusCode: 200,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Photo deletion error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to delete photo',
-      statusCode: 500
+      error: error.message || 'Failed to delete photo',
+      statusCode: 500,
     });
   }
 };
