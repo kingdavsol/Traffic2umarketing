@@ -19,57 +19,58 @@ import { Check, Star } from '@mui/icons-material';
 const PricingPage: React.FC = () => {
   const plans = [
     {
+      id: 'free',
       name: 'Free',
       price: '$0',
       period: 'forever',
-      description: 'Perfect for trying out QuickSell',
+      description: 'Try QuickSell with 3 free listings',
       features: [
-        'Up to 5 listings per month',
+        '3 free listings total',
         'AI-powered descriptions',
-        'Post to 5 marketplaces',
+        'Post to eBay marketplace',
         'Basic price estimation',
-        'Email support',
+        'Community support',
       ],
       buttonText: 'Get Started Free',
       buttonVariant: 'outlined' as const,
       popular: false,
     },
     {
-      name: 'Pro',
-      price: '$19',
+      id: 'premium',
+      name: 'Premium',
+      price: '$4.99',
       period: 'per month',
-      description: 'For serious sellers',
+      description: 'Perfect for regular sellers',
       features: [
         'Unlimited listings',
         'AI-powered descriptions',
-        'Post to 20+ marketplaces',
+        'Post to 10+ marketplaces',
         'Advanced price estimation',
         'Priority email support',
         'Sales analytics',
-        'Bulk upload (up to 10 items)',
-        'Auto-reposting',
+        'Bulk upload (up to 100 items)',
+        'No ads',
       ],
-      buttonText: 'Start Pro Trial',
+      buttonText: 'Start 14-Day Trial',
       buttonVariant: 'contained' as const,
       popular: true,
     },
     {
-      name: 'Business',
-      price: '$49',
+      id: 'premium_plus',
+      name: 'Premium Plus',
+      price: '$9.99',
       period: 'per month',
-      description: 'For power sellers and businesses',
+      description: 'For power sellers',
       features: [
-        'Everything in Pro',
-        'Unlimited bulk uploads',
-        'AI chatbot for buyer questions',
+        'Everything in Premium',
+        'AI image classification',
         'Inventory management',
-        'Custom branding',
-        'API access',
-        'Dedicated account manager',
-        'Phone support',
-        'Advanced analytics & reports',
+        'Shipping cost optimization',
+        'Advanced seller insights',
+        'Priority support',
+        'Early access to new features',
       ],
-      buttonText: 'Contact Sales',
+      buttonText: 'Start 14-Day Trial',
       buttonVariant: 'outlined' as const,
       popular: false,
     },
@@ -201,7 +202,10 @@ const PricingPage: React.FC = () => {
                       </ListItem>
                     ))}
                   </List>
-                  <Link to="/auth/register" style={{ textDecoration: 'none' }}>
+                  <Link
+                    to={plan.id === 'free' ? '/auth/register' : `/auth/register?plan=${plan.id}`}
+                    style={{ textDecoration: 'none' }}
+                  >
                     <Button
                       fullWidth
                       variant={plan.buttonVariant}
@@ -248,7 +252,7 @@ const PricingPage: React.FC = () => {
                   What payment methods do you accept?
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  We accept all major credit cards, PayPal, and ACH bank transfers for Business plans.
+                  We accept all major credit cards through Stripe's secure payment processing.
                 </Typography>
               </Card>
             </Grid>
@@ -258,7 +262,7 @@ const PricingPage: React.FC = () => {
                   Is there a free trial?
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  The Free plan is available forever. Pro and Business plans offer a 14-day free trial.
+                  The Free plan gives you 3 listings. Premium and Premium Plus plans offer a 14-day free trial.
                 </Typography>
               </Card>
             </Grid>

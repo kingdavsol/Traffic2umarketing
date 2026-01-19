@@ -226,7 +226,7 @@ class APIService {
     return this.api.post('/shipping/create-label', { saleId, carrier });
   }
 
-  // Subscription
+  // Subscription & Stripe
   getSubscriptionPlans() {
     return this.api.get('/subscription/plans');
   }
@@ -241,6 +241,14 @@ class APIService {
 
   cancelSubscription() {
     return this.api.post('/subscription/cancel');
+  }
+
+  createCheckoutSession(planId: string) {
+    return this.api.post('/stripe/create-checkout-session', { planId });
+  }
+
+  createCustomerPortalSession() {
+    return this.api.post('/stripe/create-portal-session');
   }
 
   // Notifications

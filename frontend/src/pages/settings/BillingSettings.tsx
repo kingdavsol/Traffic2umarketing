@@ -89,9 +89,20 @@ const BillingSettings: React.FC = () => {
     }
   };
 
-  const handleUpgradePlan = (plan: string) => {
-    // Redirect to checkout or show payment modal
-    window.location.href = `/checkout?plan=${plan}`;
+  const handleUpgradePlan = async (planId: string) => {
+    setLoading(true);
+    try {
+      const response = await api.createCheckoutSession(planId);
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        setMessage({ type: 'error', text: 'Failed to create checkout session' });
+      }
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.error || 'Failed to start checkout' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancelSubscription = async () => {
@@ -126,22 +137,25 @@ const BillingSettings: React.FC = () => {
 
   const plans = [
     {
+      id: 'free',
       name: 'Free',
       price: 0,
-      features: ['Up to 5 listings/month', 'Basic marketplace integration', 'Email support'],
-      current: subscription.plan === 'Free',
+      features: ['3 free listings total', 'eBay marketplace only', 'Basic support'],
+      current: subscription.plan === 'free' || subscription.plan === 'Free',
     },
     {
-      name: 'Pro',
-      price: 19.99,
-      features: ['Unlimited listings', 'All marketplace integrations', 'Priority support', 'Advanced analytics'],
-      current: subscription.plan === 'Pro',
+      id: 'premium',
+      name: 'Premium',
+      price: 4.99,
+      features: ['Unlimited listings', '10+ marketplaces', 'Priority support', 'Sales analytics'],
+      current: subscription.plan === 'premium' || subscription.plan === 'Premium',
     },
     {
-      name: 'Business',
-      price: 49.99,
-      features: ['Everything in Pro', 'Team collaboration', 'API access', 'Dedicated account manager'],
-      current: subscription.plan === 'Business',
+      id: 'premium_plus',
+      name: 'Premium Plus',
+      price: 9.99,
+      features: ['Everything in Premium', 'AI image classification', 'Inventory management', 'Advanced insights'],
+      current: subscription.plan === 'premium_plus' || subscription.plan === 'Premium Plus',
     },
   ];
 
@@ -243,7 +257,8 @@ const BillingSettings: React.FC = () => {
                   <Button
                     fullWidth
                     variant={plan.price > 0 ? 'contained' : 'outlined'}
-                    onClick={() => handleUpgradePlan(plan.name.toLowerCase())}
+                    onClick={() => handleUpgradePlan(plan.id)}
+                    disabled={loading}
                   >
                     {plan.price === 0 ? 'Downgrade' : 'Upgrade'}
                   </Button>

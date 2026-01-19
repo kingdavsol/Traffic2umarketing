@@ -28,6 +28,8 @@ import notificationRoutes from './routes/notification.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import publishRoutes from './routes/publish.routes';
 import referralRoutes from './routes/referral.routes';
+import stripeRoutes from './routes/stripe.routes';
+import billingRoutes from './routes/billing.routes';
 import adminRoutes from './routes/admin.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 
@@ -64,6 +66,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Raw body parsing for Stripe webhook (must be before JSON parsing)
+app.use('/api/v1/stripe/webhook', express.raw({ type: 'application/json' }));
 
 // Body parsing middleware
 app.use(express.json({ limit: '50mb' }));
@@ -133,6 +138,8 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/subscription', subscriptionRoutes);
 app.use('/api/v1/publish', publishRoutes);
 app.use('/api/v1/referrals', referralRoutes);
+app.use('/api/v1/stripe', stripeRoutes);
+app.use('/api/v1/billing', billingRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 

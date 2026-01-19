@@ -3,6 +3,7 @@ import { logger } from '../config/logger';
 import { query } from '../database/connection';
 import marketplaceAutomationService from '../services/marketplaceAutomationService';
 import { onListingCreated } from './gamificationController';
+import { canCreateListing, decrementFreeListings } from '../services/stripeService';
 
 // Helper function to convert snake_case to camelCase
 const toCamelCase = (obj: any): any => {
@@ -99,6 +100,16 @@ export const createListing = async (req: Request, res: Response) => {
       });
     }
 
+    // Check if user can create listing (free tier limit)
+    const listingPermission = await canCreateListing(userId);
+    if (!listingPermission.allowed) {
+      return res.status(403).json({
+        success: false,
+        error: listingPermission.reason || 'You have reached your listing limit. Please upgrade to Premium for unlimited listings.',
+        statusCode: 403,
+      });
+    }
+
     const {
       title,
       description,
@@ -176,6 +187,13 @@ export const createListing = async (req: Request, res: Response) => {
     const result = await query(queryText, params);
 
     logger.info(`Listing created: ${result.rows[0].id} by user ${userId}`);
+
+    // Decrement free listings count for free users (non-blocking)
+    try {
+      await decrementFreeListings(userId);
+    } catch (decrementError) {
+      logger.error('Decrement free listings error (non-critical):', decrementError);
+    }
 
     // Award gamification points (non-blocking)
     try {
