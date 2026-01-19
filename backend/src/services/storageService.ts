@@ -83,6 +83,7 @@ class LocalStorage implements StorageProvider {
 
 /**
  * AWS S3 / S3-Compatible Storage
+ * Note: Requires @aws-sdk/client-s3 to be installed for S3 functionality
  */
 class S3Storage implements StorageProvider {
   private bucketName: string;
@@ -94,43 +95,63 @@ class S3Storage implements StorageProvider {
   }
 
   async upload(buffer: Buffer, filename: string, mimeType: string): Promise<UploadResult> {
-    // Dynamic import to avoid requiring aws-sdk if not using S3
-    const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
+    try {
+      // Dynamic import to avoid requiring aws-sdk if not using S3
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const awsS3 = await import('@aws-sdk/client-s3').catch(() => null) as any;
 
-    const client = new S3Client({
-      region: this.region,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-      },
-    });
+      if (!awsS3) {
+        throw new Error('AWS SDK not installed. Please install @aws-sdk/client-s3 for S3 storage.');
+      }
 
-    const ext = mimeType.split('/')[1] || 'jpg';
-    const hash = crypto.createHash('md5').update(buffer).digest('hex').substring(0, 8);
-    const timestamp = Date.now();
-    const key = `photos/${timestamp}-${hash}.${ext}`;
+      const { S3Client, PutObjectCommand } = awsS3;
 
-    await client.send(new PutObjectCommand({
-      Bucket: this.bucketName,
-      Key: key,
-      Body: buffer,
-      ContentType: mimeType,
-      ACL: 'public-read',
-    }));
+      const client = new S3Client({
+        region: this.region,
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+        },
+      });
 
-    const url = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${key}`;
+      const ext = mimeType.split('/')[1] || 'jpg';
+      const hash = crypto.createHash('md5').update(buffer).digest('hex').substring(0, 8);
+      const timestamp = Date.now();
+      const key = `photos/${timestamp}-${hash}.${ext}`;
 
-    return {
-      url,
-      publicId: key,
-      format: ext,
-      size: buffer.length,
-    };
+      await client.send(new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: mimeType,
+        ACL: 'public-read',
+      }));
+
+      const url = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${key}`;
+
+      return {
+        url,
+        publicId: key,
+        format: ext,
+        size: buffer.length,
+      };
+    } catch (error: any) {
+      logger.error('S3 upload error:', error);
+      throw error;
+    }
   }
 
   async delete(publicId: string): Promise<boolean> {
     try {
-      const { S3Client, DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const awsS3 = await import('@aws-sdk/client-s3').catch(() => null) as any;
+
+      if (!awsS3) {
+        logger.error('AWS SDK not installed');
+        return false;
+      }
+
+      const { S3Client, DeleteObjectCommand } = awsS3;
 
       const client = new S3Client({
         region: this.region,
@@ -200,7 +221,12 @@ class CloudinaryStorage implements StorageProvider {
       throw new Error(`Cloudinary upload failed: ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const result = await response.json() as {
+      secure_url: string;
+      public_id: string;
+      format: string;
+      bytes: number;
+    };
 
     return {
       url: result.secure_url,

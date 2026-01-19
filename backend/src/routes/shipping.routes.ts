@@ -5,8 +5,24 @@ import { query } from '../database/connection';
 
 const router = Router();
 
+// Service interface with optional maxWeight
+interface ShippingService {
+  id: string;
+  name: string;
+  baseRate: number;
+  perPound: number;
+  days: string;
+  maxWeight?: number;
+}
+
+interface Carrier {
+  id: string;
+  name: string;
+  services: ShippingService[];
+}
+
 // Shipping carrier configurations with base rates
-const CARRIERS = {
+const CARRIERS: Record<string, Carrier> = {
   usps: {
     id: 'usps',
     name: 'USPS',
