@@ -15,7 +15,7 @@ const router = Router();
 
 // Initialize Stripe for webhook signature verification
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2022-11-15',
 });
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://quicksell.monster';

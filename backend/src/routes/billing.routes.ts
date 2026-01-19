@@ -85,7 +85,7 @@ router.get('/invoices', authenticate, async (req: Request, res: Response) => {
       [userId]
     );
 
-    const invoices = result.rows.map((inv) => ({
+    const invoices = result.rows.map((inv: any) => ({
       id: inv.id,
       date: new Date(inv.created_at).toLocaleDateString(),
       amount: inv.amount_paid / 100,
@@ -125,7 +125,7 @@ router.get('/payment-methods', authenticate, async (req: Request, res: Response)
       [userId]
     );
 
-    const paymentMethods = result.rows.map((pm) => ({
+    const paymentMethods = result.rows.map((pm: any) => ({
       id: pm.id,
       type: pm.type || 'card',
       last4: pm.last4,
