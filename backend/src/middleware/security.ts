@@ -148,6 +148,11 @@ export const enforceHttps = (req: Request, res: Response, next: NextFunction) =>
     return next();
   }
 
+  // Skip HTTPS enforcement for health check endpoint (internal monitoring)
+  if (req.path === '/health') {
+    return next();
+  }
+
   // Check various headers that indicate HTTPS
   const isSecure =
     req.secure ||
