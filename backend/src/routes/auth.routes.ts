@@ -1,6 +1,15 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth";
-import { register, login, logout, refreshToken } from "../controllers/authController";
+import {
+  register,
+  login,
+  logout,
+  refreshToken,
+  sendVerificationEmail,
+  verifyEmail,
+  forgotPassword,
+  resetPassword
+} from "../controllers/authController";
 import { getGoogleAuthUrl, googleCallback, verifyGoogleToken } from "../controllers/googleAuthController";
 
 const router = Router();
@@ -53,5 +62,33 @@ router.get("/google/callback", googleCallback);
  * @access  Public
  */
 router.post("/google/verify", verifyGoogleToken);
+
+/**
+ * @route   POST /api/v1/auth/send-verification
+ * @desc    Send email verification link
+ * @access  Private
+ */
+router.post("/send-verification", authenticate, sendVerificationEmail);
+
+/**
+ * @route   POST /api/v1/auth/verify-email
+ * @desc    Verify email with token
+ * @access  Public
+ */
+router.post("/verify-email", verifyEmail);
+
+/**
+ * @route   POST /api/v1/auth/forgot-password
+ * @desc    Request password reset email
+ * @access  Public
+ */
+router.post("/forgot-password", forgotPassword);
+
+/**
+ * @route   POST /api/v1/auth/reset-password
+ * @desc    Reset password with token
+ * @access  Public
+ */
+router.post("/reset-password", resetPassword);
 
 export default router;
