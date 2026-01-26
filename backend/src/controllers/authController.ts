@@ -201,12 +201,72 @@ export const logout = async (req: Request, res: Response) => {
 
 export const refreshToken = async (req: Request, res: Response) => {
   try {
-    // TODO: Validate existing token
-    // TODO: Generate new token
+    // Get token from header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: 'No token provided',
+        statusCode: 401,
+      });
+    }
+
+    const oldToken = authHeader.replace('Bearer ', '');
+
+    // Decode existing token (allow expired tokens for refresh)
+    let decoded;
+    try {
+      decoded = jwt.decode(oldToken, process.env.JWT_SECRET || 'your-secret-key', true);
+    } catch (decodeError) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid token',
+        statusCode: 401,
+      });
+    }
+
+    if (!decoded.userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid token payload',
+        statusCode: 401,
+      });
+    }
+
+    // Verify user still exists and is active
+    const user = await getUserByEmail(decoded.email);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: 'User no longer exists',
+        statusCode: 401,
+      });
+    }
+
+    // Generate new token with fresh expiration
+    const newToken = jwt.encode(
+      {
+        userId: user.id,
+        email: user.email,
+        exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
+      },
+      process.env.JWT_SECRET || 'your-secret-key'
+    );
 
     res.status(200).json({
       success: true,
-      message: 'Token refreshed',
+      message: 'Token refreshed successfully',
+      data: {
+        token: newToken,
+        expiresIn: 7 * 24 * 60 * 60, // seconds
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          subscriptionTier: user.subscription_tier,
+          isAdmin: user.is_admin || false,
+        },
+      },
       statusCode: 200,
     });
   } catch (error) {

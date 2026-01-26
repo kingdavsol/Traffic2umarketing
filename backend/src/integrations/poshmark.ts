@@ -269,10 +269,68 @@ export const postToPoshmark = async (
 
     // Handle image upload if photos are provided
     if (listingData.photos && listingData.photos.length > 0) {
-      logger.info('Image upload for Poshmark not yet implemented (requires file handling)');
-      // TODO: Implement image upload
-      // Poshmark allows up to 16 photos
-      // Would need to convert base64 to files and upload
+      logger.info(`Uploading ${listingData.photos.length} images to Poshmark`);
+
+      try {
+        // Find the file input element for photos
+        const fileInput = await page.$('input[type="file"][accept*="image"]');
+
+        if (fileInput) {
+          // Process each photo (max 16 for Poshmark)
+          const photosToUpload = listingData.photos.slice(0, 16);
+
+          for (let i = 0; i < photosToUpload.length; i++) {
+            const photo = photosToUpload[i];
+
+            // Check if it's a base64 string or URL
+            if (photo.startsWith('data:image') || photo.startsWith('/9j/') || photo.startsWith('iVBOR')) {
+              // Convert base64 to buffer and create temp file
+              const fs = await import('fs').then(m => m.promises);
+              const path = await import('path');
+              const os = await import('os');
+
+              // Handle both data URI and raw base64
+              const base64Data = photo.includes(',') ? photo.split(',')[1] : photo;
+              const buffer = Buffer.from(base64Data, 'base64');
+
+              // Detect image type from base64 header
+              let ext = 'jpg';
+              if (photo.includes('image/png') || base64Data.startsWith('iVBOR')) {
+                ext = 'png';
+              } else if (photo.includes('image/webp')) {
+                ext = 'webp';
+              }
+
+              // Create temp file
+              const tempDir = os.tmpdir();
+              const tempFile = path.join(tempDir, `poshmark_upload_${Date.now()}_${i}.${ext}`);
+              await fs.writeFile(tempFile, buffer);
+
+              // Upload the file
+              await fileInput.uploadFile(tempFile);
+              logger.info(`Uploaded image ${i + 1}/${photosToUpload.length}`);
+
+              // Wait for upload to process
+              await page.waitForTimeout(2000);
+
+              // Clean up temp file
+              await fs.unlink(tempFile).catch(() => {});
+            } else if (photo.startsWith('http')) {
+              // For URL-based images, we need to download first
+              logger.info(`Skipping URL-based image ${i + 1} - download not implemented`);
+            }
+          }
+
+          // Wait for all uploads to complete
+          await page.waitForTimeout(3000);
+          logger.info('Image uploads completed');
+        } else {
+          logger.warn('Could not find file input for Poshmark photo upload');
+        }
+      } catch (uploadError) {
+        logger.error('Error uploading images to Poshmark:', uploadError);
+        // Continue with listing even if image upload fails
+      }
     }
 
     // Submit the listing
