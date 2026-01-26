@@ -311,7 +311,7 @@ export const postToPoshmark = async (
               logger.info(`Uploaded image ${i + 1}/${photosToUpload.length}`);
 
               // Wait for upload to process
-              await page.waitForTimeout(2000);
+              await new Promise(resolve => setTimeout(resolve, 2000));
 
               // Clean up temp file
               await fs.unlink(tempFile).catch(() => {});
@@ -322,7 +322,7 @@ export const postToPoshmark = async (
           }
 
           // Wait for all uploads to complete
-          await page.waitForTimeout(3000);
+          await new Promise(resolve => setTimeout(resolve, 3000));
           logger.info('Image uploads completed');
         } else {
           logger.warn('Could not find file input for Poshmark photo upload');
