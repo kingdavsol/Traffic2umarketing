@@ -4,6 +4,18 @@ import { logger } from '../config/logger';
 import { AppError } from './errorHandler';
 import { query } from '../database/connection';
 
+// Get JWT secret with validation
+const getJwtSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret === 'your-secret-key' || secret === 'your-secret-key-here') {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET must be configured in production');
+    }
+    return 'your-secret-key';
+  }
+  return secret;
+};
+
 export interface AuthRequest extends Request {
   userId?: number;
   token?: string;
@@ -21,7 +33,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
     const decoded = jwt.decode(
       token,
-      process.env.JWT_SECRET || 'your-secret-key',
+      getJwtSecret(),
       true
     );
 

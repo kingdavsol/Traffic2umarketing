@@ -6,6 +6,18 @@ import { query } from "../database/connection";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+// Get JWT secret with validation
+const getJwtSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret === 'your-secret-key' || secret === 'your-secret-key-here') {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET must be configured in production');
+    }
+    return 'your-secret-key';
+  }
+  return secret;
+};
+
 // Get Google OAuth URL for redirect
 export const getGoogleAuthUrl = async (req: Request, res: Response) => {
   try {
@@ -116,7 +128,7 @@ export const googleCallback = async (req: Request, res: Response) => {
         email: dbUser.email,
         exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
       },
-      process.env.JWT_SECRET || "your-secret-key"
+      getJwtSecret()
     );
 
     // Redirect to frontend with token
@@ -189,7 +201,7 @@ export const verifyGoogleToken = async (req: Request, res: Response) => {
         email: user.email,
         exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
       },
-      process.env.JWT_SECRET || "your-secret-key"
+      getJwtSecret()
     );
 
     res.json({

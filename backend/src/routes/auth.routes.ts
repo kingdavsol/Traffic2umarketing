@@ -11,6 +11,7 @@ import {
   resetPassword
 } from "../controllers/authController";
 import { getGoogleAuthUrl, googleCallback, verifyGoogleToken } from "../controllers/googleAuthController";
+import { verifyCaptcha, accountLockout } from "../middleware/security";
 
 const router = Router();
 
@@ -18,15 +19,17 @@ const router = Router();
  * @route   POST /api/v1/auth/register
  * @desc    Register a new user
  * @access  Public
+ * @security CAPTCHA required to prevent spam signups
  */
-router.post("/register", register);
+router.post("/register", verifyCaptcha, register);
 
 /**
  * @route   POST /api/v1/auth/login
  * @desc    User login
  * @access  Public
+ * @security Account lockout after 5 failed attempts
  */
-router.post("/login", login);
+router.post("/login", accountLockout, login);
 
 /**
  * @route   POST /api/v1/auth/logout
@@ -81,8 +84,9 @@ router.post("/verify-email", verifyEmail);
  * @route   POST /api/v1/auth/forgot-password
  * @desc    Request password reset email
  * @access  Public
+ * @security CAPTCHA required to prevent abuse
  */
-router.post("/forgot-password", forgotPassword);
+router.post("/forgot-password", verifyCaptcha, forgotPassword);
 
 /**
  * @route   POST /api/v1/auth/reset-password

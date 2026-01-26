@@ -5,14 +5,25 @@ import { getConnectedMarketplaces } from '../services/marketplaceService';
 import crypto from 'crypto';
 
 // Encryption key for storing credentials
-const ENCRYPTION_KEY = process.env.MARKETPLACE_ENCRYPTION_KEY || 'quicksell-default-encryption-key-32b';
+const getEncryptionKey = (): string => {
+  const key = process.env.MARKETPLACE_ENCRYPTION_KEY;
+  if (!key || key === 'quicksell-default-encryption-key-32b') {
+    if (process.env.NODE_ENV === 'production') {
+      logger.error('CRITICAL: MARKETPLACE_ENCRYPTION_KEY must be set in production!');
+      throw new Error('MARKETPLACE_ENCRYPTION_KEY not properly configured');
+    }
+    logger.warn('Using insecure default encryption key - set MARKETPLACE_ENCRYPTION_KEY env variable');
+    return 'quicksell-default-encryption-key-32b';
+  }
+  return key;
+};
 const ALGORITHM = 'aes-256-cbc';
 
 /**
  * Encrypt password before storing
  */
 function encryptPassword(password: string): string {
-  const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
+  const key = crypto.scryptSync(getEncryptionKey(), 'salt', 32);
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
   let encrypted = cipher.update(password, 'utf8', 'hex');

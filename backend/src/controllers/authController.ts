@@ -9,6 +9,20 @@ import { createUser, getUserByEmail } from '../services/userService';
 import { sendWelcomeEmail, sendConfirmationEmail, sendPasswordResetEmail } from '../services/emailService';
 import { trackUserRegistration, trackUserLogin } from '../services/analyticsService';
 import { trackReferralSignup, validateReferralCode, completeReferral } from '../services/referralService';
+import { recordFailedAttempt, clearLoginAttempts } from '../middleware/security';
+
+// Get JWT secret with validation
+const getJwtSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret === 'your-secret-key' || secret === 'your-secret-key-here') {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET must be configured in production');
+    }
+    logger.warn('Using insecure default JWT secret - set JWT_SECRET env variable');
+    return 'your-secret-key';
+  }
+  return secret;
+};
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -88,7 +102,7 @@ export const register = async (req: Request, res: Response) => {
         email: user.email,
         exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
       },
-      process.env.JWT_SECRET || 'your-secret-key'
+      getJwtSecret()
     );
 
     res.status(201).json({
@@ -130,6 +144,8 @@ export const login = async (req: Request, res: Response) => {
     // Find user by email
     const user = await getUserByEmail(email);
     if (!user) {
+      // Record failed attempt for brute force protection
+      recordFailedAttempt(email);
       return res.status(401).json({
         success: false,
         error: 'Invalid email or password',
@@ -140,12 +156,17 @@ export const login = async (req: Request, res: Response) => {
     // Compare passwords
     const isPasswordValid = await bcryptjs.compare(password, user.password_hash);
     if (!isPasswordValid) {
+      // Record failed attempt for brute force protection
+      recordFailedAttempt(email);
       return res.status(401).json({
         success: false,
         error: 'Invalid email or password',
         statusCode: 401,
       });
     }
+
+    // Clear failed attempts on successful login
+    clearLoginAttempts(email);
 
     // Track user login in analytics
     trackUserLogin(user.id, user.email);
@@ -157,7 +178,7 @@ export const login = async (req: Request, res: Response) => {
         email: user.email,
         exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
       },
-      process.env.JWT_SECRET || 'your-secret-key'
+      getJwtSecret()
     );
 
     res.status(200).json({
@@ -218,7 +239,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     // Decode existing token (allow expired tokens for refresh)
     let decoded;
     try {
-      decoded = jwt.decode(oldToken, process.env.JWT_SECRET || 'your-secret-key', true);
+      decoded = jwt.decode(oldToken, getJwtSecret(), true);
     } catch (decodeError) {
       return res.status(401).json({
         success: false,
@@ -252,7 +273,7 @@ export const refreshToken = async (req: Request, res: Response) => {
         email: user.email,
         exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
       },
-      process.env.JWT_SECRET || 'your-secret-key'
+      getJwtSecret()
     );
 
     res.status(200).json({

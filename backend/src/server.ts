@@ -36,6 +36,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
+import { enforceHttps, securityHeaders, validateJwtSecret } from './middleware/security';
 
 const app: Express = express();
 const PORT = process.env.PORT || 5000;
@@ -50,6 +51,8 @@ app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
+app.use(securityHeaders);
+app.use(enforceHttps);
 
 // CORS configuration - Allow frontend to access API
 const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
@@ -70,9 +73,9 @@ app.use(cors({
 // Raw body parsing for Stripe webhook (must be before JSON parsing)
 app.use('/api/v1/stripe/webhook', express.raw({ type: 'application/json' }));
 
-// Body parsing middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Body parsing middleware - limit to 10MB to prevent DoS attacks
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Logging middleware
 app.use(morgan('combined'));
@@ -168,6 +171,9 @@ app.use(errorHandler);
 const initializeApp = async () => {
   try {
     logger.info('Initializing QuickSell API...');
+
+    // Validate JWT secret before starting
+    validateJwtSecret();
 
     // Connect to PostgreSQL
     logger.info('Connecting to PostgreSQL database...');
