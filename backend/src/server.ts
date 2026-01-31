@@ -54,7 +54,7 @@ app.use(helmet());
 app.use(securityHeaders);
 app.use(enforceHttps);
 
-// CORS configuration - Allow frontend to access API
+// CORS configuration - Allow frontend and mobile apps to access API
 const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
   'http://localhost:3000',
   'http://localhost:8080',
@@ -64,10 +64,28 @@ const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
 ];
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, curl, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+    // Allow configured origins
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Allow Expo/React Native development
+    if (origin.startsWith('exp://') || origin.includes('expo')) {
+      return callback(null, true);
+    }
+    // Block other origins in production, allow in development
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Raw body parsing for Stripe webhook (must be before JSON parsing)
