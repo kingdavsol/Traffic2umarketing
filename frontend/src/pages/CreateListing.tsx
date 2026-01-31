@@ -381,8 +381,17 @@ const CreateListing: React.FC = () => {
   const getMarketplaceUrl = (marketplace: string) => {
     const urls: {[key: string]: string} = {
       facebook: 'https://www.facebook.com/marketplace/create/item',
-      offerup: 'https://offerup.com/', // Mobile app required for posting
+      offerup: 'https://offerup.com/sell/',
       mercari: 'https://www.mercari.com/sell/',
+      ebay: 'https://www.ebay.com/sl/prelist/suggest',
+      craigslist: 'https://post.craigslist.org/',
+      poshmark: 'https://poshmark.com/create-listing',
+      etsy: 'https://www.etsy.com/your/shops/me/tools/listings/create',
+      depop: 'https://www.depop.com/products/create/',
+      vinted: 'https://www.vinted.com/items/new',
+      tiktok: 'https://seller-us.tiktok.com/product/manage',
+      instagram: 'https://www.instagram.com',
+      nextdoor: 'https://nextdoor.com/sell/',
     };
     return urls[marketplace.toLowerCase()] || '#';
   };
@@ -432,34 +441,42 @@ const CreateListing: React.FC = () => {
         dispatch(createListingSuccess(listing));
       }
 
-      // If marketplaces selected, publish in background
+      // If marketplaces selected, show copy/paste instructions
       if (selectedMarketplaces.length > 0) {
         // Check if Craigslist is selected (requires automation)
         const hasCraigslist = selectedMarketplaces.some(m => m.toLowerCase() === 'craigslist');
 
-        // Show success message with background publishing notice
-        if (hasCraigslist) {
-          setSnackbarMessage(
-            isEditMode
-              ? '✓ Listing updated! Publishing to marketplaces in background (Craigslist may take 1-2 minutes).'
-              : '✓ Listing created! Publishing to marketplaces in background (Craigslist may take 1-2 minutes). You can continue creating more listings.'
-          );
-        } else {
-          setSnackbarMessage(
-            isEditMode
-              ? '✓ Listing updated! Publishing to marketplaces in background.'
-              : '✓ Listing created! Publishing to marketplaces in background. You can continue creating more listings.'
-          );
-        }
+        // Show success message
+        setSnackbarMessage(
+          isEditMode
+            ? '✓ Listing updated! Now copy your listing to the marketplaces below.'
+            : '✓ Listing created! Now copy your listing to the marketplaces below.'
+        );
         setSnackbarOpen(true);
 
-        // Show publishing status
-        setTimeout(() => {
-          setSnackbarMessage(`📤 Publishing to ${selectedMarketplaces.join(', ')}...`);
-          setSnackbarOpen(true);
-        }, 2000);
+        // Build publish results with copy/paste data for manual posting
+        const manualPosts = selectedMarketplaces.map((marketplace) => ({
+          marketplace,
+          copyPasteData: {
+            title: formData.title,
+            description: formData.description,
+            price: formData.price,
+            category: formData.category,
+            condition: formData.condition,
+          },
+        }));
 
-        // Start publishing in background with error notification
+        setPublishResults({
+          automaticPosts: [],
+          manualPosts: manualPosts,
+          copyPastePosts: manualPosts,
+          failedPosts: [],
+        });
+
+        // Move to publish results step to show copy/paste instructions
+        setActiveStep(2);
+
+        // Also try background publishing for automated marketplaces
         api.publishListing(listing.id, selectedMarketplaces)
           .then((response) => {
             console.log('Publish response:', response.data);
@@ -467,27 +484,23 @@ const CreateListing: React.FC = () => {
             const successful = results.filter((r: any) => r.success);
             const failed = response.data?.data?.failedPosts || [];
 
-            // Show detailed results
-            if (failed.length > 0 && successful.length > 0) {
-              setSnackbarMessage(`⚠️ Partially published: ${successful.length} succeeded, ${failed.length} failed (${failed.map((f: any) => f.marketplace).join(', ')})`);
-              setSnackbarOpen(true);
-            } else if (failed.length > 0) {
-              console.error('All marketplaces failed:', failed);
-              setSnackbarMessage(`❌ Publishing failed: ${failed.map((f: any) => f.marketplace).join(', ')} - ${failed[0]?.error || 'Unknown error'}`);
-              setSnackbarOpen(true);
-            } else if (successful.length > 0) {
-              setSnackbarMessage(`✅ Successfully published to ${successful.length} marketplace(s)!`);
+            // Update publish results with actual API results
+            if (successful.length > 0) {
+              setPublishResults((prev: any) => ({
+                ...prev,
+                automaticPosts: successful.map((r: any) => ({
+                  marketplace: r.marketplace,
+                  listingUrl: r.url || '#',
+                })),
+              }));
+              setSnackbarMessage(`✅ Auto-published to ${successful.length} marketplace(s)! Copy to others below.`);
               setSnackbarOpen(true);
             }
           })
           .catch((err) => {
             console.error('Background publish error:', err);
-            setSnackbarMessage(`❌ Publishing failed: ${err.response?.data?.error || err.message || 'Unknown error'}`);
-            setSnackbarOpen(true);
+            // Don't show error - user can still copy/paste manually
           });
-
-        // Navigate to listings immediately so user can continue
-        setTimeout(() => navigate('/listings'), 2000); // Brief delay to show success message
       } else {
         // No marketplaces selected
         setSnackbarMessage(isEditMode ? '✓ Listing updated successfully!' : '✓ Listing created successfully!');

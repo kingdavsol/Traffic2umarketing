@@ -71,17 +71,20 @@ interface SignupResult {
   error?: string;
 }
 
-// Marketplace signup URLs
+// Marketplace signup URLs - keys must match marketplace.id (lowercase)
 const MARKETPLACE_SIGNUP_URLS: Record<string, string> = {
-  'eBay': 'https://signup.ebay.com/pa/crte',
-  'Facebook': 'https://www.facebook.com/marketplace',
-  'Craigslist': 'https://accounts.craigslist.org/login',
-  'Mercari': 'https://www.mercari.com/signup/',
-  'Poshmark': 'https://poshmark.com/signup',
-  'Etsy': 'https://www.etsy.com/join',
-  'Depop': 'https://www.depop.com/signup/',
-  'Vinted': 'https://www.vinted.com/signup',
-  'OfferUp': 'https://offerup.com/signup',
+  'ebay': 'https://signup.ebay.com/pa/crte',
+  'facebook': 'https://www.facebook.com/marketplace/create/item',
+  'craigslist': 'https://accounts.craigslist.org/login',
+  'mercari': 'https://www.mercari.com/signup/',
+  'poshmark': 'https://poshmark.com/signup',
+  'etsy': 'https://www.etsy.com/join',
+  'depop': 'https://www.depop.com/signup/',
+  'vinted': 'https://www.vinted.com/signup',
+  'offerup': 'https://offerup.com/signup',
+  'tiktok': 'https://seller-us.tiktok.com/account/welcome',
+  'instagram': 'https://www.instagram.com',
+  'nextdoor': 'https://nextdoor.com',
 };
 
 export const BulkMarketplaceSignup: React.FC = () => {
