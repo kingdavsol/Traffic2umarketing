@@ -149,14 +149,16 @@ export const createListing = async (req: Request, res: Response) => {
       }
     }
 
-    logger.info('Creating listing with data:', {
+    logger.info('Creating listing with photos debug:', {
       userId,
       title,
       category,
       price,
       photosType: typeof photos,
       photosIsArray: Array.isArray(photos),
-      photosLength: photosArray.length
+      photosRawLength: photos ? (Array.isArray(photos) ? photos.length : 'not array') : 'undefined',
+      photosArrayLength: photosArray.length,
+      firstPhotoPreview: photosArray.length > 0 ? photosArray[0].substring(0, 100) + '...' : 'no photos'
     });
 
     const queryText = `
