@@ -359,6 +359,22 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                         Connect
                       </Button>
                     )}
+
+                    {/* Explicit "Open" button for marketplace URL */}
+                    {marketplace.url && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(marketplace.url, '_blank');
+                        }}
+                        sx={{ ml: 'auto' }}
+                      >
+                        Open {marketplace.name}
+                      </Button>
+                    )}
                   </Box>
                 </Box>
               </Box>
