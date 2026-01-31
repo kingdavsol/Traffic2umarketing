@@ -7,6 +7,7 @@ import {
   getAllUsers,
   getRecentActivity,
   updateUserTier,
+  getAllListings,
 } from '../controllers/adminController';
 import {
   getEnhancedAdminStats,
@@ -72,6 +73,13 @@ router.get('/users', authenticate, isAdmin, getAllUsers);
  * @access  Private (Admin only)
  */
 router.get('/activity', authenticate, isAdmin, getRecentActivity);
+
+/**
+ * @route   GET /api/v1/admin/listings
+ * @desc    Get all listings across all users
+ * @access  Private (Admin only)
+ */
+router.get('/listings', authenticate, isAdmin, getAllListings);
 
 /**
  * @route   PUT /api/v1/admin/users/:userId/tier

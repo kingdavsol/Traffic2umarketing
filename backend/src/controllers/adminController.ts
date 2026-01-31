@@ -178,3 +178,113 @@ export const updateUserTier = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getAllListings = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const offset = (page - 1) * limit;
+    const search = req.query.search as string || '';
+    const status = req.query.status as string || '';
+    const userId = req.query.userId as string || '';
+
+    // Build dynamic query
+    let whereClause = 'WHERE l.deleted_at IS NULL';
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (search) {
+      whereClause += ` AND (l.title ILIKE $${paramIndex} OR l.description ILIKE $${paramIndex})`;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    if (status) {
+      whereClause += ` AND l.status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+
+    if (userId) {
+      whereClause += ` AND l.user_id = $${paramIndex}`;
+      params.push(parseInt(userId));
+      paramIndex++;
+    }
+
+    // Get total count
+    const countResult = await query(
+      `SELECT COUNT(*) as count FROM listings l ${whereClause}`,
+      params
+    );
+    const total = parseInt(countResult.rows[0].count);
+
+    // Get listings with user info
+    const listingsResult = await query(
+      `SELECT
+        l.id,
+        l.user_id,
+        l.title,
+        l.description,
+        l.category,
+        l.price,
+        l.condition,
+        l.status,
+        l.ai_generated,
+        l.created_at,
+        l.updated_at,
+        CASE
+          WHEN jsonb_array_length(l.photos) > 0
+          THEN l.photos->0
+          ELSE NULL
+        END as first_photo,
+        jsonb_array_length(l.photos) as photo_count,
+        u.username,
+        u.email
+      FROM listings l
+      JOIN users u ON l.user_id = u.id
+      ${whereClause}
+      ORDER BY l.created_at DESC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+      [...params, limit, offset]
+    );
+
+    const listings = listingsResult.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      title: row.title,
+      description: row.description,
+      category: row.category,
+      price: parseFloat(row.price) || 0,
+      condition: row.condition,
+      status: row.status,
+      aiGenerated: row.ai_generated,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      firstPhoto: row.first_photo,
+      photoCount: row.photo_count,
+      username: row.username,
+      userEmail: row.email,
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        listings,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+      statusCode: 200,
+    });
+  } catch (error: any) {
+    logger.error('Get all listings error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch listings',
+      statusCode: 500,
+    });
+  }
+};
