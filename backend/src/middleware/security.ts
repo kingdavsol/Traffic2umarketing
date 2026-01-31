@@ -70,17 +70,13 @@ export const clearLoginAttempts = (identifier: string): void => {
 export const verifyCaptcha = async (req: Request, res: Response, next: NextFunction) => {
   const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
 
-  // Skip captcha in development if no secret configured
+  // Skip captcha if no secret configured (with warning)
   if (!recaptchaSecret) {
     if (process.env.NODE_ENV === 'production') {
-      logger.error('RECAPTCHA_SECRET_KEY not configured in production!');
-      return res.status(500).json({
-        success: false,
-        error: 'Server configuration error',
-        statusCode: 500,
-      });
+      logger.warn('RECAPTCHA_SECRET_KEY not configured - CAPTCHA verification skipped. Configure reCAPTCHA for spam protection.');
+    } else {
+      logger.warn('Skipping CAPTCHA verification - RECAPTCHA_SECRET_KEY not set');
     }
-    logger.warn('Skipping CAPTCHA verification - RECAPTCHA_SECRET_KEY not set');
     return next();
   }
 
