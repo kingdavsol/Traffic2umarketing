@@ -151,13 +151,19 @@ const CreateListing: React.FC = () => {
 
   // Photo upload
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    console.log('[DEBUG] onDrop called with', acceptedFiles.length, 'files');
     setPhotos((prev) => [...prev, ...acceptedFiles]);
 
     // Create preview URLs
     acceptedFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onload = () => {
-        setPhotoUrls((prev) => [...prev, reader.result as string]);
+        console.log('[DEBUG] FileReader completed for', file.name);
+        setPhotoUrls((prev) => {
+          const newUrls = [...prev, reader.result as string];
+          console.log('[DEBUG] photoUrls now has', newUrls.length, 'items');
+          return newUrls;
+        });
       };
       reader.readAsDataURL(file);
     });
@@ -260,6 +266,10 @@ const CreateListing: React.FC = () => {
 
   // AI Analysis
   const analyzePhotos = async () => {
+    console.log('[DEBUG] analyzePhotos called');
+    console.log('[DEBUG] photos.length:', photos.length);
+    console.log('[DEBUG] photoUrls.length:', photoUrls.length);
+
     if (photos.length === 0) {
       setError('Please upload at least one photo');
       return;
@@ -270,6 +280,7 @@ const CreateListing: React.FC = () => {
 
     try {
       // Analyze the first photo
+      console.log('[DEBUG] Calling api.analyzePhoto with', photos[0].name);
       const response = await api.analyzePhoto(photos[0]);
       const result = response.data.data || response.data; // Handle both response formats
 
@@ -408,6 +419,14 @@ const CreateListing: React.FC = () => {
 
   // Submit listing
   const handleSubmit = async () => {
+    // Debug: Log what we're submitting
+    console.log('[DEBUG] handleSubmit called');
+    console.log('[DEBUG] formData:', formData);
+    console.log('[DEBUG] photoUrls:', photoUrls);
+    console.log('[DEBUG] photoUrls.length:', photoUrls.length);
+    console.log('[DEBUG] photos (File[]):', photos);
+    console.log('[DEBUG] photos.length:', photos.length);
+
     if (!formData.title || !formData.description) {
       setError('Title and description are required');
       return;
