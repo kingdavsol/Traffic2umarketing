@@ -417,12 +417,22 @@ const CreateListing: React.FC = () => {
     return instructions[marketplace.toLowerCase()] || 'Open marketplace and paste your listing details';
   };
 
+  // Helper: Convert File to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Submit listing
   const handleSubmit = async () => {
     // Debug: Log what we're submitting
     console.log('[DEBUG] handleSubmit called');
     console.log('[DEBUG] formData:', formData);
-    console.log('[DEBUG] photoUrls:', photoUrls);
+    console.log('[DEBUG] photoUrls from state:', photoUrls);
     console.log('[DEBUG] photoUrls.length:', photoUrls.length);
     console.log('[DEBUG] photos (File[]):', photos);
     console.log('[DEBUG] photos.length:', photos.length);
@@ -436,13 +446,29 @@ const CreateListing: React.FC = () => {
     setError(null);
 
     try {
+      // IMPORTANT: Convert photos (File objects) to base64 directly
+      // This ensures we don't rely on potentially stale photoUrls state
+      let photosToSend: string[] = [];
+
+      if (photos.length > 0) {
+        console.log('[DEBUG] Converting', photos.length, 'files to base64...');
+        photosToSend = await Promise.all(photos.map(fileToBase64));
+        console.log('[DEBUG] Converted to', photosToSend.length, 'base64 strings');
+      } else if (photoUrls.length > 0) {
+        // Fallback to photoUrls if photos array is empty (e.g., edit mode)
+        console.log('[DEBUG] Using photoUrls from state:', photoUrls.length);
+        photosToSend = photoUrls;
+      }
+
+      console.log('[DEBUG] Final photosToSend.length:', photosToSend.length);
+
       let listing;
 
       if (isEditMode && editListingId) {
         // Update existing listing
         const listingResponse = await api.updateListing(parseInt(editListingId), {
           ...formData,
-          photos: photoUrls,
+          photos: photosToSend,
         });
 
         listing = listingResponse.data.data;
@@ -451,7 +477,7 @@ const CreateListing: React.FC = () => {
         // Create new listing
         const listingResponse = await api.createListing({
           ...formData,
-          photos: photoUrls,
+          photos: photosToSend,
           status: 'draft',
           ai_generated: true,
         });
