@@ -240,21 +240,21 @@ const MyListings: React.FC = () => {
   const filteredListings = listings
     .filter((listing) => {
       if (statusFilter !== 'all' && listing.status !== statusFilter) return false;
-      if (searchQuery && !listing.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (searchQuery && !listing.title?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       return true;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
         case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
         case 'price_high':
-          return b.price - a.price;
+          return (b.price || 0) - (a.price || 0);
         case 'price_low':
-          return a.price - b.price;
+          return (a.price || 0) - (b.price || 0);
         case 'title':
-          return a.title.localeCompare(b.title);
+          return (a.title || '').localeCompare(b.title || '');
         default:
           return 0;
       }
@@ -418,15 +418,15 @@ const MyListings: React.FC = () => {
                 <CardMedia
                   component="img"
                   height="200"
-                  image={listing.photos[0] || '/placeholder-image.jpg'}
+                  image={listing.photos?.[0] || '/placeholder-image.jpg'}
                   alt={listing.title}
                   sx={{ objectFit: 'cover', bgcolor: '#f5f5f5' }}
                 />
 
                 {/* Status Badge */}
                 <Chip
-                  label={listing.status.toUpperCase()}
-                  color={getStatusColor(listing.status) as any}
+                  label={(listing.status || 'draft').toUpperCase()}
+                  color={getStatusColor(listing.status || 'draft') as any}
                   size="small"
                   sx={{
                     position: 'absolute',
@@ -442,11 +442,11 @@ const MyListings: React.FC = () => {
                     {listing.title}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap' }}>
-                    <Chip label={listing.category} size="small" variant="outlined" />
-                    <Chip label={getConditionLabel(listing.condition)} size="small" variant="outlined" />
+                    {listing.category && <Chip label={listing.category} size="small" variant="outlined" />}
+                    {listing.condition && <Chip label={getConditionLabel(listing.condition)} size="small" variant="outlined" />}
                   </Box>
                   <Typography variant="h6" color="primary" sx={{ mb: 1 }}>
-                    ${listing.price.toFixed(2)}
+                    ${(listing.price || 0).toFixed(2)}
                   </Typography>
 
                   {/* Marketplace Status */}
@@ -475,7 +475,7 @@ const MyListings: React.FC = () => {
                   )}
 
                   <Typography variant="caption" color="textSecondary">
-                    Created {new Date(listing.createdAt).toLocaleDateString()}
+                    {listing.createdAt && `Created ${new Date(listing.createdAt).toLocaleDateString()}`}
                   </Typography>
                 </CardContent>
 
@@ -510,7 +510,7 @@ const MyListings: React.FC = () => {
                 <CardMedia
                   component="img"
                   sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 1, mr: 2 }}
-                  image={listing.photos[0] || '/placeholder-image.jpg'}
+                  image={listing.photos?.[0] || '/placeholder-image.jpg'}
                   alt={listing.title}
                 />
 
@@ -520,14 +520,14 @@ const MyListings: React.FC = () => {
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
                       {listing.title}
                     </Typography>
-                    <Chip label={listing.status.toUpperCase()} color={getStatusColor(listing.status) as any} size="small" />
+                    <Chip label={(listing.status || 'draft').toUpperCase()} color={getStatusColor(listing.status || 'draft') as any} size="small" />
                   </Box>
                   <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }} noWrap>
                     {listing.description}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
-                    <Chip label={listing.category} size="small" variant="outlined" />
-                    <Chip label={getConditionLabel(listing.condition)} size="small" variant="outlined" />
+                    {listing.category && <Chip label={listing.category} size="small" variant="outlined" />}
+                    {listing.condition && <Chip label={getConditionLabel(listing.condition)} size="small" variant="outlined" />}
                     {listing.marketplaceListings && Object.keys(listing.marketplaceListings).length > 0 && (
                       <>
                         {Object.entries(listing.marketplaceListings).map(([marketplace, details]) => (
@@ -547,14 +547,14 @@ const MyListings: React.FC = () => {
                     )}
                   </Box>
                   <Typography variant="caption" color="textSecondary">
-                    Created {new Date(listing.createdAt).toLocaleDateString()}
+                    {listing.createdAt && `Created ${new Date(listing.createdAt).toLocaleDateString()}`}
                   </Typography>
                 </Box>
 
                 {/* Price & Actions */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                   <Typography variant="h5" color="primary" sx={{ fontWeight: 600 }}>
-                    ${listing.price.toFixed(2)}
+                    ${(listing.price || 0).toFixed(2)}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button size="small" startIcon={<EditIcon />} onClick={() => handleEdit(listing)}>
