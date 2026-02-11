@@ -57,6 +57,10 @@ class APIService {
     return this.api.post('/auth/reset-password', { token, newPassword });
   }
 
+  verifyEmail(token: string) {
+    return this.api.post('/auth/verify-email', { token });
+  }
+
   // Dashboard
   getDashboardStats() {
     return this.api.get('/dashboard/stats');

@@ -168,7 +168,7 @@ export const sendConfirmationEmail = async (email: string, confirmationToken: st
       return { success: false };
     }
 
-    const confirmationLink = `https://quicksell.monster/confirm-email?token=${confirmationToken}`;
+    const confirmationLink = `${process.env.FRONTEND_URL || 'https://quicksell.monster'}/confirm-email?token=${confirmationToken}`;
 
     const result = await resend.emails.send({
       from: 'QuickSell <noreply@service.quicksell.monster>',
@@ -224,7 +224,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string) 
       return { success: false };
     }
 
-    const resetLink = `https://quicksell.monster/reset-password?token=${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL || 'https://quicksell.monster'}/reset-password?token=${resetToken}`;
 
     const result = await resend.emails.send({
       from: 'QuickSell <noreply@service.quicksell.monster>',

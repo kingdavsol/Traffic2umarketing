@@ -39,6 +39,8 @@ const BlogPost = lazy(() => import('./pages/BlogPost'));
 const CaseStudies = lazy(() => import('./pages/CaseStudies'));
 const GoogleCallback = lazy(() => import('./pages/auth/GoogleCallback'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ConfirmEmail = lazy(() => import('./pages/auth/ConfirmEmail'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 
 // Create theme function with QuickSell branding (supports dark mode)
@@ -156,6 +158,8 @@ const App: React.FC = () => {
             <Route path="/auth/callback" element={<GoogleCallback />} />
             <Route path="/auth/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <RegisterPage />} />
             <Route path="/auth/forgot-password" element={isAuthenticated ? <Navigate to="/dashboard" /> : <ForgotPassword />} />
+            <Route path="/confirm-email" element={<ConfirmEmail />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/login" element={<Navigate to="/auth/login" />} />
             <Route path="/register" element={<Navigate to="/auth/register" />} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
