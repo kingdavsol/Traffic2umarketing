@@ -1297,7 +1297,7 @@ const CreateListing: React.FC = () => {
         }}
       />
 
-      {/* AI Analyzing Status - Fixed position at top, always visible */}
+      {/* AI Analyzing Status - Mobile-friendly positioning over photo area */}
       <Snackbar
         open={analyzing}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -1314,12 +1314,12 @@ const CreateListing: React.FC = () => {
             fontWeight: 'bold',
             fontSize: '1.1rem',
             boxShadow: 6,
-            minWidth: '350px',
+            minWidth: { xs: '280px', sm: '350px' },
           }
         }}
         sx={{
           position: 'fixed',
-          top: '80px !important',
+          top: { xs: '120px !important', sm: '80px !important' },
           zIndex: 9999,
         }}
       />

@@ -258,59 +258,31 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                 borderColor: selectedMarketplaces.includes(marketplace.id)
                   ? 'primary.main'
                   : 'divider',
-                cursor: 'pointer',
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
               }}
-              onClick={() => handleToggle(marketplace.id)}
             >
               <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                 <Checkbox
                   checked={selectedMarketplaces.includes(marketplace.id)}
                   onChange={() => handleToggle(marketplace.id)}
-                  sx={{ p: 0, mr: 2 }}
+                  sx={{ p: 0, mr: 2, mt: 0.5 }}
                 />
 
                 <Box sx={{ flexGrow: 1 }}>
-                  {/* Clickable marketplace name and icon */}
+                  {/* Marketplace name and icon */}
                   <Box
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
                       mb: 1,
-                      cursor: marketplace.url ? 'pointer' : 'default',
-                      '&:hover': marketplace.url ? {
-                        '& .marketplace-name': {
-                          textDecoration: 'underline',
-                          color: 'primary.main',
-                        }
-                      } : {}
-                    }}
-                    onClick={(e) => {
-                      if (marketplace.url) {
-                        e.stopPropagation();
-                        window.open(marketplace.url, '_blank');
-                      }
                     }}
                   >
                     <Box sx={{ mr: 1, color: 'primary.main' }}>{marketplace.icon}</Box>
                     <Typography
                       variant="subtitle1"
                       fontWeight="medium"
-                      className="marketplace-name"
-                      sx={{ transition: 'all 0.2s' }}
                     >
                       {marketplace.name}
                     </Typography>
-                    {marketplace.url && (
-                      <Typography
-                        variant="caption"
-                        sx={{ ml: 1, color: 'primary.main', fontSize: '0.7rem' }}
-                      >
-                        ↗
-                      </Typography>
-                    )}
                   </Box>
 
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -360,17 +332,24 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                       </Button>
                     )}
 
-                    {/* Explicit "Open" button for marketplace URL */}
+                    {/* Explicit "Open" button for marketplace URL - Mobile-friendly */}
                     {marketplace.url && (
                       <Button
-                        size="small"
-                        variant="outlined"
+                        size="medium"
+                        variant="contained"
                         color="primary"
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
-                          window.open(marketplace.url, '_blank');
+                          window.open(marketplace.url, '_blank', 'noopener,noreferrer');
                         }}
-                        sx={{ ml: 'auto' }}
+                        sx={{
+                          ml: 'auto',
+                          minHeight: '44px',
+                          minWidth: '120px',
+                          fontSize: '0.9rem',
+                          fontWeight: 'bold',
+                        }}
                       >
                         Open {marketplace.name}
                       </Button>
