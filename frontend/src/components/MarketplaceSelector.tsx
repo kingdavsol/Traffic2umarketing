@@ -332,23 +332,30 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                       </Button>
                     )}
 
-                    {/* Explicit "Open" button for marketplace URL - Mobile-friendly */}
+                    {/* Explicit "Open" button for marketplace URL - Mobile-optimized with touch support */}
                     {marketplace.url && (
                       <Button
                         size="medium"
                         variant="contained"
                         color="primary"
+                        onTouchStart={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          window.open(marketplace.url!, '_blank', 'noopener,noreferrer');
+                        }}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          window.open(marketplace.url, '_blank', 'noopener,noreferrer');
+                          window.open(marketplace.url!, '_blank', 'noopener,noreferrer');
                         }}
                         sx={{
                           ml: 'auto',
-                          minHeight: '44px',
-                          minWidth: '120px',
-                          fontSize: '0.9rem',
+                          minHeight: '48px',
+                          minWidth: '140px',
+                          fontSize: '1rem',
                           fontWeight: 'bold',
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent',
                         }}
                       >
                         Open {marketplace.name}

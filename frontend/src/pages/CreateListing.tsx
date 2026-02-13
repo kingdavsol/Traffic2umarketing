@@ -698,31 +698,57 @@ const CreateListing: React.FC = () => {
             )}
 
             {photoUrls.length > 0 && (
-              <Grid container spacing={2} sx={{ mt: 2 }}>
-                {photoUrls.map((url, index) => (
-                  <Grid item xs={6} sm={4} md={3} key={index}>
-                    <Box sx={{ position: 'relative' }}>
-                      <img
-                        src={url}
-                        alt={`Upload ${index + 1}`}
-                        style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 8 }}
-                      />
-                      <IconButton
-                        size="small"
-                        sx={{
-                          position: 'absolute',
-                          top: 5,
-                          right: 5,
-                          bgcolor: 'background.paper',
-                        }}
-                        onClick={() => removePhoto(index)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
+              <Box sx={{ position: 'relative', mt: 2 }}>
+                {/* AI Analyzing overlay - positioned over photos */}
+                {analyzing && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 20,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      zIndex: 1000,
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      px: 3,
+                      py: 2,
+                      borderRadius: 2,
+                      boxShadow: 6,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                    }}
+                  >
+                    <CircularProgress size={20} sx={{ color: 'white' }} />
+                    <Typography sx={{ fontSize: '1rem', fontWeight: 'bold' }}>🤖 AI Analyzing your photo...</Typography>
+                  </Box>
+                )}
+                <Grid container spacing={2}>
+                  {photoUrls.map((url, index) => (
+                    <Grid item xs={6} sm={4} md={3} key={index}>
+                      <Box sx={{ position: 'relative' }}>
+                        <img
+                          src={url}
+                          alt={`Upload ${index + 1}`}
+                          style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 8 }}
+                        />
+                        <IconButton
+                          size="small"
+                          sx={{
+                            position: 'absolute',
+                            top: 5,
+                            right: 5,
+                            bgcolor: 'background.paper',
+                          }}
+                          onClick={() => removePhoto(index)}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
             )}
 
             {/* Analyzing message moved to floating snackbar at top */}
@@ -1297,32 +1323,7 @@ const CreateListing: React.FC = () => {
         }}
       />
 
-      {/* AI Analyzing Status - Mobile-friendly positioning over photo area */}
-      <Snackbar
-        open={analyzing}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        message={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <CircularProgress size={20} sx={{ color: 'white' }} />
-            <Typography sx={{ fontSize: '1rem' }}>🤖 AI Analyzing your photo...</Typography>
-          </Box>
-        }
-        ContentProps={{
-          sx: {
-            bgcolor: 'primary.main',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '1.1rem',
-            boxShadow: 6,
-            minWidth: { xs: '280px', sm: '350px' },
-          }
-        }}
-        sx={{
-          position: 'fixed',
-          top: { xs: '120px !important', sm: '80px !important' },
-          zIndex: 9999,
-        }}
-      />
+      {/* AI Analyzing Status moved inline with photos above */}
 
       {/* Success & Status Messages - Fixed position at top, always visible */}
       <Snackbar
