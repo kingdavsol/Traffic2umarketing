@@ -332,33 +332,35 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                       </Button>
                     )}
 
-                    {/* Explicit "Open" button for marketplace URL - Mobile-optimized with touch support */}
+                    {/* DEBUG VERSION - Explicit "Open" button with alert */}
                     {marketplace.url && (
                       <Button
-                        size="medium"
+                        size="large"
                         variant="contained"
-                        color="primary"
+                        color="error"
                         onTouchStart={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          alert('Touch detected! Opening: ' + marketplace.name);
                           window.open(marketplace.url!, '_blank', 'noopener,noreferrer');
                         }}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          alert('Click detected! Opening: ' + marketplace.name + '\nURL: ' + marketplace.url);
                           window.open(marketplace.url!, '_blank', 'noopener,noreferrer');
                         }}
                         sx={{
                           ml: 'auto',
-                          minHeight: '48px',
-                          minWidth: '140px',
-                          fontSize: '1rem',
+                          minHeight: '56px',
+                          minWidth: '160px',
+                          fontSize: '1.1rem',
                           fontWeight: 'bold',
-                          touchAction: 'manipulation',
-                          WebkitTapHighlightColor: 'transparent',
+                          bgcolor: '#FF0000',
+                          '&:hover': { bgcolor: '#CC0000' },
                         }}
                       >
-                        Open {marketplace.name}
+                        OPEN {marketplace.name}
                       </Button>
                     )}
                   </Box>

@@ -270,13 +270,18 @@ const CreateListing: React.FC = () => {
     console.log('[DEBUG] photos.length:', photos.length);
     console.log('[DEBUG] photoUrls.length:', photoUrls.length);
 
+    // EXPLICIT DEBUG - User will see this
+    alert('analyzePhotos function called! Photos: ' + photos.length);
+
     if (photos.length === 0) {
       setError('Please upload at least one photo');
+      alert('ERROR: No photos found!');
       return;
     }
 
     setAnalyzing(true);
     setError(null);
+    alert('setAnalyzing(true) executed - snackbar should appear!');
 
     try {
       // Analyze the first photo
@@ -697,29 +702,41 @@ const CreateListing: React.FC = () => {
               </Alert>
             )}
 
-            {/* AI Analyzing - FIXED to viewport, always visible */}
+            {/* AI Analyzing - MEGA VISIBLE DEBUG VERSION */}
             {analyzing && (
               <Box
                 sx={{
                   position: 'fixed',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  zIndex: 9999,
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  px: 4,
-                  py: 3,
-                  borderRadius: 3,
-                  boxShadow: 8,
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  bgcolor: 'rgba(0, 0, 0, 0.8)',
+                  zIndex: 99999,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 2,
-                  minWidth: '280px',
+                  justifyContent: 'center',
                 }}
               >
-                <CircularProgress size={24} sx={{ color: 'white' }} />
-                <Typography sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}>🤖 AI Analyzing your photo...</Typography>
+                <Box
+                  sx={{
+                    bgcolor: '#FF0000',
+                    color: 'white',
+                    p: 5,
+                    borderRadius: 4,
+                    textAlign: 'center',
+                    minWidth: '300px',
+                    border: '5px solid yellow',
+                  }}
+                >
+                  <CircularProgress size={40} sx={{ color: 'white', mb: 2 }} />
+                  <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                    🤖 AI ANALYZING
+                  </Typography>
+                  <Typography sx={{ fontSize: '1rem', mt: 1 }}>
+                    Please wait...
+                  </Typography>
+                </Box>
               </Box>
             )}
 
