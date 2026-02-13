@@ -702,6 +702,25 @@ const CreateListing: React.FC = () => {
               </Alert>
             )}
 
+            {/* DEBUG BUILD INDICATOR - ALWAYS VISIBLE */}
+            <Box
+              sx={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bgcolor: '#FF0000',
+                color: 'white',
+                p: 2,
+                textAlign: 'center',
+                zIndex: 99999,
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+              }}
+            >
+              🔴 DEBUG BUILD ACTIVE - Feb 13 7:30pm - Cache Fixed
+            </Box>
+
             {/* AI Analyzing - MEGA VISIBLE DEBUG VERSION */}
             {analyzing && (
               <Box
