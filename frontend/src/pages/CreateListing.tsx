@@ -697,32 +697,34 @@ const CreateListing: React.FC = () => {
               </Alert>
             )}
 
+            {/* AI Analyzing - FIXED to viewport, always visible */}
+            {analyzing && (
+              <Box
+                sx={{
+                  position: 'fixed',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 9999,
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  px: 4,
+                  py: 3,
+                  borderRadius: 3,
+                  boxShadow: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  minWidth: '280px',
+                }}
+              >
+                <CircularProgress size={24} sx={{ color: 'white' }} />
+                <Typography sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}>🤖 AI Analyzing your photo...</Typography>
+              </Box>
+            )}
+
             {photoUrls.length > 0 && (
-              <Box sx={{ position: 'relative', mt: 2 }}>
-                {/* AI Analyzing overlay - positioned over photos */}
-                {analyzing && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 20,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      zIndex: 1000,
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      px: 3,
-                      py: 2,
-                      borderRadius: 2,
-                      boxShadow: 6,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2,
-                    }}
-                  >
-                    <CircularProgress size={20} sx={{ color: 'white' }} />
-                    <Typography sx={{ fontSize: '1rem', fontWeight: 'bold' }}>🤖 AI Analyzing your photo...</Typography>
-                  </Box>
-                )}
+              <Box sx={{ mt: 2 }}>
                 <Grid container spacing={2}>
                   {photoUrls.map((url, index) => (
                     <Grid item xs={6} sm={4} md={3} key={index}>
