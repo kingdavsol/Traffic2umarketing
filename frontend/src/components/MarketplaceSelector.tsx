@@ -332,35 +332,23 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
                       </Button>
                     )}
 
-                    {/* DEBUG VERSION - Explicit "Open" button with alert */}
+                    {/* Direct link to marketplace */}
                     {marketplace.url && (
                       <Button
-                        size="large"
+                        component="a"
+                        href={marketplace.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="medium"
                         variant="contained"
-                        color="error"
-                        onTouchStart={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          alert('Touch detected! Opening: ' + marketplace.name);
-                          window.open(marketplace.url!, '_blank', 'noopener,noreferrer');
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          alert('Click detected! Opening: ' + marketplace.name + '\nURL: ' + marketplace.url);
-                          window.open(marketplace.url!, '_blank', 'noopener,noreferrer');
-                        }}
+                        color="primary"
                         sx={{
                           ml: 'auto',
-                          minHeight: '56px',
-                          minWidth: '160px',
-                          fontSize: '1.1rem',
-                          fontWeight: 'bold',
-                          bgcolor: '#FF0000',
-                          '&:hover': { bgcolor: '#CC0000' },
+                          minHeight: '44px',
+                          px: 2,
                         }}
                       >
-                        OPEN {marketplace.name}
+                        Open
                       </Button>
                     )}
                   </Box>

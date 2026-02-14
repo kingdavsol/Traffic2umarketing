@@ -266,26 +266,15 @@ const CreateListing: React.FC = () => {
 
   // AI Analysis
   const analyzePhotos = async () => {
-    console.log('[DEBUG] analyzePhotos called');
-    console.log('[DEBUG] photos.length:', photos.length);
-    console.log('[DEBUG] photoUrls.length:', photoUrls.length);
-
-    // EXPLICIT DEBUG - User will see this
-    alert('analyzePhotos function called! Photos: ' + photos.length);
-
     if (photos.length === 0) {
       setError('Please upload at least one photo');
-      alert('ERROR: No photos found!');
       return;
     }
 
     setAnalyzing(true);
     setError(null);
-    alert('setAnalyzing(true) executed - snackbar should appear!');
 
     try {
-      // Analyze the first photo
-      console.log('[DEBUG] Calling api.analyzePhoto with', photos[0].name);
       const response = await api.analyzePhoto(photos[0]);
       const result = response.data.data || response.data; // Handle both response formats
 
@@ -703,26 +692,7 @@ const CreateListing: React.FC = () => {
               </Alert>
             )}
 
-            {/* DEBUG BUILD INDICATOR - ALWAYS VISIBLE */}
-            <Box
-              sx={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bgcolor: '#FF0000',
-                color: 'white',
-                p: 2,
-                textAlign: 'center',
-                zIndex: 99999,
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-              }}
-            >
-              🔴 DEBUG BUILD ACTIVE - Feb 13 7:30pm - Cache Fixed
-            </Box>
-
-            {/* AI Analyzing - MEGA VISIBLE DEBUG VERSION */}
+            {/* AI Analyzing - Clean overlay */}
             {analyzing && (
               <Box
                 sx={{
@@ -731,8 +701,8 @@ const CreateListing: React.FC = () => {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  bgcolor: 'rgba(0, 0, 0, 0.8)',
-                  zIndex: 99999,
+                  bgcolor: 'rgba(0, 0, 0, 0.7)',
+                  zIndex: 9999,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -740,21 +710,20 @@ const CreateListing: React.FC = () => {
               >
                 <Box
                   sx={{
-                    bgcolor: '#FF0000',
+                    bgcolor: 'primary.main',
                     color: 'white',
-                    p: 5,
-                    borderRadius: 4,
+                    p: 4,
+                    borderRadius: 2,
                     textAlign: 'center',
-                    minWidth: '300px',
-                    border: '5px solid yellow',
+                    minWidth: '280px',
                   }}
                 >
-                  <CircularProgress size={40} sx={{ color: 'white', mb: 2 }} />
-                  <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                    🤖 AI ANALYZING
+                  <CircularProgress size={50} sx={{ color: 'white', mb: 2 }} />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    🤖 AI Analyzing Photo
                   </Typography>
-                  <Typography sx={{ fontSize: '1rem', mt: 1 }}>
-                    Please wait...
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    This may take 10-15 seconds...
                   </Typography>
                 </Box>
               </Box>
