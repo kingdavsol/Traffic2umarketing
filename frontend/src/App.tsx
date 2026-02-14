@@ -150,6 +150,24 @@ const App: React.FC = () => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
+          {/* DEBUG VERSION INDICATOR - VISIBLE ON ALL PAGES */}
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              bgcolor: '#FF0000',
+              color: 'white',
+              p: 1,
+              textAlign: 'center',
+              zIndex: 999999,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+            }}
+          >
+            🔴 DEBUG v2.0 - FEB 13 8:00PM - If you see this, new code loaded!
+          </Box>
           <Suspense fallback={<LoadingFallback />}>
           <Routes>
             <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
