@@ -334,22 +334,30 @@ const MarketplaceSelector: React.FC<MarketplaceSelectorProps> = ({
 
                     {/* Direct link to marketplace */}
                     {marketplace.url && (
-                      <Button
-                        component="a"
+                      <a
                         href={marketplace.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        size="medium"
-                        variant="contained"
-                        color="primary"
-                        sx={{
-                          ml: 'auto',
+                        style={{
+                          display: 'inline-block',
+                          marginLeft: 'auto',
+                          padding: '10px 20px',
                           minHeight: '44px',
-                          px: 2,
+                          backgroundColor: '#007AFF',
+                          color: 'white',
+                          textDecoration: 'none',
+                          borderRadius: '8px',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          textAlign: 'center',
+                          lineHeight: '24px',
+                          cursor: 'pointer',
+                          userSelect: 'none',
+                          WebkitTapHighlightColor: 'transparent',
                         }}
                       >
-                        Open
-                      </Button>
+                        OPEN
+                      </a>
                     )}
                   </Box>
                 </Box>
