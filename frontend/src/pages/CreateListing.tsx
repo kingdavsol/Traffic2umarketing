@@ -301,6 +301,7 @@ const CreateListing: React.FC = () => {
         size: result.size || '',
       });
 
+      setPhotosApproved(true); // Set AFTER analysis completes
       setActiveStep(1); // Move to review step
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to analyze photos');
@@ -690,7 +691,7 @@ const CreateListing: React.FC = () => {
                       size="large"
                       startIcon={<CheckCircleIcon />}
                       onClick={() => {
-                        setPhotosApproved(true);
+                        // Don't set photosApproved here - let analyzePhotos handle it
                         setPhotoCaptured(true);
                         analyzePhotos();
                       }}
