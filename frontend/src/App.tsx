@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { CssBaseline, ThemeProvider, createTheme, CircularProgress, Box } from '@mui/material';
 
 // Non-lazy imports (needed immediately)
-import { TermsOfService, PrivacyPolicy, CookiePolicy } from './pages/legal';
+import { TermsOfService, PrivacyPolicy, CookiePolicy, DisclosurePage } from "./pages/legal";
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -178,6 +178,7 @@ const App: React.FC = () => {
             <Route path="/legal/terms-of-service" element={<TermsOfService />} />
             <Route path="/legal/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/legal/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/disclosure" element={<DisclosurePage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
           </Suspense>
