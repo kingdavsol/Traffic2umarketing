@@ -151,17 +151,14 @@ const CreateListing: React.FC = () => {
 
   // Photo upload
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    console.log('[DEBUG] onDrop called with', acceptedFiles.length, 'files');
     setPhotos((prev) => [...prev, ...acceptedFiles]);
 
     // Create preview URLs
     acceptedFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onload = () => {
-        console.log('[DEBUG] FileReader completed for', file.name);
         setPhotoUrls((prev) => {
           const newUrls = [...prev, reader.result as string];
-          console.log('[DEBUG] photoUrls now has', newUrls.length, 'items');
           return newUrls;
         });
       };
@@ -425,12 +422,6 @@ const CreateListing: React.FC = () => {
   // Submit listing
   const handleSubmit = async () => {
     // Debug: Log what we're submitting
-    console.log('[DEBUG] handleSubmit called');
-    console.log('[DEBUG] formData:', formData);
-    console.log('[DEBUG] photoUrls from state:', photoUrls);
-    console.log('[DEBUG] photoUrls.length:', photoUrls.length);
-    console.log('[DEBUG] photos (File[]):', photos);
-    console.log('[DEBUG] photos.length:', photos.length);
 
     if (!formData.title || !formData.description) {
       setError('Title and description are required');
@@ -446,16 +437,12 @@ const CreateListing: React.FC = () => {
       let photosToSend: string[] = [];
 
       if (photos.length > 0) {
-        console.log('[DEBUG] Converting', photos.length, 'files to base64...');
         photosToSend = await Promise.all(photos.map(fileToBase64));
-        console.log('[DEBUG] Converted to', photosToSend.length, 'base64 strings');
       } else if (photoUrls.length > 0) {
         // Fallback to photoUrls if photos array is empty (e.g., edit mode)
-        console.log('[DEBUG] Using photoUrls from state:', photoUrls.length);
         photosToSend = photoUrls;
       }
 
-      console.log('[DEBUG] Final photosToSend.length:', photosToSend.length);
 
       let listing;
 

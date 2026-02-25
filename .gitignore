@@ -125,3 +125,4 @@ secrets/
 
 # Vercel
 .vercel
+CREDENTIALS_BACKUP.txt

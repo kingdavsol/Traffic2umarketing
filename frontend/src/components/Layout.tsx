@@ -35,6 +35,7 @@ function Layout({ children }: LayoutProps) {
         <main className="layout-main">
           {children || <Outlet />}
         </main>
+        <footer style={{ textAlign: "center", padding: "8px", fontSize: "0.75rem", color: "#999" }}>QuickSell v1.1.0</footer>
       </div>
     </div>
   );
