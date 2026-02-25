@@ -1,11 +1,15 @@
-import React from 'react';
-import { Box, Heading, Text } from 'native-base';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 
 export default function ListingsScreen() {
   return (
-    <Box flex={1} bg="white" safeArea justifyContent="center" alignItems="center">
-      <Heading>My Listings</Heading>
-      <Text>View your active listings</Text>
-    </Box>
+    <View style={styles.container}>
+      <Text style={styles.heading}>Listings</Text>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#fff", justifyContent: "center", alignItems: "center" },
+  heading: { fontSize: 24, fontWeight: "bold" },
+});

@@ -3,90 +3,52 @@
     "name": "QuickSell",
     "slug": "quicksell",
     "version": "1.0.0",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "owner": "markd98",
+    "extra": {
+      "eas": {
+        "projectId": "bf85a847-ef74-4f1a-a9fc-60e81c961bd9"
+      }
+    },
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#007AFF",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.quicksell.app"
+    },
     "android": {
       "package": "com.quicksell.app",
-      "versionCode": 1,
-      "config": {
-        "googleMaps": {
-          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
-        }
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#007AFF"
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.CAMERA_ROLL",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.INTERNET",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION"
-      ],
-      "useNextNotificationApi": true
-    },
-    "ios": {
-      "bundleIdentifier": "com.quicksell.app",
-      "buildNumber": "1",
-      "supportsTabletMode": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "Camera is used to take photos of items to sell",
-        "NSPhotoLibraryUsageDescription": "Photo library access is needed to select item photos",
-        "NSLocationWhenInUseUsageDescription": "Location is used for local pickup options"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/favicon.png"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow QuickSell to access your camera to take photos of items"
+          "cameraPermission": "QuickSell needs camera access to photograph items for sale."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow QuickSell to access your photos to sell items",
-          "savePhotosPermission": "Allow QuickSell to save photos to your library"
+          "photosPermission": "QuickSell needs photo access to select item photos.",
+          "cameraPermission": "QuickSell needs camera access to photograph items."
         }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#ffffff"
-        }
-      ],
-      [
-        "expo-file-system",
-        {}
       ]
-    ],
-    "scheme": "quicksell",
-    "owner": "quicksell-team",
-    "runtimeVersion": "1.0.0",
-    "updates": {
-      "enabled": true,
-      "fallbackToCacheTimeout": 30000,
-      "url": "https://updates.expo.dev/quicksell"
-    },
-    "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "icon": "./assets/icon.png",
-    "primaryColor": "#007AFF",
-    "notification": {
-      "icon": "./assets/notification-icon.png",
-      "color": "#007AFF"
-    },
-    "description": "QuickSell - Take a photo, list on 20+ marketplaces instantly!"
+    ]
   }
 }

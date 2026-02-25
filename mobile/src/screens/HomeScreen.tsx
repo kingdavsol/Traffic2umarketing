@@ -1,21 +1,17 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Box, Heading, VStack } from 'native-base';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 
 export default function HomeScreen() {
   return (
-    <Box flex={1} bg="white" safeArea>
-      <VStack space={4} p={4}>
-        <Heading size="xl">QuickSell</Heading>
-        <Text style={styles.subtitle}>Sell items quickly across multiple marketplaces</Text>
-      </VStack>
-    </Box>
+    <View style={styles.container}>
+      <Text style={styles.title}>QuickSell</Text>
+      <Text style={styles.subtitle}>Sell items quickly across multiple marketplaces</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-  },
+  container: { flex: 1, backgroundColor: "#fff", padding: 16, justifyContent: "center" },
+  title: { fontSize: 32, fontWeight: "bold", marginBottom: 8 },
+  subtitle: { fontSize: 16, color: "#666" },
 });

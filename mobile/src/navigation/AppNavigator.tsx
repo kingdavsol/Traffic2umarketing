@@ -1,12 +1,12 @@
-import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '../screens/HomeScreen';
-import CameraScreen from '../screens/CameraScreen';
-import ListingsScreen from '../screens/ListingsScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import HomeScreen from "../screens/HomeScreen";
+import CameraScreen from "../screens/CameraScreen";
+import ListingsScreen from "../screens/ListingsScreen";
+import ProfileScreen from "../screens/ProfileScreen";
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
@@ -14,8 +14,8 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#6200EE',
-        tabBarInactiveTintColor: '#757575',
+        tabBarActiveTintColor: "#007AFF",
+        tabBarInactiveTintColor: "#757575",
       }}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -29,11 +29,7 @@ function MainTabs() {
 export default function AppNavigator() {
   return (
     <Stack.Navigator initialRouteName="Main">
-      <Stack.Screen
-        name="Main"
-        component={MainTabs}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
